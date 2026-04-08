@@ -1,67 +1,67 @@
 // ─── Stage 1: Consultation ───────────────────────────────────────────────────
 // Paid first. Covers AI intake, NZ vet review, VOI issuance.
-// Fixed regardless of which vaccines are ultimately recommended.
+// One fee covers the entire multi-dose course — not per visit.
 export const CONSULTATION_FEE = {
   id: 'consultation',
   name: 'Consultation & Vet Review',
-  price: 45,
-  description: 'AI health intake, NZ-registered vet assessment, and Veterinary Operating Instruction (VOI) issuance.',
+  price: 75,
+  description: 'AI-guided health intake, video assessment, NZ-registered vet review, and Veterinary Operating Instruction for your dog\'s full vaccine course.',
   includes: [
-    'AI-guided 5-minute health intake',
+    'Personalised AI health intake (10–15 min)',
     'Video assessment reviewed by AI + NZ vet',
-    'NZ-registered vet review (VCNZ APC holder)',
+    'Full clinical review by a VCNZ-registered vet',
     'Veterinary Operating Instruction (VOI) issued in your name',
-    'Digital health record created',
-    'Full administration guide included',
+    'Tailored vaccine schedule based on your dog\'s history',
+    'Digital health record + printable vaccination certificate',
   ],
+  refundNote: 'Refunded in full if your vet refers you to an in-person clinic.',
 }
 
 // ─── Stage 2: Vaccines (per dose, itemised after consult) ────────────────────
-// These are surfaced after the AI determines what the dog actually needs.
-// Priced individually so the customer sees exactly what they are paying for.
+// Surfaced after the AI determines exactly what the dog needs.
+// Priced per dose so you see exactly what you are paying for.
 export const VACCINE_PRODUCTS = {
   C3: {
     id: 'c3',
     name: 'C3 Vaccine',
     fullName: 'C3 — Distemper, Hepatitis, Parvovirus',
-    description: 'Core first puppy dose. Recommended at 6–8 weeks.',
-    price: 28,
-    note: 'Typically the first dose for puppies under 10 weeks.',
+    description: 'Core first puppy dose protecting against the three most common fatal canine diseases.',
+    price: 62,
+    note: 'Typically the first dose for puppies 6–8 weeks.',
   },
   C5: {
     id: 'c5',
     name: 'C5 Vaccine',
     fullName: 'C5 — Distemper, Hepatitis, Parvovirus + Parainfluenza + Kennel Cough',
-    description: 'Full core protection. Recommended from 10 weeks onward.',
-    price: 34,
+    description: 'Full core protection plus upper respiratory cover. Standard from 10 weeks and for annual boosters.',
+    price: 76,
     note: 'Standard for doses 2, 3 and annual boosters.',
   },
   LEPTO: {
     id: 'lepto',
     name: 'Leptospirosis Vaccine',
-    fullName: 'Leptospirosis (Lepto) — Leptospira interrogans',
-    description: 'Recommended for dogs in rural areas or with waterway access.',
-    price: 32,
+    fullName: 'Leptospirosis — Leptospira interrogans',
+    description: 'Recommended for dogs in rural areas or with access to waterways, rivers, or farm animals.',
+    price: 48,
     note: 'Recommended based on your lifestyle responses.',
   },
   KENNEL_COUGH: {
     id: 'kennel_cough',
-    name: 'Kennel Cough Vaccine',
+    name: 'Kennel Cough (Bordetella)',
     fullName: 'Kennel Cough — Bordetella bronchiseptica (intranasal)',
-    description: 'Recommended for dogs attending boarding, daycare, or dog parks.',
-    price: 26,
+    description: 'Recommended for dogs attending boarding, daycare, dog parks, or training classes.',
+    price: 42,
     note: 'Recommended based on your lifestyle responses.',
   },
 }
 
 // ─── Freight ─────────────────────────────────────────────────────────────────
-// Charged per shipment. Each dose in a multi-dose course ships separately
-// at the correct interval — so freight is multiplied by the number of shipments.
+// Charged per shipment. Multi-dose courses ship at the correct clinical interval.
 export const FREIGHT = {
   id: 'freight',
   name: 'Cold-chain courier',
-  pricePerShipment: 15,
-  description: 'Certified 2–8°C cold-chain packaging with temperature indicator strip. Signature required.',
+  pricePerShipment: 18,
+  description: 'Pharmaceutical-grade cold-chain packaging maintaining 2–8°C. Temperature indicator strip included. Signature required.',
 }
 
 // ─── Add-ons ─────────────────────────────────────────────────────────────────
@@ -69,53 +69,61 @@ export const ADDONS = {
   ASSIST: {
     id: 'assist',
     name: 'VetPac Assist',
-    description: 'A trained VetPac technician visits your home to administer the vaccine.',
-    price: 49,
+    description: 'A trained VetPac technician visits your home to administer the vaccine for you.',
+    price: 59,
     note: 'Auckland only. Same-day or next-day availability.',
   },
-  WORMING: { id: 'worming', name: 'Worming Treatment', price: 23 },
-  FLEA: { id: 'flea', name: 'Flea Treatment', price: 28 },
+  WORMING: { id: 'worming', name: 'Worming Treatment', price: 24 },
+  FLEA: { id: 'flea', name: 'Flea Treatment', price: 29 },
 }
 
 // ─── Homepage pricing examples (illustrative) ─────────────────────────────────
-// Used on the home page to give visitors a realistic cost picture.
 export const PRICING_EXAMPLES = [
   {
     id: 'puppy_course',
-    label: 'Puppy starting from scratch',
-    scenario: '3-dose course (C3 + C5 + C5)',
-    consultation: 45,
+    label: 'Full puppy course from scratch',
+    scenario: '3-dose programme (C3 + C5 + C5), shipped at clinical intervals',
+    consultation: 75,
     vaccines: [
-      { name: 'C3 — dose 1 (8 weeks)', price: 28 },
-      { name: 'C5 — dose 2 (12 weeks)', price: 34 },
-      { name: 'C5 — dose 3 (16 weeks)', price: 34 },
+      { name: 'C3 — dose 1 (6–8 weeks)', price: 62 },
+      { name: 'C5 — dose 2 (10–12 weeks)', price: 76 },
+      { name: 'C5 — dose 3 (14–16 weeks)', price: 76 },
     ],
     shipments: 3,
     badge: 'Most common',
-    badgeColor: 'accent',
   },
   {
     id: 'single_dose',
-    label: 'One dose needed',
-    scenario: 'Puppy who has had prior doses, or annual booster',
-    consultation: 45,
+    label: 'Annual booster',
+    scenario: 'Adult dog, up-to-date records, single C5 booster',
+    consultation: 75,
     vaccines: [
-      { name: 'C5 — single dose', price: 34 },
+      { name: 'C5 — annual booster', price: 76 },
     ],
     shipments: 1,
   },
   {
     id: 'partial_course',
     label: 'Partially vaccinated puppy',
-    scenario: '2 doses remaining (AI determines based on records)',
-    consultation: 45,
+    scenario: '2 doses remaining — AI determines based on prior records',
+    consultation: 75,
     vaccines: [
-      { name: 'C5 — dose 2 (12 weeks)', price: 34 },
-      { name: 'C5 — dose 3 (16 weeks)', price: 34 },
+      { name: 'C5 — dose 2 (10–12 weeks)', price: 76 },
+      { name: 'C5 — dose 3 (14–16 weeks)', price: 76 },
     ],
     shipments: 2,
   },
 ]
+
+// ─── Clinic comparison (for homepage pricing section) ────────────────────────
+export const CLINIC_COMPARISON = {
+  consultPerVisit: 70,
+  vaccinePerVisit: 75,
+  visitsForFullCourse: 3,
+  get totalClinic() {
+    return (this.consultPerVisit + this.vaccinePerVisit) * this.visitsForFullCourse
+  },
+}
 
 export const NZ_REGIONS = [
   'Northland',
