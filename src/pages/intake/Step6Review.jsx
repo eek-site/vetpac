@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  CheckCircle, Lock, Package, Clock, AlertTriangle,
-  Loader2, Info, ChevronDown, ChevronUp, Syringe, Truck
+  CheckCircle, Lock, Package, Clock,
+  Loader2, Info, ChevronDown, ChevronUp, Syringe, Truck, Home
 } from 'lucide-react'
 import Button from '../../components/ui/Button'
 import Alert from '../../components/ui/Alert'
@@ -184,49 +184,65 @@ function VaccineLineItem({ item, onToggle }) {
   )
 }
 
-function FreightBlock({ shipmentCount, freightPerShipment }) {
-  const total = shipmentCount * freightPerShipment
+function DeliveryMethodBlock({ assistSelected, setAssistSelected, totals }) {
   return (
     <div className="border-2 border-border rounded-card-lg p-5">
       <SectionHeading
         step="3"
-        label="Cold-chain freight"
-        sublabel={`NZD $${freightPerShipment} per shipment × ${shipmentCount} shipment${shipmentCount !== 1 ? 's' : ''} (one per dose)`}
+        label="How would you like to do this?"
+        sublabel="Choose how your vaccines are delivered and administered."
       />
-      <div className="flex items-center justify-between">
-        <div className="flex items-start gap-2 text-sm text-textSecondary">
-          <Truck className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-          <span>Certified 2–8°C cold-chain packaging, temperature indicator strip, signature required on delivery</span>
-        </div>
-        <span className="font-mono font-bold text-lg text-textPrimary ml-4 flex-shrink-0">NZD ${total}.00</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+
+        {/* Option A — Ship to me */}
+        <button
+          type="button"
+          onClick={() => setAssistSelected(false)}
+          className={`text-left p-4 rounded-card border-2 transition-all duration-200
+            ${!assistSelected ? 'border-primary bg-primary/5' : 'border-border bg-white hover:border-primary/40'}`}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
+              ${!assistSelected ? 'border-primary bg-primary' : 'border-border'}`}>
+              {!assistSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+            </div>
+            <Truck className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-textPrimary text-sm">Ship to me — I'll do it</span>
+          </div>
+          <p className="text-xs text-textMuted leading-relaxed ml-6">
+            Vaccines delivered cold-chain to your door. Step-by-step guide and everything you need is in the box.
+          </p>
+          <p className="text-xs font-semibold text-primary mt-2 ml-6">
+            NZD ${FREIGHT.pricePerShipment} × {totals.shipmentCount} delivery{totals.shipmentCount !== 1 ? 's' : ''} = ${totals.shipmentCount * FREIGHT.pricePerShipment}
+          </p>
+        </button>
+
+        {/* Option B — Vaccinator comes to me */}
+        <button
+          type="button"
+          onClick={() => setAssistSelected(true)}
+          className={`text-left p-4 rounded-card border-2 transition-all duration-200
+            ${assistSelected ? 'border-accent bg-accent/5' : 'border-border bg-white hover:border-accent/40'}`}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
+              ${assistSelected ? 'border-accent bg-accent' : 'border-border'}`}>
+              {assistSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+            </div>
+            <Home className="w-4 h-4 text-accent" />
+            <span className="font-semibold text-textPrimary text-sm">Send a vaccinator to me</span>
+            <span className="text-xs bg-accent/10 text-accent font-semibold px-1.5 py-0.5 rounded-full">Auckland</span>
+          </div>
+          <p className="text-xs text-textMuted leading-relaxed ml-6">
+            A trained VetPac technician comes to your home, brings the vaccines, and administers them for you. No delivery charge.
+          </p>
+          <p className="text-xs font-semibold text-accent mt-2 ml-6">
+            NZD ${ADDONS.ASSIST.price} × {totals.doseCount} visit{totals.doseCount !== 1 ? 's' : ''} = ${totals.doseCount * ADDONS.ASSIST.price}
+          </p>
+        </button>
+
       </div>
     </div>
-  )
-}
-
-function AssistBlock({ assistSelected, setAssistSelected }) {
-  return (
-    <label className={`flex items-start gap-3 p-5 rounded-card-lg border-2 cursor-pointer transition-all
-      ${assistSelected ? 'border-accent bg-accent/5' : 'border-border bg-white hover:border-accent/40'}`}>
-      <button
-        type="button"
-        onClick={() => setAssistSelected(!assistSelected)}
-        className={`w-5 h-5 rounded border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all
-          ${assistSelected ? 'bg-accent border-accent' : 'bg-white border-border'}`}
-      >
-        {assistSelected && <CheckCircle className="w-3.5 h-3.5 text-white" />}
-      </button>
-      <div className="flex-1">
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span className="font-semibold text-textPrimary text-sm">Add VetPac Assist</span>
-          <span className="text-xs bg-accent/10 text-accent-dark font-semibold px-2 py-0.5 rounded-full">Auckland only</span>
-        </div>
-        <p className="text-textMuted text-xs leading-relaxed">
-          A trained VetPac technician visits your home and administers the vaccine for you. Same-day or next-day availability. Operates under the same VOI — no additional vet fees.
-        </p>
-      </div>
-      <span className="font-mono font-bold text-accent text-sm flex-shrink-0 mt-0.5">+${ADDONS.ASSIST.price}</span>
-    </label>
   )
 }
 
@@ -249,20 +265,22 @@ function OrderSummary({ totals, ownerDetails }) {
       {/* Line items */}
       <div className="space-y-2 mb-4">
         <div className="flex justify-between text-sm">
-          <span className="text-textSecondary">Consultation & vet review</span>
+          <span className="text-textSecondary">Initial consultation</span>
           <span className="font-mono font-semibold">NZD ${totals.consultation}.00</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-textSecondary">Vaccines ({totals.vaccines > 0 ? `NZD $${totals.vaccines}` : '—'})</span>
+          <span className="text-textSecondary">Vaccines</span>
           <span className="font-mono font-semibold">NZD ${totals.vaccines}.00</span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-textSecondary">Cold-chain freight ({totals.shipmentCount} shipment{totals.shipmentCount !== 1 ? 's' : ''})</span>
-          <span className="font-mono font-semibold">NZD ${totals.freight}.00</span>
-        </div>
+        {totals.freight > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-textSecondary">Cold-chain delivery ({totals.shipmentCount} shipment{totals.shipmentCount !== 1 ? 's' : ''})</span>
+            <span className="font-mono font-semibold">NZD ${totals.freight}.00</span>
+          </div>
+        )}
         {totals.assist > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-textSecondary">VetPac Assist</span>
+            <span className="text-textSecondary">In-home vaccinator ({totals.doseCount} visit{totals.doseCount !== 1 ? 's' : ''})</span>
             <span className="font-mono font-semibold">NZD ${totals.assist}.00</span>
           </div>
         )}
@@ -341,7 +359,7 @@ export default function Step6Review() {
           Review your plan
         </h1>
         <p className="text-textSecondary">
-          Your consultation is fixed. The vaccine plan below is what our AI recommends — adjust if needed, then confirm.
+          Your vaccine plan is below. Adjust if needed, choose how you want it delivered, then confirm.
         </p>
       </div>
 
@@ -392,17 +410,13 @@ export default function Step6Review() {
             </>
           )}
 
-          {/* Stage 3: Freight */}
+          {/* Stage 3: Delivery method */}
           {!aiLoading && (
-            <FreightBlock
-              shipmentCount={totals.shipmentCount}
-              freightPerShipment={FREIGHT.pricePerShipment}
+            <DeliveryMethodBlock
+              assistSelected={assistSelected}
+              setAssistSelected={setAssistSelected}
+              totals={totals}
             />
-          )}
-
-          {/* Optional: VetPac Assist */}
-          {!aiLoading && (
-            <AssistBlock assistSelected={assistSelected} setAssistSelected={setAssistSelected} />
           )}
 
           {/* Order summary + CTA */}
@@ -420,7 +434,7 @@ export default function Step6Review() {
                 Proceed to payment — NZD ${totals.total} →
               </Button>
               <p className="text-xs text-textMuted text-center">
-                Secure payment via Stripe. Your order is dispatched within 24 hours of vet sign-off.
+                Secure payment via Stripe. Your order is confirmed and dispatched within 24 hours.
               </p>
             </>
           )}

@@ -59,7 +59,7 @@ export default function Checkout() {
           price: freightTotal,
         },
         ...(assistTotal > 0
-          ? [{ name: 'VetPac Assist — home administration', price: assistTotal }]
+          ? [{ name: 'In-home vaccinator', description: 'Trained technician brings and administers vaccines at your home', price: assistTotal }]
           : []),
       ].filter((item) => item.price > 0)
 
@@ -129,7 +129,7 @@ export default function Checkout() {
                 price={freightTotal}
               />
               {assistTotal > 0 && (
-                <LineItemRow label="VetPac Assist — home administration" price={assistTotal} />
+                <LineItemRow label="In-home vaccinator" description="Trained technician brings and administers vaccines at your home" price={assistTotal} />
               )}
               <div className="border-t border-border pt-3 flex justify-between items-center font-semibold text-sm">
                 <span className="text-textPrimary">Total (NZD, incl. GST)</span>

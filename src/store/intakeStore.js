@@ -191,23 +191,26 @@ export const useIntakeStore = create(
       // ─── Computed totals ────────────────────────────────────────────────────
       getOrderTotals: () => {
         const s = get()
-        const vaccineTotal = s.vaccinePlan
-          .filter((v) => v.selected)
-          .reduce((sum, v) => sum + v.price, 0)
+        const selectedDoses = s.vaccinePlan.filter((v) => v.selected)
+        const vaccineTotal = selectedDoses.reduce((sum, v) => sum + v.price, 0)
 
-        // Count unique shipment dates to calculate freight
+        // Count unique scheduled dates for shipment calculation
         const shipmentDates = [...new Set(
-          s.vaccinePlan.filter((v) => v.selected && v.doseNumber).map((v) => v.scheduledDate)
+          selectedDoses.filter((v) => v.doseNumber).map((v) => v.scheduledDate)
         )]
-        const shipmentCount = Math.max(shipmentDates.length, s.vaccinePlan.filter((v) => v.selected && v.doseNumber).length > 0 ? 1 : 0)
-        const freightTotal = shipmentCount * FREIGHT.pricePerShipment
-        const assistTotal = s.assistSelected ? ADDONS.ASSIST.price : 0
+        const shipmentCount = Math.max(shipmentDates.length, selectedDoses.filter((v) => v.doseNumber).length > 0 ? 1 : 0)
+        const doseCount = selectedDoses.filter((v) => v.doseNumber).length || 1
+
+        // Delivery method: assist = vaccinator comes to you (no freight), self = shipped to you
+        const freightTotal = s.assistSelected ? 0 : shipmentCount * FREIGHT.pricePerShipment
+        const assistTotal = s.assistSelected ? doseCount * ADDONS.ASSIST.price : 0
 
         return {
           consultation: CONSULTATION_FEE.price,
           vaccines: vaccineTotal,
           freight: freightTotal,
           shipmentCount,
+          doseCount,
           assist: assistTotal,
           total: CONSULTATION_FEE.price + vaccineTotal + freightTotal + assistTotal,
         }
