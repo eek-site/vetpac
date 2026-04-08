@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom'
 import {
   ArrowRight, Shield, Truck, Star, ChevronDown, ChevronUp,
   CheckCircle, Clock, Phone, BadgeCheck, Thermometer, Video,
-  ClipboardList, Package, Syringe, Bot, X,
+  ClipboardList, Package, Syringe, Bot,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
-import { FAQ_ITEMS, CONSULTATION_FEE, VACCINE_PRODUCTS, FREIGHT, PRICING_EXAMPLES, CLINIC_COMPARISON } from '../lib/constants'
+import { FAQ_ITEMS, CONSULTATION_FEE, VACCINE_PRODUCTS, FREIGHT } from '../lib/constants'
 
 function useIntersection(ref, threshold = 0.12) {
   const [visible, setVisible] = useState(false)
@@ -90,11 +90,11 @@ const testimonials = [
 ]
 
 const galleryPhotos = [
-  { src: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=600&h=500&fit=crop&q=80', alt: 'Happy dogs' },
-  { src: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&h=500&fit=crop&q=80', alt: 'Dogs together' },
-  { src: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&h=500&fit=crop&q=80', alt: 'Dog at rest' },
-  { src: 'https://images.unsplash.com/photo-1583511655826-05700d52f4d9?w=600&h=500&fit=crop&q=80', alt: 'Puppy portrait' },
-  { src: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=600&h=500&fit=crop&q=80', alt: 'Relaxed puppy' },
+  { src: 'https://images.unsplash.com/photo-1760970902153-8d4d8535bb0a?w=600&h=500&fit=crop&q=80', alt: 'Puppy in golden sunset' },
+  { src: 'https://images.unsplash.com/photo-1760448983438-f891ddf09eef?w=600&h=500&fit=crop&q=80', alt: 'Golden retriever puppy' },
+  { src: 'https://images.unsplash.com/photo-1755962179802-734c1cc178ac?w=600&h=500&fit=crop&q=80', alt: 'Puppy peeking over box' },
+  { src: 'https://images.unsplash.com/photo-1599692392256-2d084495fe15?w=600&h=500&fit=crop&q=80', alt: 'Golden retriever portrait' },
+  { src: 'https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=600&h=500&fit=crop&q=80', alt: 'Puppy outdoors' },
 ]
 
 export default function Home() {
@@ -160,8 +160,8 @@ export default function Home() {
             <div className="lg:col-span-5 order-1 lg:order-2">
               <div className="relative rounded-card-lg overflow-hidden shadow-card-hover" style={{ aspectRatio: '4/5' }}>
                 <img
-                  src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=900&h=1200&fit=crop&q=85"
-                  alt="Happy golden retriever puppy"
+                  src="https://images.unsplash.com/photo-1599692392256-2d084495fe15?w=900&h=1200&fit=crop&q=85"
+                  alt="Golden retriever puppy portrait"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
@@ -342,17 +342,17 @@ export default function Home() {
             {[
               {
                 src: 'https://assets.mixkit.co/videos/preview/mixkit-corgi-puppy-playing-with-a-toy-with-its-owner-45873-large.mp4',
-                poster: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&h=450&fit=crop&q=80',
+                poster: 'https://images.unsplash.com/photo-1599692392256-2d084495fe15?w=600&h=450&fit=crop&q=80',
                 caption: 'Protected & playful',
               },
               {
                 src: 'https://assets.mixkit.co/videos/preview/mixkit-young-girl-playing-with-a-puppy-6178-large.mp4',
-                poster: 'https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=600&h=450&fit=crop&q=80',
+                poster: 'https://images.unsplash.com/photo-1760448983438-f891ddf09eef?w=600&h=450&fit=crop&q=80',
                 caption: 'At ease at home',
               },
               {
                 src: 'https://assets.mixkit.co/videos/preview/mixkit-little-dog-running-in-snow-in-slow-motion-25225-large.mp4',
-                poster: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=600&h=450&fit=crop&q=80',
+                poster: 'https://images.unsplash.com/photo-1760970902153-8d4d8535bb0a?w=600&h=450&fit=crop&q=80',
                 caption: 'Healthy for life',
               },
             ].map((vid, i) => (
@@ -378,117 +378,83 @@ export default function Home() {
         <div className="max-w-content mx-auto px-4 sm:px-6">
           <Reveal>
             <div className="text-center mb-14">
-              <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">Honest pricing</p>
+              <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">Transparent pricing</p>
               <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-4">
-                Priced fairly. Not cheaply.
+                Two simple steps. No surprises.
               </h2>
-              <p className="text-textSecondary max-w-2xl mx-auto leading-relaxed">
-                VetPac is not a cut-price service. You pay for genuine vet oversight, real cold-chain logistics, and proper clinical care.
-                What you won't pay for is clinic overhead, parking, and three separate appointments.
+              <p className="text-textSecondary max-w-xl mx-auto">
+                Pay for the consultation first. Once the vet has assessed your dog, you see exactly what vaccines are needed and confirm before anything ships.
               </p>
             </div>
           </Reveal>
 
-          {/* Comparison row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-            {/* Clinic card */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Stage 1 */}
             <Reveal>
-              <div className="rounded-card-lg border-2 border-border bg-bg p-8 h-full">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-9 h-9 rounded-full bg-border flex items-center justify-center">
-                    <X className="w-4 h-4 text-textMuted" />
-                  </div>
+              <div className="bg-white rounded-card-lg border-2 border-primary p-8 h-full">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center flex-shrink-0">1</div>
                   <div>
-                    <p className="font-semibold text-textPrimary">At your local vet clinic</p>
-                    <p className="text-xs text-textMuted">Full 3-dose puppy course</p>
+                    <p className="font-semibold text-textPrimary">Consultation & Vet Review</p>
+                    <p className="text-xs text-textMuted">Paid upfront. Fixed fee.</p>
                   </div>
+                  <span className="ml-auto font-mono font-bold text-2xl text-primary">$75</span>
                 </div>
-                <div className="space-y-3 mb-6">
-                  {[
-                    { label: 'Consult fee × 3 visits', value: `NZD $${CLINIC_COMPARISON.consultPerVisit * 3}` },
-                    { label: 'Vaccine × 3 doses', value: `NZD $${CLINIC_COMPARISON.vaccinePerVisit * 3}` },
-                    { label: 'Time off work (estimate)', value: '3–4 hours' },
-                    { label: 'Car travel + wait × 3', value: 'Included in your day' },
-                  ].map(r => (
-                    <div key={r.label} className="flex justify-between items-center text-sm border-b border-border pb-3">
-                      <span className="text-textSecondary">{r.label}</span>
-                      <span className="font-mono font-semibold text-textSecondary">{r.value}</span>
-                    </div>
+                <ul className="space-y-2.5 mb-5">
+                  {CONSULTATION_FEE.includes.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-textSecondary">
+                      <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                      {item}
+                    </li>
                   ))}
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-textPrimary">Total (money)</span>
-                  <span className="font-mono font-bold text-2xl text-textPrimary">NZD ${CLINIC_COMPARISON.totalClinic}+</span>
-                </div>
+                </ul>
+                <p className="text-xs text-primary font-medium bg-primary/5 rounded-card px-3 py-2">
+                  Refunded in full if your vet recommends an in-person clinic visit.
+                </p>
               </div>
             </Reveal>
 
-            {/* VetPac card */}
+            {/* Stage 2 */}
             <Reveal delay={100}>
-              <div className="rounded-card-lg border-2 border-primary bg-white p-8 shadow-card-hover h-full relative overflow-hidden">
-                <div className="absolute top-4 right-4">
-                  <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">VetPac</span>
-                </div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-primary" />
-                  </div>
+              <div className="bg-bg rounded-card-lg border-2 border-border p-8 h-full">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 rounded-full bg-accent text-white font-bold text-sm flex items-center justify-center flex-shrink-0">2</div>
                   <div>
-                    <p className="font-semibold text-textPrimary">With VetPac</p>
-                    <p className="text-xs text-textMuted">Full 3-dose puppy course</p>
+                    <p className="font-semibold text-textPrimary">Your Vaccine Plan</p>
+                    <p className="text-xs text-textMuted">Itemised after the vet's assessment.</p>
                   </div>
                 </div>
-                <div className="space-y-3 mb-6">
+                <div className="space-y-3 mb-5">
                   {[
-                    { label: `Consultation & VOI (whole course)`, value: `NZD $${CONSULTATION_FEE.price}` },
-                    { label: `C3 vaccine — dose 1`, value: `NZD $${VACCINE_PRODUCTS.C3.price}` },
-                    { label: `C5 vaccine — doses 2 & 3`, value: `NZD $${VACCINE_PRODUCTS.C5.price * 2}` },
-                    { label: `Cold-chain freight (3 shipments)`, value: `NZD $${FREIGHT.pricePerShipment * 3}` },
-                  ].map(r => (
-                    <div key={r.label} className="flex justify-between items-center text-sm border-b border-primary/10 pb-3">
-                      <span className="text-textSecondary">{r.label}</span>
-                      <span className="font-mono font-semibold text-textPrimary">{r.value}</span>
+                    { label: 'C3 vaccine (first dose)', price: VACCINE_PRODUCTS.C3.price },
+                    { label: 'C5 vaccine (per dose)', price: VACCINE_PRODUCTS.C5.price },
+                    { label: 'Leptospirosis (if recommended)', price: VACCINE_PRODUCTS.LEPTO.price },
+                    { label: 'Kennel Cough (if recommended)', price: VACCINE_PRODUCTS.KENNEL_COUGH.price },
+                    { label: 'Cold-chain freight (per shipment)', price: FREIGHT.pricePerShipment },
+                  ].map(row => (
+                    <div key={row.label} className="flex items-center justify-between text-sm border-b border-border pb-3 last:border-0">
+                      <span className="text-textSecondary">{row.label}</span>
+                      <span className="font-mono font-semibold text-textPrimary">NZD ${row.price}</span>
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-bold text-textPrimary">Total (money)</span>
-                  <span className="font-mono font-bold text-2xl text-primary">
-                    NZD ${CONSULTATION_FEE.price + VACCINE_PRODUCTS.C3.price + VACCINE_PRODUCTS.C5.price * 2 + FREIGHT.pricePerShipment * 3}
-                  </span>
-                </div>
-                <div className="bg-primary/5 rounded-card p-3 text-xs text-primary font-medium">
-                  One consultation fee covers your entire programme — not per visit.
-                </div>
+                <p className="text-xs text-textMuted">
+                  You see the full itemised plan before confirming. Only the vaccines your dog actually needs are included.
+                </p>
               </div>
             </Reveal>
           </div>
 
-          {/* Two-stage explanation */}
+          {/* Simple comparison note */}
           <Reveal>
-            <div className="bg-bg rounded-card-lg p-8 border border-border">
-              <h3 className="font-semibold text-textPrimary mb-6">How the two-stage billing works</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-primary text-white text-sm font-bold flex items-center justify-center flex-shrink-0">1</div>
-                    <p className="font-semibold text-textPrimary">Pay for the consultation first — NZD $75</p>
-                  </div>
-                  <p className="text-textSecondary text-sm leading-relaxed">
-                    This covers the AI intake, video review, and vet assessment. The vet determines exactly which vaccines your dog needs based on their specific history, age, and lifestyle. You pay this regardless of the outcome.
-                    <strong className="text-textPrimary"> Refunded in full if the vet refers you to an in-person clinic.</strong>
-                  </p>
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-accent text-white text-sm font-bold flex items-center justify-center flex-shrink-0">2</div>
-                    <p className="font-semibold text-textPrimary">Confirm your itemised vaccine plan</p>
-                  </div>
-                  <p className="text-textSecondary text-sm leading-relaxed">
-                    Once the vet's plan is ready, you see an itemised list of exactly which vaccines are recommended — and why. You review, confirm, and pay. Each dose ships at the correct clinical interval. No surprises.
-                  </p>
-                </div>
-              </div>
+            <div className="bg-primary/5 rounded-card-lg p-5 border border-primary/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <p className="text-textSecondary text-sm">
+                <strong className="text-textPrimary">A typical 3-dose puppy course with VetPac costs around NZD $343</strong> — consultation, all three vaccines, and cold-chain freight included.
+                A NZ vet clinic charges around $140 per visit (consult + vaccine), so three visits = $420+.
+              </p>
+              <Link to="/intake" className="flex-shrink-0">
+                <Button size="sm">Get started</Button>
+              </Link>
             </div>
           </Reveal>
         </div>
@@ -639,7 +605,7 @@ export default function Home() {
       <section className="relative py-28 overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1600&h=700&fit=crop&q=80"
+            src="https://images.unsplash.com/photo-1760970902153-8d4d8535bb0a?w=1600&h=700&fit=crop&q=80"
             alt=""
             className="w-full h-full object-cover"
           />
