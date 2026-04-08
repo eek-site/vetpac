@@ -4,7 +4,7 @@
 export const CONSULTATION_FEE = {
   id: 'consultation',
   name: 'Consultation & Vet Review',
-  price: 75,
+  price: 95,
   description: 'AI-guided health intake, video assessment, NZ-registered vet review, and Veterinary Operating Instruction for your dog\'s full vaccine course.',
   includes: [
     'Personalised AI health intake (10–15 min)',
@@ -26,7 +26,7 @@ export const VACCINE_PRODUCTS = {
     name: 'C3 Vaccine',
     fullName: 'C3 — Distemper, Hepatitis, Parvovirus',
     description: 'Core first puppy dose protecting against the three most common fatal canine diseases.',
-    price: 62,
+    price: 78,
     note: 'Typically the first dose for puppies 6–8 weeks.',
   },
   C5: {
@@ -34,7 +34,7 @@ export const VACCINE_PRODUCTS = {
     name: 'C5 Vaccine',
     fullName: 'C5 — Distemper, Hepatitis, Parvovirus + Parainfluenza + Kennel Cough',
     description: 'Full core protection plus upper respiratory cover. Standard from 10 weeks and for annual boosters.',
-    price: 76,
+    price: 92,
     note: 'Standard for doses 2, 3 and annual boosters.',
   },
   LEPTO: {
@@ -42,7 +42,7 @@ export const VACCINE_PRODUCTS = {
     name: 'Leptospirosis Vaccine',
     fullName: 'Leptospirosis — Leptospira interrogans',
     description: 'Recommended for dogs in rural areas or with access to waterways, rivers, or farm animals.',
-    price: 48,
+    price: 59,
     note: 'Recommended based on your lifestyle responses.',
   },
   KENNEL_COUGH: {
@@ -50,7 +50,7 @@ export const VACCINE_PRODUCTS = {
     name: 'Kennel Cough (Bordetella)',
     fullName: 'Kennel Cough — Bordetella bronchiseptica (intranasal)',
     description: 'Recommended for dogs attending boarding, daycare, dog parks, or training classes.',
-    price: 42,
+    price: 54,
     note: 'Recommended based on your lifestyle responses.',
   },
 }
@@ -60,7 +60,7 @@ export const VACCINE_PRODUCTS = {
 export const FREIGHT = {
   id: 'freight',
   name: 'Cold-chain courier',
-  pricePerShipment: 18,
+  pricePerShipment: 22,
   description: 'Pharmaceutical-grade cold-chain packaging maintaining 2–8°C. Temperature indicator strip included. Signature required.',
 }
 
@@ -70,11 +70,11 @@ export const ADDONS = {
     id: 'assist',
     name: 'VetPac Assist',
     description: 'A trained VetPac technician visits your home to administer the vaccine for you.',
-    price: 59,
+    price: 69,
     note: 'Auckland only. Same-day or next-day availability.',
   },
-  WORMING: { id: 'worming', name: 'Worming Treatment', price: 24 },
-  FLEA: { id: 'flea', name: 'Flea Treatment', price: 29 },
+  WORMING: { id: 'worming', name: 'Worming Treatment', price: 29 },
+  FLEA: { id: 'flea', name: 'Flea Treatment', price: 34 },
 }
 
 // ─── Homepage pricing examples (illustrative) ─────────────────────────────────
@@ -83,11 +83,11 @@ export const PRICING_EXAMPLES = [
     id: 'puppy_course',
     label: 'Full puppy course from scratch',
     scenario: '3-dose programme (C3 + C5 + C5), shipped at clinical intervals',
-    consultation: 75,
+    consultation: 95,
     vaccines: [
-      { name: 'C3 — dose 1 (6–8 weeks)', price: 62 },
-      { name: 'C5 — dose 2 (10–12 weeks)', price: 76 },
-      { name: 'C5 — dose 3 (14–16 weeks)', price: 76 },
+      { name: 'C3 — dose 1 (6–8 weeks)', price: 78 },
+      { name: 'C5 — dose 2 (10–12 weeks)', price: 92 },
+      { name: 'C5 — dose 3 (14–16 weeks)', price: 92 },
     ],
     shipments: 3,
     badge: 'Most common',
@@ -96,9 +96,9 @@ export const PRICING_EXAMPLES = [
     id: 'single_dose',
     label: 'Annual booster',
     scenario: 'Adult dog, up-to-date records, single C5 booster',
-    consultation: 75,
+    consultation: 95,
     vaccines: [
-      { name: 'C5 — annual booster', price: 76 },
+      { name: 'C5 — annual booster', price: 92 },
     ],
     shipments: 1,
   },
@@ -106,24 +106,14 @@ export const PRICING_EXAMPLES = [
     id: 'partial_course',
     label: 'Partially vaccinated puppy',
     scenario: '2 doses remaining — AI determines based on prior records',
-    consultation: 75,
+    consultation: 95,
     vaccines: [
-      { name: 'C5 — dose 2 (10–12 weeks)', price: 76 },
-      { name: 'C5 — dose 3 (14–16 weeks)', price: 76 },
+      { name: 'C5 — dose 2 (10–12 weeks)', price: 92 },
+      { name: 'C5 — dose 3 (14–16 weeks)', price: 92 },
     ],
     shipments: 2,
   },
 ]
-
-// ─── Clinic comparison (for homepage pricing section) ────────────────────────
-export const CLINIC_COMPARISON = {
-  consultPerVisit: 70,
-  vaccinePerVisit: 75,
-  visitsForFullCourse: 3,
-  get totalClinic() {
-    return (this.consultPerVisit + this.vaccinePerVisit) * this.visitsForFullCourse
-  },
-}
 
 export const NZ_REGIONS = [
   'Northland',

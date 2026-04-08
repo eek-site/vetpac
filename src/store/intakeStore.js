@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { CONSULTATION_FEE, VACCINE_PRODUCTS, FREIGHT } from '../lib/constants'
+import { CONSULTATION_FEE, VACCINE_PRODUCTS, FREIGHT, ADDONS } from '../lib/constants'
 
 const defaultDogProfile = {
   name: '',
@@ -201,7 +201,7 @@ export const useIntakeStore = create(
         )]
         const shipmentCount = Math.max(shipmentDates.length, s.vaccinePlan.filter((v) => v.selected && v.doseNumber).length > 0 ? 1 : 0)
         const freightTotal = shipmentCount * FREIGHT.pricePerShipment
-        const assistTotal = s.assistSelected ? 45 : 0 // per visit × shipments (simplified to first visit)
+        const assistTotal = s.assistSelected ? ADDONS.ASSIST.price : 0
 
         return {
           consultation: CONSULTATION_FEE.price,
