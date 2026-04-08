@@ -1,93 +1,83 @@
-// ─── Stage 1: Consultation ───────────────────────────────────────────────────
-// Paid first. Covers AI intake, NZ vet review, VOI issuance.
-// One fee covers the entire multi-dose course — not per visit.
 export const CONSULTATION_FEE = {
   id: 'consultation',
-  name: 'Consultation & Vet Review',
-  price: 95,
-  description: 'AI-guided health intake, video assessment, NZ-registered vet review, and Veterinary Operating Instruction for your dog\'s full vaccine course.',
+  name: 'Initial Consultation',
+  price: 289,
+  description: 'Full health assessment and personalised vaccine plan for your dog.',
   includes: [
-    'Personalised AI health intake (10–15 min)',
-    'Video assessment reviewed by AI + NZ vet',
-    'Full clinical review by a VCNZ-registered vet',
-    'Veterinary Operating Instruction (VOI) issued in your name',
-    'Tailored vaccine schedule based on your dog\'s history',
-    'Digital health record + printable vaccination certificate',
+    'Personalised health intake (10-15 min)',
+    'Video assessment of your dog',
+    'Tailored vaccine schedule for your dog\'s age, history, and lifestyle',
+    'Full vaccine plan confirmed before anything ships',
+    'Digital health record and vaccination certificate',
+    'Step-by-step administration guide with every delivery',
   ],
-  refundNote: 'Refunded in full if your vet refers you to an in-person clinic.',
+  refundNote: 'Refunded in full if an in-person visit is recommended for your dog.',
 }
 
-// ─── Stage 2: Vaccines (per dose, itemised after consult) ────────────────────
-// Surfaced after the AI determines exactly what the dog needs.
-// Priced per dose so you see exactly what you are paying for.
 export const VACCINE_PRODUCTS = {
   C3: {
     id: 'c3',
     name: 'C3 Vaccine',
     fullName: 'C3 — Distemper, Hepatitis, Parvovirus',
-    description: 'Core first puppy dose protecting against the three most common fatal canine diseases.',
-    price: 78,
-    note: 'Typically the first dose for puppies 6–8 weeks.',
+    description: 'Core first puppy dose.',
+    price: 89,
+    note: 'Typically the first dose for puppies 6-8 weeks.',
   },
   C5: {
     id: 'c5',
     name: 'C5 Vaccine',
-    fullName: 'C5 — Distemper, Hepatitis, Parvovirus + Parainfluenza + Kennel Cough',
-    description: 'Full core protection plus upper respiratory cover. Standard from 10 weeks and for annual boosters.',
-    price: 92,
+    fullName: 'C5 — Distemper, Hepatitis, Parvovirus, Parainfluenza, Kennel Cough',
+    description: 'Full core protection. Standard from 10 weeks and for annual boosters.',
+    price: 89,
     note: 'Standard for doses 2, 3 and annual boosters.',
   },
   LEPTO: {
     id: 'lepto',
     name: 'Leptospirosis Vaccine',
-    fullName: 'Leptospirosis — Leptospira interrogans',
-    description: 'Recommended for dogs in rural areas or with access to waterways, rivers, or farm animals.',
-    price: 59,
+    fullName: 'Leptospirosis',
+    description: 'Recommended for dogs with rural or waterway exposure.',
+    price: 89,
     note: 'Recommended based on your lifestyle responses.',
   },
   KENNEL_COUGH: {
     id: 'kennel_cough',
-    name: 'Kennel Cough (Bordetella)',
-    fullName: 'Kennel Cough — Bordetella bronchiseptica (intranasal)',
-    description: 'Recommended for dogs attending boarding, daycare, dog parks, or training classes.',
-    price: 54,
+    name: 'Kennel Cough',
+    fullName: 'Kennel Cough — Bordetella bronchiseptica',
+    description: 'Recommended for dogs attending boarding, daycare, or dog parks.',
+    price: 89,
     note: 'Recommended based on your lifestyle responses.',
   },
 }
 
-// ─── Freight ─────────────────────────────────────────────────────────────────
-// Charged per shipment. Multi-dose courses ship at the correct clinical interval.
 export const FREIGHT = {
   id: 'freight',
-  name: 'Cold-chain courier',
-  pricePerShipment: 22,
-  description: 'Pharmaceutical-grade cold-chain packaging maintaining 2–8°C. Temperature indicator strip included. Signature required.',
+  name: 'Cold-chain delivery',
+  pricePerShipment: 119,
+  description: 'Pharmaceutical-grade cold-chain packaging maintaining 2-8 degrees. Temperature indicator strip included. Signature required on delivery.',
 }
 
-// ─── Add-ons ─────────────────────────────────────────────────────────────────
 export const ADDONS = {
   ASSIST: {
     id: 'assist',
     name: 'VetPac Assist',
-    description: 'A trained VetPac technician visits your home to administer the vaccine for you.',
-    price: 69,
+    description: 'A trained VetPac technician visits your home and administers the vaccine for you.',
+    price: 149,
     note: 'Auckland only. Same-day or next-day availability.',
   },
   WORMING: { id: 'worming', name: 'Worming Treatment', price: 29 },
   FLEA: { id: 'flea', name: 'Flea Treatment', price: 34 },
 }
 
-// ─── Homepage pricing examples (illustrative) ─────────────────────────────────
 export const PRICING_EXAMPLES = [
   {
     id: 'puppy_course',
-    label: 'Full puppy course from scratch',
-    scenario: '3-dose programme (C3 + C5 + C5), shipped at clinical intervals',
-    consultation: 95,
+    label: 'Full puppy course',
+    scenario: '3-dose programme shipped at the right intervals',
+    consultation: 289,
     vaccines: [
-      { name: 'C3 — dose 1 (6–8 weeks)', price: 78 },
-      { name: 'C5 — dose 2 (10–12 weeks)', price: 92 },
-      { name: 'C5 — dose 3 (14–16 weeks)', price: 92 },
+      { name: 'C3 dose 1', price: 89 },
+      { name: 'C5 dose 2', price: 89 },
+      { name: 'C5 dose 3', price: 89 },
     ],
     shipments: 3,
     badge: 'Most common',
@@ -95,21 +85,21 @@ export const PRICING_EXAMPLES = [
   {
     id: 'single_dose',
     label: 'Annual booster',
-    scenario: 'Adult dog, up-to-date records, single C5 booster',
-    consultation: 95,
+    scenario: 'Adult dog, single C5 booster',
+    consultation: 289,
     vaccines: [
-      { name: 'C5 — annual booster', price: 92 },
+      { name: 'C5 annual booster', price: 89 },
     ],
     shipments: 1,
   },
   {
     id: 'partial_course',
     label: 'Partially vaccinated puppy',
-    scenario: '2 doses remaining — AI determines based on prior records',
-    consultation: 95,
+    scenario: '2 doses remaining',
+    consultation: 289,
     vaccines: [
-      { name: 'C5 — dose 2 (10–12 weeks)', price: 92 },
-      { name: 'C5 — dose 3 (14–16 weeks)', price: 92 },
+      { name: 'C5 dose 2', price: 89 },
+      { name: 'C5 dose 3', price: 89 },
     ],
     shipments: 2,
   },
@@ -199,140 +189,47 @@ export const INTAKE_STEPS = [
 
 export const FAQ_ITEMS = [
   {
-    q: 'Is this actually legal in New Zealand?',
-    a: `Yes — and it's important you understand exactly how.
-
-VetPac operates under the Veterinary Operating Instruction (VOI) framework established in the ACVM Act 1997. A VOI is a legal document issued by a NZ-registered veterinarian that authorises a named individual to purchase and administer specific Restricted Veterinary Medicines (RVMs) to their own animal.
-
-This is not a workaround or grey area. VOIs have been in common use for decades — they are the standard mechanism by which NZ farmers vaccinate their own livestock and working dogs without a vet being physically present. It is one of the most widely-used provisions in NZ veterinary law.
-
-The key difference VetPac introduces is doing this digitally for dog owners, using AI-assisted intake and video assessment to give the reviewing vet "sufficient information" about the animal — the same legal standard that applies to any VOI. Every order is reviewed by a NZ-registered vet holding a current VCNZ Annual Practising Certificate before any vaccine is dispatched.
-
-The vaccines we supply are exactly the same products your local vet uses.`,
+    q: 'How does it work?',
+    a: 'Fill in a short form about your dog — takes around 10 minutes. Record a quick video of your dog. Your vaccine plan is confirmed within a few hours. The vaccines arrive cold-chain couriered to your door, usually next day. Everything you need is in the box — just follow the step-by-step guide and you are done.',
   },
   {
-    q: 'Who is the vet who reviews my dog? Are they qualified?',
-    a: `Every VetPac intake is reviewed by a NZ-registered veterinarian who holds a current Annual Practising Certificate issued by the Veterinary Council of New Zealand (VCNZ). This is the same credential required of any vet working in NZ.
-
-Our partner vets are experienced in small animal medicine and have been specifically briefed on the VetPac platform, the VOI model, and the clinical standards we apply to each assessment.
-
-You will receive the reviewing vet's name and VCNZ registration number with your Veterinary Operating Instruction. Your VOI is a legal document you should keep — it confirms that a qualified NZ vet has authorised the specific vaccines for your specific dog.`,
+    q: 'What vaccines do you offer?',
+    a: 'We offer C3 and C5 — the standard core vaccinations for dogs in New Zealand. C3 covers Distemper, Hepatitis, and Parvovirus. C5 covers everything in C3 plus Parainfluenza and Kennel Cough. We also offer Leptospirosis and standalone Kennel Cough vaccines where needed based on your dog\'s lifestyle.',
   },
   {
-    q: 'What vaccines do you supply, and are they the same brands my vet uses?',
-    a: `We supply C3 and C5 vaccines — the standard core puppy and adult dog vaccinations in New Zealand.
-
-C3 protects against: Canine Distemper Virus, Canine Adenovirus (Hepatitis), and Canine Parvovirus.
-C5 protects against: everything in C3, plus Canine Parainfluenza Virus and Bordetella bronchiseptica (Kennel Cough).
-
-We source vaccines from NZ-approved suppliers only. The brands we use — such as Vanguard Plus 5 (Zoetis) and equivalents — are the same products used in NZ veterinary clinics. We do not use grey-market or imported vaccines.
-
-Optional add-ons include standalone Leptospirosis vaccination (recommended for dogs with rural or waterway exposure) and additional Kennel Cough protection.`,
+    q: "I've never given an injection before. Is this something I can actually do?",
+    a: 'Yes — most owners are surprised by how easy it is. It is a simple under-the-skin injection at the scruff of the neck. Every box includes a step-by-step video guide and a printed quick-reference card. Pre-loaded syringes, alcohol wipes, and a sharps disposal bag are all included. If you would rather not do it yourself, add our home visit option at checkout and we will send a trained technician to your door.',
   },
   {
-    q: 'How are vaccines kept cold during delivery? What if the temperature goes wrong?',
-    a: `Every VetPac shipment is packed in an insulated polystyrene inner box with a certified gel ice pack rated to maintain 2–8°C for a minimum of 48 hours — well beyond our typical 1–3 business day nationwide delivery window.
-
-Each box includes a colour-change temperature indicator strip. This strip is green when your order arrives. If it has changed colour (indicating the cold chain was compromised at any point in transit), do not use the vaccine — contact us immediately and we will dispatch a free replacement within 24 hours, no questions asked.
-
-We only work with courier partners who have pharmaceutical cold-chain capability and signature-required delivery for all medical shipments.`,
+    q: 'What is included in the box?',
+    a: 'The vaccines your dog needs, pre-loaded to the correct dose. Step-by-step administration guide (printed card and video link). Alcohol wipes and a sharps disposal bag. A temperature indicator strip confirming the cold chain held during delivery. Our 0800 emergency number printed on the packaging.',
   },
   {
-    q: "I've never given an injection before. Is this actually something I can do?",
-    a: `Most owners are surprised by how straightforward it is. A subcutaneous (under-the-skin) injection is significantly easier than it sounds — you are not injecting into muscle or a vein. You are simply lifting the skin at the scruff of the neck to form a small tent and injecting beneath it.
-
-Here is what we include to make sure you feel completely prepared:
-• A professional 5-minute administration video (filmed with a vet demonstrating each step)
-• A printed two-sided laminated card in the box: quick-reference checklist on one side, emergency info on the other
-• Pre-loaded syringes with the correct gauge needle for your dog's size
-• Alcohol wipes and a sharps disposal bag
-• An 0800 emergency number staffed by an on-call vet technician
-
-If you would genuinely rather not do it yourself, add VetPac Assist at checkout. A trained technician will come to your home — Auckland same-day or next-day, no clinic stress for you or your dog.`,
+    q: 'How are the vaccines kept cold?',
+    a: 'Every shipment is packed in pharmaceutical-grade insulated packaging with a certified gel ice pack rated to hold 2-8 degrees Celsius for a minimum of 48 hours. A colour-change temperature indicator strip is included in every box. If it is green when your order arrives, the cold chain held. If it has changed colour, do not use the vaccine — contact us and we will send a replacement within 24 hours.',
   },
   {
-    q: 'What happens if my dog has a reaction?',
-    a: `Vaccine reactions in dogs are uncommon — the rate for routine core vaccines is well under 1% — but we take this seriously.
-
-Every VetPac order includes our 0800 VETPAC emergency line number on the packaging, in your confirmation email, and in your dashboard. This line is answered by an on-call vet technician 24 hours a day, 7 days a week. They will advise you on whether to monitor at home or attend an emergency vet, and will stay on the line with you.
-
-We ask all owners to observe their dog for 30 minutes after administration. Signs of a significant reaction typically appear within this window: facial swelling, hives, vomiting, extreme lethargy, or collapse. These are rare — but knowing what to look for matters.
-
-All adverse events are logged in our system and reported to MPI (Ministry for Primary Industries) within 72 hours, as required under the ACVM Act. Your VOI may be reviewed or revoked following an adverse event.`,
+    q: 'Can someone come and do the injection for me?',
+    a: 'Yes. Add VetPac Assist at checkout. A trained technician comes to your home and administers the vaccine for you. Same-day or next-day availability. Currently available in Auckland only.',
   },
   {
-    q: 'What if the vet reviews my intake and says my dog cannot be vaccinated?',
-    a: `This can happen, and we handle it respectfully and promptly.
-
-If our reviewing vet determines that your dog needs an in-person physical examination before vaccinating — because of flagged health concerns, ambiguity in the assessment, or other clinical reasons — you will be notified within 4 hours of your submission during business hours.
-
-In this case, a full refund is initiated immediately. We will also provide a written summary of the vet's findings and a recommendation for next steps, so you can bring this to your local vet. There is no charge for the intake or vet review if you are referred.
-
-Our AI intake system is specifically designed to flag obvious concerns before you reach the vet review stage — so referrals are relatively uncommon for otherwise healthy dogs. But safety comes first, always.`,
+    q: 'What if my dog seems unwell when the vaccines arrive?',
+    a: 'Do not vaccinate a dog that is unwell, even mildly. Every box includes a short pre-administration checklist to run through before you start. If your dog fails any item on it, hold off and call us. We can delay your next shipment or hold your order — just get in touch.',
   },
   {
-    q: 'Do I really need to record a video of my dog?',
-    a: `Yes, and here is why it matters. The video is the single most important part of the vet's remote assessment.
-
-A 90-second video showing your dog walking, their face (eyes and nose), and their body from each side gives the reviewing vet a direct visual assessment of:
-• Mobility — is the dog moving freely without lameness?
-• Eye and nasal discharge — common early indicators of illness
-• Body condition — appropriate weight for breed and age
-• General alertness and demeanour
-
-This is what allows a qualified vet to issue a VOI with clinical confidence, without requiring a physical consultation. Without the video, the vet's assessment is limited to your written responses alone — and they are more likely to request an in-person visit as a result.
-
-The video takes about 2 minutes to record. We show you exactly what angles to capture, step by step.`,
+    q: 'What if something goes wrong after the injection?',
+    a: 'Our 0800 VETPAC line is staffed 24 hours a day, 7 days a week. The number is on the box, in your confirmation email, and in your account. If your dog shows any unusual signs after vaccination, call us immediately and we will advise you on what to do. Keep an eye on your dog for around 30 minutes after administering.',
   },
   {
-    q: 'What if my dog is sick on the day the vaccines arrive?',
-    a: `Do not vaccinate a dog that is unwell, even mildly. This is a firm rule — it applies whether you are at a clinic or at home.
-
-Your VetPac box includes a pre-administration health checklist that you complete immediately before giving the injection. If your dog fails any item on that checklist (lethargy, loss of appetite, discharge, vomiting, diarrhoea, elevated temperature), the instruction is clear: do not proceed. Contact us.
-
-If your dog becomes unwell between ordering and your vaccine arriving, call our support line. We can delay shipment, hold your order, or advise on next steps. Vaccines in transit have a 48-hour temperature window, so there is some flexibility.
-
-If your dog requires veterinary care, your order will be held until they have recovered and been cleared.`,
+    q: 'Do you deliver everywhere in New Zealand?',
+    a: 'Yes — we deliver to all regions of New Zealand including rural addresses. Auckland is typically next day. Wellington and Christchurch 1-2 business days. Rest of New Zealand 2-3 business days. Signature required on delivery.',
   },
   {
-    q: 'What areas do you deliver to?',
-    a: `We deliver to all regions of New Zealand, including rural addresses. All shipments are via pharmaceutical-grade cold-chain courier with signature required on delivery.
-
-Delivery times: Auckland 1 business day, Wellington and Christchurch 1–2 business days, rest of North Island 2 business days, South Island (outside Christchurch) 2–3 business days.
-
-VetPac Assist — where a trained technician visits your home to administer the vaccine — is currently available in Auckland only. Wellington and Christchurch are on our roadmap. If you are outside Auckland and prefer not to administer yourself, please contact us to discuss options.`,
+    q: 'Is my dog\'s vaccination record official?',
+    a: 'Yes. Every order includes a signed vaccination certificate confirming your dog\'s vaccinations, the products used, and the dates administered. This is the same record you would receive from a clinic visit and is accepted by boarding facilities, groomers, and border crossings.',
   },
   {
-    q: "What's a VOI, and what does mine actually say?",
-    a: `A Veterinary Operating Instruction (VOI) is a legal document issued under section 44G of the ACVM Act 1997. It is the instrument that authorises you, by name, to purchase and administer specific Restricted Veterinary Medicines to your dog.
-
-Your VetPac VOI will include:
-• Your full name and date of birth (as the authorised person)
-• Your dog's details (name, breed, weight, age, sex)
-• The specific vaccines authorised (product name, dose, route, site)
-• The administration schedule (which doses, on what dates)
-• The issuing vet's name, VCNZ registration number, and practice details
-• Valid from and valid until dates (maximum 12 months)
-• The vet's digital signature
-
-A copy is emailed to you in PDF format, another is included in every delivery box, and the original is stored securely in our system for a minimum of 7 years (the VCNZ-required retention period).`,
-  },
-  {
-    q: "What's your refund policy?",
-    a: `We aim to be fair and straightforward.
-
-Full refund, no questions asked:
-• If our vet review determines your dog needs an in-person examination, you are refunded in full — including any delivery charges.
-• If your delivery arrives with a triggered temperature indicator (cold chain compromised), we replace the order at no cost and refund your original order.
-• If you cancel before your order has been dispatched, you receive a full refund.
-
-Partial refund:
-• If you cancel after dispatch but before delivery, a restocking and return fee applies.
-
-No refund:
-• Once vaccines have been administered, we cannot accept returns for health and safety reasons.
-• If vaccines were administered and there was no product defect, we are unable to refund.
-
-We believe in doing the right thing. If something has gone wrong that is our fault — contact us and we will make it right.`,
+    q: 'What is your refund policy?',
+    a: 'If we recommend an in-person visit for your dog after your assessment, you are refunded in full. If your delivery arrives with a triggered temperature strip, we replace it free and refund the original. If you cancel before dispatch, full refund. If you cancel after dispatch, a restocking fee applies. Once vaccines have been administered we cannot accept returns.',
   },
 ]
