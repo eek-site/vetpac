@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #F9F6F1;
+    color: #1C1917;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-variation-settings: "opsz" 72;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-variation-settings: "opsz" 48;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white font-body font-semibold px-6 py-3 rounded-card transition-all duration-200 hover:bg-primary-dark hover:shadow-card-hover active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-primary border-2 border-primary font-body font-semibold px-6 py-3 rounded-card transition-all duration-200 hover:bg-primary hover:text-white inline-flex items-center gap-2;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-white font-body font-semibold px-6 py-3 rounded-card transition-all duration-200 hover:bg-accent-dark hover:shadow-card-hover active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .card {
+    @apply bg-white rounded-card shadow-card p-6;
+  }
+
+  .card-lg {
+    @apply bg-white rounded-card-lg shadow-card p-8;
+  }
+
+  .input-field {
+    @apply w-full border border-border rounded-card px-4 py-3 font-body text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary-light focus:ring-2 focus:ring-primary-light/20 transition-all duration-200;
+  }
+
+  .label {
+    @apply block text-sm font-semibold text-textSecondary mb-1.5;
+  }
+
+  .section-cream {
+    @apply bg-bg;
+  }
+
+  .section-white {
+    @apply bg-white;
+  }
+
+  .section-green {
+    @apply bg-primary text-white;
+  }
+
+  .price-tag {
+    @apply font-mono font-bold text-accent text-2xl;
+  }
+}
+
+/* Fade in up animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Stagger children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 100ms; }
+.stagger > *:nth-child(3) { animation-delay: 200ms; }
+.stagger > *:nth-child(4) { animation-delay: 300ms; }
+.stagger > *:nth-child(5) { animation-delay: 400ms; }
+
+/* Progress bar animation */
+@keyframes progressFill {
+  from { width: 0%; }
+  to { width: var(--progress-width); }
+}
+
+/* Checkmark animation */
+@keyframes checkDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+.check-animated {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: checkDraw 0.6s ease 0.3s forwards;
+}
