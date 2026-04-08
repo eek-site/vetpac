@@ -102,9 +102,35 @@ const steps = [
 ]
 
 const testimonials = [
-  { name: 'Sarah M.', location: 'Auckland', text: 'I was nervous about doing it myself but the instructions were so clear. Milo didn\'t even flinch — the whole thing took less time than the car ride to the vet used to!', stars: 5 },
-  { name: 'Tom K.', location: 'Wellington', text: 'Saved me $120 vs the vet. Same vaccines, delivered to my door. The vet reviewed everything within a couple of hours. Really impressed.', stars: 5 },
-  { name: 'Rachel B.', location: 'Christchurch', text: 'Added the Assist option — the technician was at my door the next morning. Total stress-free experience. My anxious dog did so much better at home.', stars: 5 },
+  {
+    name: 'Sarah M.', location: 'Auckland',
+    text: 'I was nervous about doing it myself but the instructions were so clear. Milo didn\'t even flinch — the whole thing took less time than the car ride to the vet used to!',
+    stars: 5,
+    dogPhoto: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=120&h=120&fit=crop&q=80',
+    dogName: 'Milo',
+  },
+  {
+    name: 'Tom K.', location: 'Wellington',
+    text: 'Saved me $120 vs the vet. Same vaccines, delivered to my door. The vet reviewed everything within a couple of hours. Really impressed.',
+    stars: 5,
+    dogPhoto: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=120&h=120&fit=crop&q=80',
+    dogName: 'Biscuit',
+  },
+  {
+    name: 'Rachel B.', location: 'Christchurch',
+    text: 'Added the Assist option — the technician was at my door the next morning. Total stress-free experience. My anxious dog did so much better at home.',
+    stars: 5,
+    dogPhoto: 'https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=120&h=120&fit=crop&q=80',
+    dogName: 'Luna',
+  },
+]
+
+const galleryPhotos = [
+  { src: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=600&h=500&fit=crop&q=80', alt: 'Happy dog at home' },
+  { src: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&h=500&fit=crop&q=80', alt: 'Dogs playing' },
+  { src: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&h=500&fit=crop&q=80', alt: 'Calm dog indoors' },
+  { src: 'https://images.unsplash.com/photo-1583511655826-05700d52f4d9?w=600&h=500&fit=crop&q=80', alt: 'Dog portrait' },
+  { src: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=600&h=500&fit=crop&q=80', alt: 'Relaxed dog' },
 ]
 
 export default function Home() {
@@ -165,13 +191,13 @@ export default function Home() {
             </div>
 
             <div className="lg:col-span-2 relative">
-              <div className="relative rounded-card-lg overflow-hidden bg-primary/5 aspect-[4/5] flex items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10" />
-                <div className="relative text-center p-8">
-                  <div className="text-8xl mb-4">🐕</div>
-                  <p className="text-textSecondary font-medium">Happy, healthy dog</p>
-                  <p className="text-textMuted text-sm">Vaccinated at home</p>
-                </div>
+              <div className="relative rounded-card-lg overflow-hidden aspect-[4/5] shadow-card-hover">
+                <img
+                  src="https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=800&h=1000&fit=crop&q=85"
+                  alt="Happy healthy dog at home"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 bg-white rounded-card shadow-card p-4 flex items-center gap-3">
                   <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center flex-shrink-0">
                     <Package className="w-5 h-5 text-success" />
@@ -455,19 +481,44 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((t, i) => (
               <AnimatedSection key={i} delay={i * 100}>
-                <div className="bg-white rounded-card-lg shadow-card p-8">
-                  <div className="flex gap-0.5 mb-4">
-                    {[...Array(t.stars)].map((_, j) => <Star key={j} className="w-4 h-4 text-warning fill-warning" />)}
+                <div className="bg-white rounded-card-lg shadow-card p-8 flex flex-col">
+                  <div className="flex items-center gap-4 mb-5">
+                    <img
+                      src={t.dogPhoto}
+                      alt={t.dogName}
+                      className="w-14 h-14 rounded-full object-cover border-2 border-border flex-shrink-0"
+                    />
+                    <div>
+                      <p className="font-semibold text-textPrimary text-sm">{t.name}</p>
+                      <p className="text-textMuted text-xs">{t.location} · {t.dogName}'s owner</p>
+                      <div className="flex gap-0.5 mt-1">
+                        {[...Array(t.stars)].map((_, j) => <Star key={j} className="w-3 h-3 text-warning fill-warning" />)}
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-textSecondary text-sm leading-relaxed mb-6 italic">"{t.text}"</p>
-                  <div>
-                    <p className="font-semibold text-textPrimary text-sm">{t.name}</p>
-                    <p className="text-textMuted text-xs">{t.location}</p>
-                  </div>
+                  <p className="text-textSecondary text-sm leading-relaxed italic flex-grow">"{t.text}"</p>
                 </div>
               </AnimatedSection>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* PHOTO STRIP */}
+      <section className="py-4 bg-bg overflow-hidden">
+        <div className="flex gap-3 overflow-x-auto scrollbar-none pb-1 px-4 sm:px-6 max-w-content mx-auto">
+          {galleryPhotos.map((photo, i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 w-48 sm:w-56 h-36 sm:h-44 rounded-card overflow-hidden shadow-card"
+            >
+              <img
+                src={photo.src}
+                alt={photo.alt}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+          ))}
         </div>
       </section>
 
