@@ -191,13 +191,21 @@ export default function Home() {
             </div>
 
             <div className="lg:col-span-2 relative">
-              <div className="relative rounded-card-lg overflow-hidden aspect-[4/5] shadow-card-hover">
-                <img
-                  src="https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=800&h=1000&fit=crop&q=85"
-                  alt="Happy healthy dog at home"
+              <div className="relative rounded-card-lg overflow-hidden aspect-[4/5] shadow-card-hover bg-primary/10">
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  poster="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=1000&fit=crop&q=80"
                   className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                >
+                  <source
+                    src="https://assets.mixkit.co/videos/preview/mixkit-man-with-his-dog-watching-the-sunset-on-the-horizon-4839-large.mp4"
+                    type="video/mp4"
+                  />
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 bg-white rounded-card shadow-card p-4 flex items-center gap-3">
                   <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center flex-shrink-0">
                     <Package className="w-5 h-5 text-success" />
@@ -285,6 +293,61 @@ export default function Home() {
               </Link>
             </div>
           </AnimatedSection>
+        </div>
+      </section>
+
+      {/* VIDEO REEL */}
+      <section className="bg-bg py-20">
+        <div className="max-w-content mx-auto px-4 sm:px-6">
+          <AnimatedSection>
+            <div className="text-center mb-12">
+              <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">Happy at home</p>
+              <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-3">This is what we're all here for</h2>
+              <p className="text-textSecondary max-w-xl mx-auto">Healthy dogs. Stress-free owners. No clinic waiting room required.</p>
+            </div>
+          </AnimatedSection>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              {
+                src: 'https://assets.mixkit.co/videos/preview/mixkit-corgi-running-next-to-its-owner-at-the-park-45869-large.mp4',
+                poster: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=600&h=400&fit=crop&q=80',
+                label: 'Corgi running with owner at the park',
+                caption: 'Happy, vaccinated & full of energy',
+              },
+              {
+                src: 'https://assets.mixkit.co/videos/preview/mixkit-young-girl-playing-with-a-puppy-6178-large.mp4',
+                poster: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&h=400&fit=crop&q=80',
+                label: 'Girl playing with a puppy',
+                caption: 'Home is where puppies thrive',
+              },
+              {
+                src: 'https://assets.mixkit.co/videos/preview/mixkit-little-dog-running-in-snow-in-slow-motion-25225-large.mp4',
+                poster: 'https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=600&h=400&fit=crop&q=80',
+                label: 'Puppy running in slow motion',
+                caption: 'Protected. Playful. Loved.',
+              },
+            ].map((vid, i) => (
+              <AnimatedSection key={i} delay={i * 120}>
+                <div className="group relative rounded-card-lg overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 bg-black aspect-[4/3]">
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    poster={vid.poster}
+                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                    aria-label={vid.label}
+                  >
+                    <source src={vid.src} type="video/mp4" />
+                  </video>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <p className="text-white font-semibold text-sm">{vid.caption}</p>
+                  </div>
+                </div>
+              </AnimatedSection>
+            ))}
+          </div>
         </div>
       </section>
 
