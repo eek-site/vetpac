@@ -205,7 +205,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Can I meet the technician before you send someone to my home?',
-    a: 'Yes. Our trained VetPac technician will video call you before coming to your home and walk you through everything. We will discuss all options with you once your plan is set up.',
+    a: 'Yes. Before any home visit, our senior programme coordinator will video call you to introduce the technician assigned to your dog, walk you through what to expect, and make sure you are completely comfortable. Every technician is individually matched to ensure they share our values around animal care. We will arrange this once your plan is confirmed.',
   },
   {
     q: 'What if my dog seems unwell on the day?',
