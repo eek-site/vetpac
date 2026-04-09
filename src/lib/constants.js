@@ -112,14 +112,17 @@ export const SCALES = {
 
 export const INSURANCE = {
   id: 'insurance',
-  name: 'VetPac Health Cover',
-  description: 'Accident and illness cover for your puppy, provided by Forman Pacific LLC.',
+  name: 'VetPac 2-Year Puppy Cover',
+  description: 'Accident and illness cover for your puppy\'s first two years — the most critical period of their life.',
+  policyTerm: '2 years',
   weeklyRetailPrice: 16.99,
   weeklyIntroPrice: 4.99,
-  annualPrice: 259,
-  monthlyPrice: 24.99,
+  monthlyPrice: 24.99,     // monthly billing — standard excess
+  annualPrice: 259,        // annual billing — standard excess
+  twoYearPrice: 489,       // upfront 2yr — same per-year cost as annual, but excess halved
   coverLimit: 15000,
-  excess: 200,
+  excess: 1500,            // monthly / annual billing
+  twoYearExcess: 750,      // 2-year upfront — excess drops to $750
   reimbursement: 80,
 }
 

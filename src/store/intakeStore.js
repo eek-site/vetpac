@@ -150,11 +150,13 @@ export const useIntakeStore = create(
       consultationFee: CONSULTATION_FEE,
 
       // Stage 2: itemised vaccine plan built from AI output
+      consultPaid: false,     // true after consultation fee payment confirmed
       numberOfPuppies: 1,
+      additionalPuppies: [],  // [{ name, breed, dob, sex, weight_kg }] for puppies 2+
       vaccinePlan: [], // array of vaccine items with `selected` flag
       assistSelected: true,   // default: vaccinator included (full price)
       insuranceSelected: false,
-      insuranceBilling: 'annual',
+      insuranceBilling: 'annual', // 'monthly' | 'annual' | 'twoYear'
 
       dogId: null,
       intakeId: null,
@@ -187,7 +189,23 @@ export const useIntakeStore = create(
           ),
         })),
 
-      setNumberOfPuppies: (n) => set({ numberOfPuppies: Math.max(1, parseInt(n) || 1) }),
+      setConsultPaid: (val) => set({ consultPaid: val }),
+      setNumberOfPuppies: (n) => {
+        const count = Math.max(1, parseInt(n) || 1)
+        set((s) => ({
+          numberOfPuppies: count,
+          // Grow or shrink additionalPuppies to match count-1
+          additionalPuppies: Array.from({ length: count - 1 }, (_, i) =>
+            s.additionalPuppies[i] || { name: '', breed: '', dob: '', sex: '', weight_kg: '' }
+          ),
+        }))
+      },
+      updateAdditionalPuppy: (index, data) =>
+        set((s) => ({
+          additionalPuppies: s.additionalPuppies.map((p, i) =>
+            i === index ? { ...p, ...data } : p
+          ),
+        })),
       setAssistSelected: (val) => set({ assistSelected: val }),
       setInsuranceSelected: (val) => set({ insuranceSelected: val }),
       setInsuranceBilling: (val) => set({ insuranceBilling: val }),
@@ -213,7 +231,11 @@ export const useIntakeStore = create(
         const freightTotal = s.assistSelected ? 0 : shipmentCount * FREIGHT.pricePerShipment
         const assistTotal = s.assistSelected ? doseCount * ADDONS.ASSIST.price : 0
         const insuranceCost = s.insuranceSelected
-          ? (s.insuranceBilling === 'annual' ? INSURANCE.annualPrice : INSURANCE.monthlyPrice)
+          ? (s.insuranceBilling === 'twoYear'
+              ? INSURANCE.twoYearPrice
+              : s.insuranceBilling === 'annual'
+                ? INSURANCE.annualPrice
+                : INSURANCE.monthlyPrice)
           : 0
 
         return {
@@ -238,7 +260,9 @@ export const useIntakeStore = create(
           videoUrl: null,
           videoFile: null,
           aiAssessment: null,
+          consultPaid: false,
           numberOfPuppies: 1,
+          additionalPuppies: [],
           vaccinePlan: [],
           assistSelected: true,
           insuranceSelected: false,
@@ -256,7 +280,9 @@ export const useIntakeStore = create(
         ownerDetails: s.ownerDetails,
         videoUrl: s.videoUrl,
         aiAssessment: s.aiAssessment,
+        consultPaid: s.consultPaid,
         numberOfPuppies: s.numberOfPuppies,
+        additionalPuppies: s.additionalPuppies,
         vaccinePlan: s.vaccinePlan,
         assistSelected: s.assistSelected,
         insuranceSelected: s.insuranceSelected,

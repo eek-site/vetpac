@@ -10,7 +10,9 @@ import Step4Owner from './pages/intake/Step4Owner'
 import Step5Video from './pages/intake/Step5Video'
 import Step6Review from './pages/intake/Step6Review'
 import Checkout from './pages/Checkout'
+import PlanPage from './pages/PlanPage'
 import OrderConfirmation from './pages/OrderConfirmation'
+import InsuranceTerms from './pages/InsuranceTerms'
 import Dashboard from './pages/Dashboard'
 import VetPortal from './pages/VetPortal'
 import NotFound from './pages/NotFound'
@@ -22,8 +24,8 @@ function ScrollToTop() {
 }
 
 const INTAKE_ROUTES = ['/intake', '/intake/health', '/intake/lifestyle', '/intake/owner', '/intake/video', '/intake/review']
-const NO_NAV_ROUTES = ['/checkout', ...INTAKE_ROUTES]
-const NO_FOOTER_ROUTES = ['/checkout', ...INTAKE_ROUTES, '/dashboard', '/vet-portal']
+const NO_NAV_ROUTES = ['/checkout', '/plan', ...INTAKE_ROUTES]
+const NO_FOOTER_ROUTES = ['/checkout', '/plan', ...INTAKE_ROUTES, '/dashboard', '/vet-portal']
 
 function Layout({ children }) {
   const { pathname } = useLocation()
@@ -55,7 +57,9 @@ export default function App() {
           <Route path="/intake/video" element={<Step5Video />} />
           <Route path="/intake/review" element={<Step6Review />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/plan" element={<PlanPage />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
+          <Route path="/insurance-terms" element={<InsuranceTerms />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/vet-portal" element={<VetPortal />} />
           <Route path="*" element={<NotFound />} />
