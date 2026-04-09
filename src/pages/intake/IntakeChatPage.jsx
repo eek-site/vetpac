@@ -4,6 +4,7 @@ import { Send, Loader2, CheckCircle, ArrowRight } from 'lucide-react'
 import { useIntakeStore } from '../../store/intakeStore'
 import { runIntakeChat, parseIntakeComplete } from '../../lib/claude'
 import { logSiteEvent } from '../../lib/logSiteEvent'
+import { logIntakeTurn } from '../../lib/logIntakeMessage'
 
 const OPENING_MESSAGE = {
   role: 'assistant',
@@ -94,6 +95,7 @@ export default function IntakeChatPage() {
   const inputRef = useRef(null)
   const loggedPageView = useRef(false)
   const loggedFirstMessage = useRef(false)
+  const turnRef = useRef(0)
 
   useEffect(() => {
     if (!loggedPageView.current) {
@@ -119,6 +121,9 @@ export default function IntakeChatPage() {
       loggedFirstMessage.current = true
       logSiteEvent('intake_user_message', { path: '/intake' })
     }
+    turnRef.current += 1
+    logIntakeTurn({ role: 'user', content: text, turnIndex: turnRef.current })
+
     const updatedMessages = [...messages, userMsg]
     setMessages(updatedMessages)
     setInput('')
@@ -129,6 +134,9 @@ export default function IntakeChatPage() {
       // Only pass role+content to the API (strip display-only fields)
       const apiMessages = updatedMessages.map(({ role, content }) => ({ role, content }))
       const reply = await runIntakeChat(apiMessages)
+
+      turnRef.current += 1
+      logIntakeTurn({ role: 'assistant', content: reply, turnIndex: turnRef.current })
 
       const assistantMsg = { role: 'assistant', content: reply }
       setMessages((prev) => [...prev, assistantMsg])

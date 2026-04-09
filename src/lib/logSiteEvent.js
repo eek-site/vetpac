@@ -6,7 +6,8 @@ const TYPES = new Set([
   'treatment_plan_generated',
 ])
 
-function sessionId() {
+/** Stable per-tab id for analytics + intake transcript logging. */
+export function getAnalyticsSessionId() {
   try {
     let id = sessionStorage.getItem('vetpac_anon_sid')
     if (!id) {
@@ -17,6 +18,10 @@ function sessionId() {
   } catch {
     return null
   }
+}
+
+function sessionId() {
+  return getAnalyticsSessionId()
 }
 
 export function logSiteEvent(eventType, meta = {}) {

@@ -64,6 +64,7 @@ export default function AdminConsole() {
   const [statsLoading, setStatsLoading] = useState(false)
   const [backfillResult, setBackfillResult] = useState(null)
   const [backfillLoading, setBackfillLoading] = useState(false)
+  const [intakeStats, setIntakeStats] = useState(null)
 
   useEffect(() => {
     document.title = 'Admin — VetPac'
@@ -159,15 +160,23 @@ export default function AdminConsole() {
     setStatsLoading(true)
     setStatsError(null)
     setStats(null)
+    setIntakeStats(null)
     try {
-      const r = await fetch('/api/admin-site-stats', {
-        headers: { Authorization: `Bearer ${key}` },
-      })
-      const data = await r.json()
-      if (!r.ok) throw new Error(data.error || 'Failed to load stats')
-      setStats(data.stats)
+      const [r1, r2] = await Promise.all([
+        fetch('/api/admin-site-stats', { headers: { Authorization: `Bearer ${key}` } }),
+        fetch('/api/admin-intake-stats', { headers: { Authorization: `Bearer ${key}` } }),
+      ])
+      const d1 = await r1.json()
+      if (!r1.ok) throw new Error(d1.error || 'Failed to load site stats')
+      setStats(d1.stats)
+
+      const d2 = await r2.json()
+      if (r2.ok) setIntakeStats(d2.stats)
     } catch (e) {
-      setStatsError(e.message || 'Could not load stats. If this is the first time, run the SQL migration in Supabase (supabase/migrations/001_site_events.sql).')
+      setStatsError(
+        e.message ||
+          'Could not load stats. Run SQL in Supabase: supabase/migrations/001_site_events.sql and 002_intake_chat_messages.sql. Vercel needs SUPABASE_SERVICE_ROLE_KEY.'
+      )
     } finally {
       setStatsLoading(false)
     }
@@ -336,8 +345,8 @@ export default function AdminConsole() {
             </div>
           </div>
           <p className="text-sm text-textSecondary leading-relaxed">
-            Live events (intake page, first message, completed intake, contact AI, treatment plan) are logged from the browser. Historical funnel data is not in Vercel logs (the app is a SPA — routes like{' '}
-            <code className="text-xs bg-bg px-1 rounded font-mono">/intake</code> all hit the same HTML). Use <strong>Backfill from Stripe</strong> once to import paid Checkout sessions as proxy events (consult vs order). Times below use <strong>NZ (Pacific/Auckland)</strong> calendar days.
+            Previously, each intake Q&amp;A only lived in the browser (Anthropic is called from the client); structured answers are saved in local storage after completion — not each chat turn in the database. <strong>Now</strong> every user/assistant turn is appended to <code className="text-xs bg-bg px-1 rounded font-mono">intake_chat_messages</code> (after you run the SQL migration and set{' '}
+            <code className="text-xs bg-bg px-1 rounded font-mono">SUPABASE_SERVICE_ROLE_KEY</code> on Vercel). Funnel counters also use <code className="text-xs bg-bg px-1 rounded font-mono">site_events</code>. SPA routes are not visible in Vercel access logs; use <strong>Backfill from Stripe</strong> for historical paid sessions. Times: <strong>NZ (Pacific/Auckland)</strong>.
           </p>
           {statsError && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{statsError}</p>
@@ -347,22 +356,45 @@ export default function AdminConsole() {
               Stripe backfill: inserted {backfillResult.inserted}, skipped {backfillResult.skipped} (duplicates or unpaid), scanned {backfillResult.pages} page(s).
             </p>
           )}
+          {intakeStats && (
+            <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
+              <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Intake chat stored in DB (per session / messages)</p>
+              <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm text-textSecondary">
+                <div>
+                  <span className="text-textMuted text-xs block">Sessions yesterday (NZ)</span>
+                  <span className="font-bold text-textPrimary text-lg">{intakeStats.distinct_sessions_yesterday_nz}</span>
+                </div>
+                <div>
+                  <span className="text-textMuted text-xs block">Messages yesterday (NZ)</span>
+                  <span className="font-bold text-textPrimary text-lg">{intakeStats.messages_yesterday_nz}</span>
+                </div>
+                <div>
+                  <span className="text-textMuted text-xs block">Sessions today (NZ)</span>
+                  <span className="font-bold text-textPrimary text-lg">{intakeStats.distinct_sessions_today_nz}</span>
+                </div>
+                <div>
+                  <span className="text-textMuted text-xs block">Sessions last 7d (NZ)</span>
+                  <span className="font-bold text-textPrimary text-lg">{intakeStats.distinct_sessions_last_7_days_nz}</span>
+                </div>
+              </div>
+            </div>
+          )}
           {stats && (
             <div className="grid sm:grid-cols-3 gap-4 text-sm">
               <div className="bg-bg rounded-lg p-4 border border-border">
-                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Today (NZ)</p>
+                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Site events — today (NZ)</p>
                 <pre className="text-xs text-textPrimary whitespace-pre-wrap font-mono overflow-x-auto">
                   {JSON.stringify(stats.counts_today_nz, null, 2)}
                 </pre>
               </div>
               <div className="bg-bg rounded-lg p-4 border border-border">
-                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Yesterday (NZ)</p>
+                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Site events — yesterday (NZ)</p>
                 <pre className="text-xs text-textPrimary whitespace-pre-wrap font-mono overflow-x-auto">
                   {JSON.stringify(stats.counts_yesterday_nz, null, 2)}
                 </pre>
               </div>
               <div className="bg-bg rounded-lg p-4 border border-border">
-                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Last 7 days (NZ)</p>
+                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Site events — last 7 days (NZ)</p>
                 <p className="text-lg font-bold text-primary mb-1">{stats.totals_last_7_days_nz} events</p>
                 <pre className="text-xs text-textPrimary whitespace-pre-wrap font-mono overflow-x-auto max-h-40 overflow-y-auto">
                   {JSON.stringify(stats.counts_last_7_days_nz, null, 2)}
