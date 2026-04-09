@@ -478,7 +478,7 @@ export default function Home() {
               <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">Questions</p>
               <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-4">Everything you need to know</h2>
               <p className="text-textSecondary">
-                Most customers choose to administer vaccines themselves at home. It is straightforward, fully guided, and the most popular option by far. Here is everything that comes up.
+                Everything you need to feel confident before you get started.
               </p>
             </div>
           </Reveal>

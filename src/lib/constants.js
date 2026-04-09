@@ -192,10 +192,6 @@ export const FAQ_ITEMS = [
     a: 'Start your dog\'s health plan below. Our AI reviews your dog\'s history, age, breed, and lifestyle to build a personalised vaccination programme, reviewed and authorised by a NZ-registered veterinarian. Your vaccines are then administered at home, at a time that works for both of you.',
   },
   {
-    q: 'Which option do most customers choose?',
-    a: 'Most customers choose to administer the vaccines themselves at home. It is straightforward, fully guided, and significantly more affordable than the home-visit option. Every kit includes clear step-by-step instructions and everything you need — and our 0800 line is available around the clock if you have any questions.\n\nFor those who prefer someone else to take care of it, our VetPac Assist service sends a trained technician to your home. You can add this at any point — even after your programme has started.',
-  },
-  {
     q: 'What vaccines do you offer?',
     a: 'We offer C3 and C5 — the standard core vaccinations for dogs in New Zealand. C3 covers Distemper, Hepatitis, and Parvovirus. C5 adds Parainfluenza and Kennel Cough. We also offer Leptospirosis and Kennel Cough boosters where your dog\'s lifestyle warrants it.',
   },
