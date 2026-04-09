@@ -71,7 +71,7 @@ const testimonials = [
   },
   {
     name: 'Tom K.', location: 'Wellington',
-    text: 'Our older dog used to shake before we even got through the clinic door. I was not going to put Biscuit through that. He was perfectly calm. Done in ten minutes.',
+    text: 'Our older puppy used to shake before we even got through the clinic door. I was not going to put Biscuit through that. He was perfectly calm. Done in ten minutes.',
     stars: 5,
     dogPhoto: 'https://images.unsplash.com/photo-1606685226667-506592361467?w=120&h=120&fit=crop&q=80',
     dogName: 'Biscuit', breed: 'Labrador puppy',
@@ -115,7 +115,7 @@ export default function Home() {
             <div className="lg:col-span-6 order-2 lg:order-1">
               <div className="inline-flex items-center gap-2 bg-primary/8 text-primary text-xs font-semibold px-3.5 py-1.5 rounded-full mb-7 border border-primary/15">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                The premium at-home pet vaccination service
+                The premium at-home puppy vaccination service
               </div>
 
               <h1 className="font-display font-bold text-4xl sm:text-5xl xl:text-[3.5rem] text-textPrimary mb-6 leading-[1.08]">
@@ -197,7 +197,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
             <p className="font-display text-2xl sm:text-3xl lg:text-4xl text-white leading-snug font-medium">
               "No appointment. No car trip. No waiting room.
-              <span className="text-accent"> Your dog stays calm. The job gets done."</span>
+              <span className="text-accent"> Your puppy stays calm. The job gets done."</span>
             </p>
           </div>
         </Reveal>
@@ -227,7 +227,7 @@ export default function Home() {
                 num: '02',
                 accent: 'bg-accent',
                 title: 'At a time that works for both of you.',
-                body: 'Puppies are not always at their best at 9am on a Tuesday. Neither are their owners. We work around your schedule — evenings, weekends, whenever your dog is settled and you have time.',
+                body: 'Puppies are not always at their best at 9am on a Tuesday. Neither are their owners. We work around your schedule — evenings, weekends, whenever your puppy is settled and you have time.',
               },
               {
                 num: '03',
@@ -318,7 +318,7 @@ export default function Home() {
               </p>
               <Link to="/intake">
                 <Button variant="accent" size="md" className="shadow-md">
-                  Start your dog's health plan
+                  Start your puppy's health plan
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
@@ -334,7 +334,7 @@ export default function Home() {
             <div className="text-center mb-16">
               <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">How it works</p>
               <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-4">Everything done at home.</h2>
-              <p className="text-textSecondary max-w-xl mx-auto">On your schedule, in your space, at a time that suits you and your dog.</p>
+              <p className="text-textSecondary max-w-xl mx-auto">On your schedule, in your space, at a time that suits you and your puppy.</p>
             </div>
           </Reveal>
 
@@ -342,11 +342,11 @@ export default function Home() {
             <div className="hidden md:block absolute top-[38px] left-[10%] right-[10%] h-px bg-border" />
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
               {[
-                { icon: ArrowRight, label: 'Get started', desc: 'Click below to begin your dog\'s health plan. Already on the journey? Pick up right where you left off.' },
-                { icon: ClipboardList, label: 'We design your plan', desc: 'A personalised vaccination plan tailored to your dog\'s age, breed, history, and lifestyle.' },
-                { icon: HomeIcon, label: 'Vaccinated at home', desc: 'At a time that works for both of you — including evenings and weekends. Your dog never leaves home.' },
+                { icon: ArrowRight, label: 'Get started', desc: 'Click below to begin your puppy\'s health plan. Already on the journey? Pick up right where you left off.' },
+                { icon: ClipboardList, label: 'We design your plan', desc: 'A personalised vaccination plan tailored to your puppy\'s age, breed, history, and lifestyle.' },
+                { icon: HomeIcon, label: 'Vaccinated at home', desc: 'At a time that works for both of you — including evenings and weekends. Your puppy never leaves home.' },
                 { icon: Shield, label: 'Quick post-vaccine check', desc: 'The usual 30-minute observation window. We are available if you need us, around the clock.' },
-                { icon: Star, label: 'Happy, healthy dog', desc: 'That\'s it. Your dog is protected and never had to step foot in a clinic.' },
+                { icon: Star, label: 'Happy, healthy puppy', desc: 'That\'s it. Your puppy is protected and never had to step foot in a clinic.' },
               ].map((step, i) => {
                 const Icon = step.icon
                 return (
@@ -376,7 +376,7 @@ export default function Home() {
             <div className="text-center mb-12">
               <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">Happy at home</p>
               <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-3">This is what it looks like</h2>
-              <p className="text-textSecondary max-w-lg mx-auto">Calm dogs. Happy owners. No car park required.</p>
+              <p className="text-textSecondary max-w-lg mx-auto">Calm puppies. Happy owners. No car park required.</p>
             </div>
           </Reveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -392,7 +392,7 @@ export default function Home() {
                 caption: 'At ease at home',
               },
               {
-                src: 'https://assets.mixkit.co/videos/preview/mixkit-little-dog-running-in-snow-in-slow-motion-25225-large.mp4',
+                src: 'https://assets.mixkit.co/videos/preview/mixkit-little-puppy-running-in-snow-in-slow-motion-25225-large.mp4',
                 poster: 'https://images.unsplash.com/photo-1768224278476-ba8142c86501?w=600&h=450&fit=crop&q=80',
                 caption: 'Happy and healthy',
               },
@@ -420,7 +420,7 @@ export default function Home() {
         <div className="max-w-content mx-auto px-4 sm:px-6">
           <Reveal>
             <div className="text-center mb-14">
-              <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">From NZ dog owners</p>
+              <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">From NZ puppy owners</p>
               <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-3">Rated 4.9 / 5</h2>
               <div className="flex items-center justify-center gap-1">
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 text-warning fill-warning" />)}
@@ -492,7 +492,7 @@ export default function Home() {
               <div className="mt-10 p-6 bg-primary/5 rounded-card-lg border border-primary/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <p className="font-semibold text-textPrimary text-sm mb-0.5">Ready to get started?</p>
-                  <p className="text-textMuted text-xs">Begin your dog's health plan. Takes about 10 minutes.</p>
+                  <p className="text-textMuted text-xs">Begin your puppy's health plan. Takes about 10 minutes.</p>
                 </div>
                 <Link to="/intake" className="flex-shrink-0">
                   <Button size="sm" className="whitespace-nowrap">
@@ -521,7 +521,7 @@ export default function Home() {
               Your puppy, vaccinated<br />at home. On your terms.
             </h2>
             <p className="text-primary-light text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-              Calm. Safe. At a time that suits you and your dog.
+              Calm. Safe. At a time that suits you and your puppy.
             </p>
             <Link to="/intake">
               <Button variant="accent" size="xl" className="shadow-lg">

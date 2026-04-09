@@ -24,7 +24,7 @@ export default function Checkout() {
   const [error, setError] = useState(null)
   const [orderOpen, setOrderOpen] = useState(true)
 
-  const dogName = params.get('dog') || 'your dog'
+  const dogName = params.get('puppy') || 'your puppy'
   const total = parseFloat(params.get('total') || '0')
   const consultFee = parseFloat(params.get('consult') || CONSULTATION_FEE.price)
   const vaccinesTotal = parseFloat(params.get('vaccines') || '0')
@@ -64,7 +64,7 @@ export default function Checkout() {
       ].filter((item) => item.price > 0)
 
       const origin = window.location.origin
-      const successUrl = `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&dog=${encodeURIComponent(dogName)}`
+      const successUrl = `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&puppy=${encodeURIComponent(dogName)}`
       const cancelUrl = `${origin}/checkout?${params.toString()}`
 
       const response = await fetch('/api/create-checkout-session', {

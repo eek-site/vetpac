@@ -20,10 +20,10 @@ export default function Footer() {
               <span className="font-display font-bold text-2xl">VetPac</span>
             </div>
             <p className="text-primary-light text-sm mb-4 max-w-xs leading-relaxed">
-              Your dog's health, delivered. NZ's first at-home pet vaccination platform.
+              Your puppy's health, delivered. NZ's first at-home puppy vaccination platform.
             </p>
             <p className="text-white/50 text-xs leading-relaxed max-w-sm">
-              VetPac operates under the ACVM Act 1997 VOI framework. All treatment plans are reviewed and authorised by NZ-registered veterinarians. VetPac is not a veterinary clinic and does not provide veterinary diagnosis.
+              VetPac operates under the ACVM Act 1997 VOI framework. Every vaccination plan is reviewed and authorised by a NZ-registered veterinarian before anything is confirmed. Your puppy's health and safety is our only priority.
             </p>
           </div>
 
@@ -63,7 +63,7 @@ export default function Footer() {
         <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-white/50 text-sm">© 2025 VetPac. A <a href="https://formanpacific.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors underline underline-offset-2">Forman Pacific LLC</a> company.</p>
           <p className="text-white/50 text-sm flex items-center gap-1">
-            Made with <Heart className="w-3 h-3 text-accent fill-accent" /> for NZ dog owners
+            Made with <Heart className="w-3 h-3 text-accent fill-accent" /> for NZ puppy owners
           </p>
         </div>
       </div>

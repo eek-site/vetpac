@@ -2,15 +2,15 @@ export const CONSULTATION_FEE = {
   id: 'consultation',
   name: 'Initial Consultation',
   price: 289,
-  description: 'Full health assessment and personalised vaccine plan for your dog.',
+  description: 'Full health assessment and personalised vaccine plan for your puppy.',
   includes: [
     'Personalised health intake',
-    'Video assessment of your dog',
+    'Video assessment of your puppy',
     'Vaccine plan designed for your puppy\'s age, breed, and lifestyle',
     'Digital health record and vaccination certificate',
-    'Around-the-clock support throughout your dog\'s programme',
+    'Around-the-clock support throughout your puppy\'s programme',
   ],
-  refundNote: 'Full refund if we determine your dog needs an alternative approach.',
+  refundNote: 'Full refund if we determine your puppy needs an alternative approach.',
 }
 
 export const VACCINE_PRODUCTS = {
@@ -34,7 +34,7 @@ export const VACCINE_PRODUCTS = {
     id: 'lepto',
     name: 'Leptospirosis Vaccine',
     fullName: 'Leptospirosis',
-    description: 'Recommended for dogs with rural or waterway exposure.',
+    description: 'Recommended for puppies with rural or waterway exposure.',
     price: 89,
     note: 'Recommended based on your lifestyle responses.',
   },
@@ -42,7 +42,7 @@ export const VACCINE_PRODUCTS = {
     id: 'kennel_cough',
     name: 'Kennel Cough',
     fullName: 'Kennel Cough — Bordetella bronchiseptica',
-    description: 'Recommended for dogs attending boarding, daycare, or dog parks.',
+    description: 'Recommended for puppies attending boarding, daycare, or puppy parks.',
     price: 89,
     note: 'Recommended based on your lifestyle responses.',
   },
@@ -67,6 +67,27 @@ export const ADDONS = {
   FLEA: { id: 'flea', name: 'Flea Treatment', price: 34 },
 }
 
+export const SCALES = {
+  id: 'scales',
+  name: 'VetPac Digital Scales',
+  retailPrice: 49,
+  introPrice: 0,
+  description: 'Precision puppy scales accurate to 0.1kg. Monitor your puppy\'s weight at each vaccination point — ensures correct dosing every time.',
+}
+
+export const INSURANCE = {
+  id: 'insurance',
+  name: 'VetPac Health Cover',
+  description: 'Accident and illness cover for your puppy, provided by Forman Pacific LLC.',
+  weeklyRetailPrice: 16.99,
+  weeklyIntroPrice: 4.99,
+  annualPrice: 259,
+  monthlyPrice: 24.99,
+  coverLimit: 15000,
+  excess: 200,
+  reimbursement: 80,
+}
+
 export const PRICING_EXAMPLES = [
   {
     id: 'puppy_course',
@@ -84,7 +105,7 @@ export const PRICING_EXAMPLES = [
   {
     id: 'single_dose',
     label: 'Annual booster',
-    scenario: 'Adult dog, single C5 booster',
+    scenario: 'Adult puppy, single C5 booster',
     consultation: 289,
     vaccines: [
       { name: 'C5 annual booster', price: 89 },
@@ -149,7 +170,7 @@ export const NZ_BREEDS = [
   'Pomeranian',
   'Havanese',
   'Shetland Sheepdog',
-  'Bernese Mountain Dog',
+  'Bernese Mountain puppy',
   'English Springer Spaniel',
   'Brittany',
   'Cocker Spaniel',
@@ -178,22 +199,22 @@ export const NZ_BREEDS = [
 ]
 
 export const INTAKE_STEPS = [
-  { path: '/intake', label: "Your Dog's Profile" },
+  { path: '/intake', label: "Your puppy's Profile" },
   { path: '/intake/health', label: 'Health History' },
   { path: '/intake/lifestyle', label: 'Lifestyle & Environment' },
   { path: '/intake/owner', label: 'Your Details' },
-  { path: '/intake/video', label: 'Dog Video' },
+  { path: '/intake/video', label: 'puppy Video' },
   { path: '/intake/review', label: 'Review & Confirm' },
 ]
 
 export const FAQ_ITEMS = [
   {
     q: 'How does it work?',
-    a: 'Start your dog\'s health plan below. Our AI reviews your dog\'s history, age, breed, and lifestyle to build a personalised vaccination programme, reviewed and authorised by a NZ-registered veterinarian. Your vaccines are then administered at home, at a time that works for both of you.',
+    a: 'Start your puppy\'s health plan below. Our AI reviews your puppy\'s history, age, breed, and lifestyle to build a personalised vaccination programme, reviewed and authorised by a NZ-registered veterinarian. Your vaccines are then administered at home, at a time that works for both of you.',
   },
   {
     q: 'What vaccines do you offer?',
-    a: 'We offer C3 and C5 — the standard core vaccinations for dogs in New Zealand. C3 covers Distemper, Hepatitis, and Parvovirus. C5 adds Parainfluenza and Kennel Cough. We also offer Leptospirosis and Kennel Cough boosters where your dog\'s lifestyle warrants it.',
+    a: 'We offer C3 and C5 — the standard core vaccinations for puppies in New Zealand. C3 covers Distemper, Hepatitis, and Parvovirus. C5 adds Parainfluenza and Kennel Cough. We also offer Leptospirosis and Kennel Cough boosters where your puppy\'s lifestyle warrants it.',
   },
   {
     q: 'Is it safe?',
@@ -201,15 +222,15 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Can I meet the technician before you send someone to my home?',
-    a: 'Yes. Before any home visit, our senior programme coordinator will video call you to introduce the technician assigned to your dog, walk you through what to expect, and make sure you are completely comfortable. Every technician is individually matched to ensure they share our values around animal care. We will arrange this once your plan is confirmed.',
+    a: 'Yes. Before any home visit, our senior programme coordinator will video call you to introduce the technician assigned to your puppy, walk you through what to expect, and make sure you are completely comfortable. Every technician is individually matched to ensure they share our values around animal care. We will arrange this once your plan is confirmed.',
   },
   {
-    q: 'What if my dog seems unwell on the day?',
-    a: 'Never proceed if your dog is showing any signs of illness, however mild. We include a simple pre-vaccination checklist. If anything flags, stop and call us. We will hold your programme until your dog is well.',
+    q: 'What if my puppy seems unwell on the day?',
+    a: 'Never proceed if your puppy is showing any signs of illness, however mild. We include a simple pre-vaccination checklist. If anything flags, stop and call us. We will hold your programme until your puppy is well.',
   },
   {
     q: 'What if something goes wrong after vaccination?',
-    a: 'Our 0800 VETPAC line is staffed 24 hours a day, 7 days a week. Call us immediately if your dog shows any unusual signs after vaccination. We will advise you on what to do and stay with you throughout.',
+    a: 'Our 0800 VETPAC line is staffed 24 hours a day, 7 days a week. Call us immediately if your puppy shows any unusual signs after vaccination. We will advise you on what to do and stay with you throughout.',
   },
   {
     q: 'Do you cover all of New Zealand?',
@@ -217,6 +238,6 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Is the vaccination record official?',
-    a: 'Yes. Every programme includes a signed vaccination certificate confirming your dog\'s vaccinations, the products used, and the dates administered. It is accepted by boarding facilities, groomers, and vets.',
+    a: 'Yes. Every programme includes a signed vaccination certificate confirming your puppy\'s vaccinations, the products used, and the dates administered. It is accepted by boarding facilities, groomers, and vets.',
   },
 ]

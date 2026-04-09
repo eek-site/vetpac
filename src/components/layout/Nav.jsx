@@ -90,7 +90,7 @@ export default function Nav() {
             ))}
             <div className="pt-6 space-y-3">
               <Link to="/intake" onClick={() => setMobileOpen(false)}>
-                <Button fullWidth size="lg">Start Your Dog's Health Plan →</Button>
+                <Button fullWidth size="lg">Start Your puppy's Health Plan →</Button>
               </Link>
               <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
                 <Button variant="secondary" fullWidth size="lg">My Account</Button>

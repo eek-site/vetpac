@@ -28,7 +28,7 @@ const timeline = [
 
 export default function OrderConfirmation() {
   const [params] = useSearchParams()
-  const dogName = params.get('dog') || 'your dog'
+  const dogName = params.get('puppy') || 'your puppy'
   const [orderRef] = useState('VP-' + Math.random().toString(36).substr(2, 8).toUpperCase())
 
   return (
