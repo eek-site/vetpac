@@ -64,33 +64,33 @@ function FAQItem({ q, a }) {
 const testimonials = [
   {
     name: 'Sarah M.', location: 'Auckland',
-    text: 'Done before my morning coffee was cold. Milo was completely calm the whole time — such a different experience to dragging him to the clinic.',
+    text: 'Done before my morning coffee was cold. Milo was completely calm the whole time — I could not believe how relaxed he was.',
     stars: 5,
-    dogPhoto: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=120&h=120&fit=crop&q=80',
-    dogName: 'Milo', breed: 'Golden Retriever',
+    dogPhoto: 'https://images.unsplash.com/photo-1562176566-e9afd27531d4?w=120&h=120&fit=crop&q=80',
+    dogName: 'Milo', breed: 'Golden Retriever puppy',
   },
   {
     name: 'Tom K.', location: 'Wellington',
-    text: 'Biscuit used to shake the entire drive to the vet. This time he was calm the whole way through. Ten minutes and it was done.',
+    text: 'Our older dog used to shake before we even got through the clinic door. I was not going to put Biscuit through that. He was perfectly calm. Done in ten minutes.',
     stars: 5,
-    dogPhoto: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=120&h=120&fit=crop&q=80',
-    dogName: 'Biscuit', breed: 'Labrador mix',
+    dogPhoto: 'https://images.unsplash.com/photo-1606685226667-506592361467?w=120&h=120&fit=crop&q=80',
+    dogName: 'Biscuit', breed: 'Labrador puppy',
   },
   {
     name: 'Rachel B.', location: 'Christchurch',
     text: 'The technician was at my door at 9am, done by 9:08. Luna slept through the whole thing. I honestly could not believe how easy it was.',
     stars: 5,
-    dogPhoto: 'https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=120&h=120&fit=crop&q=80',
-    dogName: 'Luna', breed: 'Border Collie',
+    dogPhoto: 'https://images.unsplash.com/photo-1760448904758-3a88fd0073b9?w=120&h=120&fit=crop&q=80',
+    dogName: 'Luna', breed: 'Golden Retriever puppy',
   },
 ]
 
 const galleryPhotos = [
-  { src: 'https://images.unsplash.com/photo-1760970902153-8d4d8535bb0a?w=600&h=500&fit=crop&q=80', alt: 'Puppy in golden sunset' },
-  { src: 'https://images.unsplash.com/photo-1760448983438-f891ddf09eef?w=600&h=500&fit=crop&q=80', alt: 'Golden retriever puppy' },
-  { src: 'https://images.unsplash.com/photo-1755962179802-734c1cc178ac?w=600&h=500&fit=crop&q=80', alt: 'Puppy peeking over box' },
-  { src: 'https://images.unsplash.com/photo-1599692392256-2d084495fe15?w=600&h=500&fit=crop&q=80', alt: 'Golden retriever portrait' },
-  { src: 'https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=600&h=500&fit=crop&q=80', alt: 'Puppy outdoors' },
+  { src: 'https://images.unsplash.com/photo-1562176566-e9afd27531d4?w=600&h=500&fit=crop&q=80', alt: 'Cute puppy' },
+  { src: 'https://images.unsplash.com/photo-1760615303598-d9d2252be741?w=600&h=500&fit=crop&q=80', alt: 'Golden retriever puppy at home' },
+  { src: 'https://images.unsplash.com/photo-1606685226667-506592361467?w=600&h=500&fit=crop&q=80', alt: 'Yellow labrador puppy' },
+  { src: 'https://images.unsplash.com/photo-1760448904758-3a88fd0073b9?w=600&h=500&fit=crop&q=80', alt: 'Golden retriever puppy looking up' },
+  { src: 'https://images.unsplash.com/photo-1768224278476-ba8142c86501?w=600&h=500&fit=crop&q=80', alt: 'Fluffy Maltipoo puppy' },
 ]
 
 export default function Home() {
@@ -294,18 +294,18 @@ export default function Home() {
             {[
               {
                 src: 'https://assets.mixkit.co/videos/preview/mixkit-corgi-puppy-playing-with-a-toy-with-its-owner-45873-large.mp4',
-                poster: 'https://images.unsplash.com/photo-1599692392256-2d084495fe15?w=600&h=450&fit=crop&q=80',
+                poster: 'https://images.unsplash.com/photo-1562176566-e9afd27531d4?w=600&h=450&fit=crop&q=80',
                 caption: 'Protected & playful',
               },
               {
                 src: 'https://assets.mixkit.co/videos/preview/mixkit-young-girl-playing-with-a-puppy-6178-large.mp4',
-                poster: 'https://images.unsplash.com/photo-1760448983438-f891ddf09eef?w=600&h=450&fit=crop&q=80',
+                poster: 'https://images.unsplash.com/photo-1760448904758-3a88fd0073b9?w=600&h=450&fit=crop&q=80',
                 caption: 'At ease at home',
               },
               {
                 src: 'https://assets.mixkit.co/videos/preview/mixkit-little-dog-running-in-snow-in-slow-motion-25225-large.mp4',
-                poster: 'https://images.unsplash.com/photo-1760970902153-8d4d8535bb0a?w=600&h=450&fit=crop&q=80',
-                caption: 'Healthy for life',
+                poster: 'https://images.unsplash.com/photo-1768224278476-ba8142c86501?w=600&h=450&fit=crop&q=80',
+                caption: 'Happy and healthy',
               },
             ].map((vid, i) => (
               <Reveal key={i} delay={i * 120}>
@@ -335,7 +335,7 @@ export default function Home() {
                 Simple. Transparent. No surprises.
               </h2>
               <p className="text-textSecondary max-w-xl mx-auto">
-                You pay for the initial consultation first. Once your plan is confirmed you see exactly what vaccines are included — and you confirm before anything ships.
+                Your consultation is the first step. Once your plan is ready, you see exactly what vaccines are included and you approve everything before your programme begins.
               </p>
             </div>
           </Reveal>
@@ -359,9 +359,6 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <p className="text-xs text-primary font-medium bg-primary/5 rounded-card px-3 py-2">
-                  Refunded in full if we recommend an in-person visit for your dog.
-                </p>
               </div>
             </Reveal>
 
@@ -506,7 +503,6 @@ export default function Home() {
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
-            <p className="text-primary-light/70 text-sm mt-5">No payment until your plan is confirmed.</p>
           </Reveal>
         </div>
       </section>

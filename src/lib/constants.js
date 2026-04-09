@@ -189,23 +189,15 @@ export const INTAKE_STEPS = [
 export const FAQ_ITEMS = [
   {
     q: 'How does it work?',
-    a: 'Get started below — it takes less than 10 minutes to set up your dog\'s health plan. We design a personalised vaccination programme for your dog based on their age, breed, and lifestyle. From there, every vaccination is done at home, at a time that suits you. Already started? Pick up right where you left off.',
+    a: 'Get started below — it takes less than 10 minutes to set up your dog\'s health plan. We design a personalised vaccination programme based on their age, breed, and lifestyle. From there, every vaccination is done at home, at a time that suits you. Already started? Pick up right where you left off.',
   },
   {
     q: 'What vaccines do you offer?',
     a: 'We offer C3 and C5 — the standard core vaccinations for dogs in New Zealand. C3 covers Distemper, Hepatitis, and Parvovirus. C5 covers everything in C3 plus Parainfluenza and Kennel Cough. We also offer Leptospirosis and Kennel Cough vaccines where your dog\'s lifestyle warrants it.',
   },
   {
-    q: "I've never done it this way before. Is it safe and sterile at home?",
-    a: 'Yes — and in many ways, your home is a better environment than a clinic waiting room. Every vaccine arrives in sealed, sterile, single-use packaging. The equipment is pharmaceutical grade. Your home has none of the pathogens that circulate in a clinic waiting room, which is particularly important for unvaccinated puppies. We walk you through everything — you are supported at every step.',
-  },
-  {
-    q: 'What is included?',
-    a: 'Everything needed for a safe, complete vaccination at home. The vaccines your dog needs, sealed and sterile. Full clinical documentation confirming what was administered and when. Temperature indicator confirming the cold chain was maintained throughout delivery. Our 0800 support line available around the clock.',
-  },
-  {
-    q: 'How are the vaccines kept safe during delivery?',
-    a: 'Every shipment is packed in pharmaceutical-grade insulated packaging with a certified gel ice pack rated to maintain 2-8 degrees Celsius for a minimum of 48 hours. A colour-change temperature indicator strip is included. If it is green on arrival, the cold chain held throughout. If it has changed colour, contact us and we will send a replacement within 24 hours.',
+    q: "Is it safe?",
+    a: 'Yes — and in many ways, your home is a better environment than a clinic waiting room. Every vaccine is sealed, sterile, and single-use. Your home has none of the pathogens that circulate in a waiting room, which is particularly important for unvaccinated puppies. We walk you through everything — you are supported at every step.',
   },
   {
     q: 'Can you send someone to do it at our home?',
@@ -221,14 +213,10 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Do you cover all of New Zealand?',
-    a: 'Yes — we cover all regions of New Zealand including rural addresses. Auckland is typically next day. Wellington and Christchurch 1-2 business days. Rest of New Zealand 2-3 business days.',
+    a: 'Yes — we cover all regions of New Zealand including rural addresses. Get in touch if you have questions about your area.',
   },
   {
     q: 'Is the vaccination record official?',
     a: 'Yes. Every programme includes a signed vaccination certificate confirming your dog\'s vaccinations, the products used, and the dates administered. It is accepted by boarding facilities, groomers, and vets, and is the same standard of record you would receive from a clinic.',
-  },
-  {
-    q: 'What is your refund policy?',
-    a: 'If following your consultation we determine your dog needs an alternative approach, you are refunded in full. If your delivery arrives with a triggered temperature indicator, we replace it at no cost. If you cancel before your programme begins, full refund. Once your programme is underway and vaccines have been administered, we are unable to refund.',
   },
 ]
