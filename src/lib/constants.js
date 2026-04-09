@@ -189,7 +189,7 @@ export const INTAKE_STEPS = [
 export const FAQ_ITEMS = [
   {
     q: 'How does it work?',
-    a: 'Start your dog\'s health plan below — it takes about 10 minutes. Our AI reviews your dog\'s history, age, breed, and lifestyle to build a personalised vaccination programme, reviewed and authorised by a NZ-registered veterinarian. Your vaccines are then administered at home, at a time that works for both of you.',
+    a: 'Start your dog\'s health plan below. Our AI reviews your dog\'s history, age, breed, and lifestyle to build a personalised vaccination programme, reviewed and authorised by a NZ-registered veterinarian. Your vaccines are then administered at home, at a time that works for both of you.',
   },
   {
     q: 'Which option do most customers choose?',
@@ -201,11 +201,11 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Is it safe?',
-    a: 'Yes — and in many ways, your home is a better environment than a clinic waiting room. Every vaccine is sealed, sterile, and single-use. Your home has none of the pathogens that circulate in a waiting room, which is particularly important for unvaccinated or partially-vaccinated puppies. We walk you through every step.',
+    a: 'Yes — and in many ways, your home is a better environment than a clinic waiting room. Your home has none of the pathogens that circulate in a waiting room, which is particularly important for unvaccinated puppies. Every vaccine is sealed, sterile, and single-use. We walk you through everything — you are supported at every step.',
   },
   {
-    q: 'Can you send someone to do it for me?',
-    a: 'Yes. A trained VetPac technician can come to your home and take care of everything. Same-day or next-day availability in Auckland. This is our VetPac Assist service and can be added at any point in your programme.',
+    q: 'Can I meet the technician before you send someone to my home?',
+    a: 'Yes. Our trained VetPac technician will video call you before coming to your home and walk you through everything. We will discuss all options with you once your plan is set up.',
   },
   {
     q: 'What if my dog seems unwell on the day?',
