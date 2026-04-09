@@ -97,13 +97,14 @@ function useSeasonalStatus() {
   // NZ seasons: Spring Sep–Nov (peak puppy), Summer Dec–Feb, Autumn Mar–May (boosters), Winter Jun–Aug (quieter)
   const month = new Date().getMonth() + 1 // 1–12
   if (month >= 9 && month <= 11) return { label: 'Spring · Peak puppy season', sub: 'Our busiest time of year in NZ', dot: 'bg-amber-400' }
-  if (month === 12 || month <= 2)  return { label: 'Summer · High demand', sub: 'Popular time to start a programme', dot: 'bg-amber-400' }
-  if (month >= 3 && month <= 5)    return { label: 'Autumn · Booster season', sub: 'Annual programmes in full swing', dot: 'bg-amber-400' }
-  return                                   { label: 'Winter · Quieter period', sub: 'Faster start times available now', dot: 'bg-green-500' }
+  if (month === 12 || month <= 2) return { label: 'Summer · High demand', sub: 'Popular time to start a programme', dot: 'bg-amber-400' }
+  if (month >= 3 && month <= 5) return { label: 'Autumn · Booster season', sub: 'Annual programmes in full swing', dot: 'bg-amber-400' }
+  return { label: 'Winter · Quieter period', sub: 'Faster start times available now', dot: 'bg-green-500' }
 }
 
 export default function Home() {
   const season = useSeasonalStatus()
+  return (
     <div className="overflow-x-hidden">
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
