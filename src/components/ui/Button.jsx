@@ -6,6 +6,7 @@ const variants = {
   accent: 'bg-accent text-white hover:bg-accent-dark hover:shadow-card-hover',
   outline: 'bg-transparent text-primary border-2 border-primary hover:bg-primary/5',
   ghost: 'bg-transparent text-primary hover:bg-primary/10',
+  ghostWhite: 'bg-transparent text-white border-2 border-white/50 hover:bg-white hover:text-primary',
   danger: 'bg-error text-white hover:bg-red-700',
 }
 

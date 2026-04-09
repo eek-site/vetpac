@@ -79,13 +79,13 @@ export default function OrderConfirmation() {
         <div className="bg-primary rounded-card-lg p-8 text-white mb-6">
           <h2 className="font-display font-semibold text-xl mb-3">Administration guide</h2>
           <p className="text-primary-light text-sm mb-5">
-            When your vaccines arrive, follow our step-by-step video guide. A trained technician will be on call if you have any questions.
+            When your vaccines arrive, follow our step-by-step video guide. Our team is available 24/7 on WhatsApp if you have any questions.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button variant="accent">
               View Administration Guide
             </Button>
-            <Button variant="secondary" className="border-white text-white hover:bg-white hover:text-primary">
+            <Button variant="ghostWhite">
               <Bell className="w-4 h-4" />
               Add dose reminders
             </Button>
