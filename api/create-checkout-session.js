@@ -19,28 +19,38 @@ export default async function handler(req, res) {
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2025-03-31.basil',
+    apiVersion: '2024-06-20',
   })
 
   try {
-    const { items, dogName, successUrl, cancelUrl } = req.body
+    const { items, dogName, successUrl, cancelUrl, discountCode } = req.body
 
     if (!items || !items.length) {
       return res.status(400).json({ error: 'No items provided' })
     }
 
-    const line_items = items.map((item) => ({
-      price_data: {
-        currency: 'nzd',
-        product_data: {
-          name: item.name,
-          ...(item.description ? { description: item.description } : {}),
-        },
-        // Stripe uses smallest currency unit — NZD cents
-        unit_amount: Math.round(item.price * 100),
-      },
-      quantity: item.quantity || 1,
-    }))
+    // bossmode: collapse everything to a single $1 test charge
+    const isBossMode = discountCode?.toLowerCase() === 'bossmode'
+    const line_items = isBossMode
+      ? [{
+          price_data: {
+            currency: 'nzd',
+            product_data: { name: 'VetPac — Test charge (bossmode)' },
+            unit_amount: 100,
+          },
+          quantity: 1,
+        }]
+      : items.map((item) => ({
+          price_data: {
+            currency: 'nzd',
+            product_data: {
+              name: item.name,
+              ...(item.description ? { description: item.description } : {}),
+            },
+            unit_amount: Math.round(item.price * 100),
+          },
+          quantity: item.quantity || 1,
+        }))
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

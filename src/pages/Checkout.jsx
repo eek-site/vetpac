@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { Lock, Shield, CheckCircle, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
+import { Lock, Shield, CheckCircle, ChevronDown, ChevronUp, AlertCircle, Tag } from 'lucide-react'
 import Button from '../components/ui/Button'
 
 function LineItemRow({ label, description, price, muted = false }) {
@@ -22,6 +22,22 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [orderOpen, setOrderOpen] = useState(true)
+  const [discountCode, setDiscountCode] = useState('')
+  const [discountApplied, setDiscountApplied] = useState(false)
+  const [discountInput, setDiscountInput] = useState('')
+
+  const isBossMode = discountApplied && discountCode.toLowerCase() === 'bossmode'
+  const displayTotal = isBossMode ? 1.00 : total
+
+  const applyDiscount = () => {
+    const code = discountInput.trim()
+    if (code.toLowerCase() === 'bossmode') {
+      setDiscountCode(code)
+      setDiscountApplied(true)
+    } else {
+      setError('Invalid discount code.')
+    }
+  }
 
   const mode = params.get('mode') || 'consult' // 'consult' | 'vaccines'
   const isConsult = mode === 'consult'
@@ -77,7 +93,7 @@ export default function Checkout() {
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items, dogName, successUrl, cancelUrl }),
+        body: JSON.stringify({ items, dogName, successUrl, cancelUrl, discountCode: discountApplied ? discountCode : '' }),
       })
 
       const data = await response.json()
@@ -116,7 +132,7 @@ export default function Checkout() {
                 ? <ChevronUp className="w-4 h-4 text-textMuted" />
                 : <ChevronDown className="w-4 h-4 text-textMuted" />}
             </div>
-            <span className="font-mono font-bold text-accent">NZD ${total.toFixed(2)}</span>
+            <span className="font-mono font-bold text-accent">NZD ${displayTotal.toFixed(2)}</span>
           </button>
 
           {orderOpen && (
@@ -159,7 +175,7 @@ export default function Checkout() {
               )}
               <div className="border-t border-border pt-3 flex justify-between items-center font-semibold text-sm">
                 <span className="text-textPrimary">Total (NZD, incl. GST)</span>
-                <span className="font-mono text-accent text-base">NZD ${total.toFixed(2)}</span>
+                <span className="font-mono text-accent text-base">NZD ${displayTotal.toFixed(2)}</span>
               </div>
               {!isConsult && (
                 <p className="text-xs text-textMuted">Consultation fee already paid separately.</p>
@@ -198,6 +214,34 @@ export default function Checkout() {
               </ol>
             </div>
 
+            {/* Discount code */}
+            {!discountApplied ? (
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
+                  <input
+                    type="text"
+                    value={discountInput}
+                    onChange={(e) => setDiscountInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && applyDiscount()}
+                    placeholder="Discount code"
+                    className="w-full pl-9 pr-3 py-2.5 border border-border rounded-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-bg"
+                  />
+                </div>
+                <button
+                  onClick={applyDiscount}
+                  className="px-4 py-2.5 border border-border rounded-card text-sm font-medium text-textSecondary hover:bg-bg transition-colors flex-shrink-0"
+                >
+                  Apply
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-card text-sm text-green-800">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                <span>Code <strong>{discountCode.toUpperCase()}</strong> applied — total updated to NZD $1.00</span>
+              </div>
+            )}
+
             {error && (
               <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-card text-sm text-red-700">
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -206,7 +250,7 @@ export default function Checkout() {
             )}
 
             <Button fullWidth size="lg" onClick={handlePayment} loading={loading}>
-              Pay NZD ${total.toFixed(2)} with Stripe →
+              Pay NZD ${displayTotal.toFixed(2)} with Stripe →
             </Button>
 
             <div className="flex items-center justify-center gap-4 text-xs text-textMuted pt-1">
