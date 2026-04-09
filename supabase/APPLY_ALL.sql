@@ -151,3 +151,6 @@ AS $$
     )
   );
 $$;
+
+-- --- 003: RLS on EEK migrations table (Supabase linter 0013) ---
+ALTER TABLE IF EXISTS public._eek_migrations ENABLE ROW LEVEL SECURITY;

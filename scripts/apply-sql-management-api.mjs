@@ -1,6 +1,7 @@
 /**
- * Runs APPLY_ALL.sql via Supabase Management API (needs SUPABASE_ACCESS_TOKEN with project access).
- * Usage: SUPABASE_ACCESS_TOKEN=sbp_... node scripts/apply-sql-management-api.mjs
+ * Runs a SQL file via Supabase Management API (needs SUPABASE_ACCESS_TOKEN with project access).
+ * Usage: SUPABASE_ACCESS_TOKEN=sbp_... node scripts/apply-sql-management-api.mjs [path-from-repo-root]
+ * Default path: supabase/APPLY_ALL.sql
  */
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
@@ -13,7 +14,8 @@ if (!token) {
   process.exit(1)
 }
 
-const sqlPath = join(dirname(fileURLToPath(import.meta.url)), '..', 'supabase', 'APPLY_ALL.sql')
+const rel = process.argv[2] || 'supabase/APPLY_ALL.sql'
+const sqlPath = join(dirname(fileURLToPath(import.meta.url)), '..', rel)
 const query = readFileSync(sqlPath, 'utf8')
 
 const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query`, {
