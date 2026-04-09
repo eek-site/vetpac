@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Shield, ArrowLeft } from 'lucide-react'
+import { SITE_EMAIL, mailtoHref } from '../lib/site-email'
 
 function Section({ title, children }) {
   return (
@@ -107,7 +108,7 @@ export default function InsuranceTerms() {
         <Section title="5. How to make a claim">
           <ol className="list-decimal pl-5 space-y-2">
             <li>Obtain a detailed invoice and clinical notes from your veterinarian following treatment.</li>
-            <li>Submit your claim within 90 days of the date of treatment by emailing <a href="mailto:claims@vetpac.nz" className="text-primary hover:underline">claims@vetpac.nz</a> with your invoice, clinical notes, and policy number.</li>
+            <li>Submit your claim within 90 days of the date of treatment by emailing <a href={mailtoHref()} className="text-primary hover:underline">{SITE_EMAIL}</a> with your invoice, clinical notes, and policy number.</li>
             <li>Forman Pacific LLC will assess your claim within 10 business days of receiving all required documentation.</li>
             <li>Approved reimbursements will be paid directly to your nominated bank account within 5 business days of approval.</li>
             <li>If your claim is declined, you will receive a written explanation with the reasons for the decision.</li>
@@ -123,7 +124,7 @@ export default function InsuranceTerms() {
 
         <Section title="7. Cancellation and refunds">
           <p><strong className="text-textPrimary">14-day cooling-off period:</strong> You may cancel your policy within 14 days of purchase for a full refund, provided no claims have been made during this period.</p>
-          <p><strong className="text-textPrimary">After 14 days:</strong> You may cancel at any time by providing 30 days written notice to <a href="mailto:support@vetpac.nz" className="text-primary hover:underline">support@vetpac.nz</a>.</p>
+          <p><strong className="text-textPrimary">After 14 days:</strong> You may cancel at any time by providing 30 days written notice to <a href={mailtoHref()} className="text-primary hover:underline">{SITE_EMAIL}</a>.</p>
           <p><strong className="text-textPrimary">Annual policy refund:</strong> If you cancel an annual policy after the cooling-off period, a pro-rata refund of the unused portion will be issued, less a NZD $25 administration fee, provided no claims have been paid during the current policy year. No refund is available if a claim has been paid in the current policy year.</p>
           <p><strong className="text-textPrimary">Monthly policy:</strong> No refund is issued for a partial month. Cancellation takes effect at the end of the current billing cycle.</p>
           <p><strong className="text-textPrimary">Cancellation by Forman Pacific LLC:</strong> We reserve the right to cancel this policy by providing 30 days written notice if premiums are overdue by more than 14 days, if you have provided materially false information, or if continuing the policy would be unlawful.</p>
@@ -145,11 +146,11 @@ export default function InsuranceTerms() {
 
         <Section title="10. Privacy">
           <p>Forman Pacific LLC collects and holds personal and veterinary information for the purpose of administering your policy and assessing claims. Your information will not be disclosed to third parties except where required by law, where necessary to assess a claim (including to veterinary professionals), or with your consent.</p>
-          <p>You have the right to access and correct personal information held about you under the Privacy Act 2020 (NZ). To make a request, contact <a href="mailto:privacy@vetpac.nz" className="text-primary hover:underline">privacy@vetpac.nz</a>.</p>
+          <p>You have the right to access and correct personal information held about you under the Privacy Act 2020 (NZ). To make a request, contact <a href={mailtoHref()} className="text-primary hover:underline">{SITE_EMAIL}</a>.</p>
         </Section>
 
         <Section title="11. Disputes">
-          <p>If you are not satisfied with a claims decision or any aspect of your policy, you may lodge a complaint by emailing <a href="mailto:support@vetpac.nz" className="text-primary hover:underline">support@vetpac.nz</a>. We will acknowledge your complaint within 2 business days and provide a resolution within 20 business days.</p>
+          <p>If you are not satisfied with a claims decision or any aspect of your policy, you may lodge a complaint by emailing <a href={mailtoHref()} className="text-primary hover:underline">{SITE_EMAIL}</a>. We will acknowledge your complaint within 2 business days and provide a resolution within 20 business days.</p>
           <p>If you remain unsatisfied following our internal process, disputes may be referred to the New Zealand Disputes Tribunal for claims up to NZD $30,000.</p>
         </Section>
 
@@ -161,7 +162,7 @@ export default function InsuranceTerms() {
         <div className="mt-12 pt-6 border-t border-border text-xs text-textMuted space-y-1">
           <p>VetPac Health Cover is issued by <strong className="text-textPrimary">Forman Pacific LLC</strong>.</p>
           <p>Registered in the United States. Operating in New Zealand under a cross-border services arrangement.</p>
-          <p>For all policy enquiries: <a href="mailto:support@vetpac.nz" className="text-primary hover:underline">support@vetpac.nz</a> · WhatsApp (24/7)</p>
+          <p>For all policy enquiries: <a href={mailtoHref()} className="text-primary hover:underline">{SITE_EMAIL}</a> · WhatsApp (24/7)</p>
           <p className="mt-3">These terms were last updated on 1 January 2025. Forman Pacific LLC reserves the right to amend these terms with 30 days written notice.</p>
         </div>
 

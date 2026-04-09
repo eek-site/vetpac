@@ -14,6 +14,9 @@ import Dashboard from './pages/Dashboard'
 import VetPortal from './pages/VetPortal'
 import NotFound from './pages/NotFound'
 import AdminConsole from './pages/AdminConsole'
+import GoogleAdsContext from './components/GoogleAdsContext'
+import GoogleTag from './components/GoogleTag'
+import VisitorTracker from './components/VisitorTracker'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -44,6 +47,9 @@ function Layout({ children }) {
 export default function App() {
   return (
     <>
+      <GoogleAdsContext />
+      <GoogleTag />
+      <VisitorTracker />
       <ScrollToTop />
       <Layout>
         <Routes>

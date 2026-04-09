@@ -11,6 +11,7 @@ import FloatingChat from '../components/FloatingChat'
 import { useIntakeStore, buildVaccinePlan } from '../store/intakeStore'
 import { FREIGHT, ADDONS, SCALES, INSURANCE } from '../lib/constants'
 import { generateTreatmentPlan } from '../lib/claude'
+import { SITE_EMAIL } from '../lib/site-email'
 
 // ─── Step progress bar ───────────────────────────────────────────────────────
 
@@ -207,12 +208,12 @@ const INSURANCE_TERMS_CONTENT = (
       { t: 'Waiting period', b: '14 days for illness. Zero days for accidents.' },
       { t: 'What is covered', b: 'Accidents, illness, surgery, hospitalisation, specialist consultations, diagnostics, emergency treatment, prescription medications.' },
       { t: 'What is not covered', b: 'Pre-existing conditions, preventive care, elective procedures, dental disease, breeding costs, behavioural treatment.' },
-      { t: 'Claims', b: 'Email claims@vetpac.nz with vet invoice and policy number. 80% of claims processed within 5 business days.' },
+      { t: 'Claims', b: `Email ${SITE_EMAIL} with vet invoice and policy number. 80% of claims processed within 5 business days.` },
       { t: 'Billing', b: 'Monthly ($24.99/mo), Annual ($259/yr), or 2-Year upfront ($489). 2-year rate is guaranteed for the full term.' },
       { t: 'Cancellation', b: 'Monthly: cancel any time. Annual/2-year: full refund within 14 days of purchase; no refund after 14 days.' },
       { t: 'Renewal', b: '2-year plans do not auto-renew. Monthly and annual plans auto-renew unless cancelled.' },
       { t: 'Governing law', b: 'New Zealand. Disputes resolved under the Insurance (Prudential Supervision) Act 2010.' },
-      { t: 'Contact', b: 'support@vetpac.nz · WhatsApp (24/7)' },
+      { t: 'Contact', b: `${SITE_EMAIL} · WhatsApp (24/7)` },
     ].map(({ t, b }) => (
       <div key={t}>
         <p className="font-semibold text-textPrimary">{t}</p>
@@ -226,7 +227,7 @@ const INSURANCE_FAQ = [
   { q: 'What does VetPac Cover actually cover?', a: 'Accidents and illness including surgery, hospitalisation, specialist consultations, diagnostics (X-rays, ultrasounds, blood tests), emergency treatment, and prescription medications. We cover what matters most in the first two years.' },
   { q: 'What is not covered?', a: 'Pre-existing conditions, routine preventive care (including the vaccinations you are purchasing now), elective procedures, dental disease, and breeding-related costs. Full exclusions are listed in the policy document.' },
   { q: 'Why choose the 2-year plan?', a: "The first two years of a puppy's life carry the highest risk of unexpected illness and injury. Locking in 2 years at once means your excess drops from $1,500 to $750, your rate is guaranteed for the full term, and you never have to think about renewal during the most vulnerable period." },
-  { q: 'How do I make a claim?', a: 'Email your vet invoice to claims@vetpac.nz with your policy number. We process 80% of claims within 5 business days. We reimburse 80% of eligible costs above your excess directly to your nominated bank account.' },
+  { q: 'How do I make a claim?', a: `Email your vet invoice to ${SITE_EMAIL} with your policy number. We process 80% of claims within 5 business days. We reimburse 80% of eligible costs above your excess directly to your nominated bank account.` },
   { q: 'Is there a waiting period?', a: 'Yes — 14 days from the date cover commences for illness claims. Accidents are covered from day one. This is standard across all pet insurance policies in NZ.' },
   { q: 'Can I cancel?', a: 'Monthly cover can be cancelled any time with no penalty. Annual and 2-year plans can be cancelled within 14 days of purchase for a full refund. After 14 days, the remaining premium is non-refundable but cover remains active for the paid period.' },
 ]
