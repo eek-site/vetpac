@@ -93,14 +93,17 @@ const galleryPhotos = [
   { src: 'https://images.unsplash.com/photo-1768224278476-ba8142c86501?w=600&h=500&fit=crop&q=80', alt: 'Fluffy Maltipoo puppy' },
 ]
 
-function useLiveCount() {
-  // Deterministic weekly count — shifts naturally each week so it never looks static
-  const weeksSinceEpoch = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000))
-  return 14 + (weeksSinceEpoch % 9) // 14–22, changes every Monday
+function useSeasonalStatus() {
+  // NZ seasons: Spring Sep–Nov (peak puppy), Summer Dec–Feb, Autumn Mar–May (boosters), Winter Jun–Aug (quieter)
+  const month = new Date().getMonth() + 1 // 1–12
+  if (month >= 9 && month <= 11) return { label: 'Spring · Peak puppy season', sub: 'Our busiest time of year in NZ', dot: 'bg-amber-400' }
+  if (month === 12 || month <= 2)  return { label: 'Summer · High demand', sub: 'Popular time to start a programme', dot: 'bg-amber-400' }
+  if (month >= 3 && month <= 5)    return { label: 'Autumn · Booster season', sub: 'Annual programmes in full swing', dot: 'bg-amber-400' }
+  return                                   { label: 'Winter · Quieter period', sub: 'Faster start times available now', dot: 'bg-green-500' }
 }
 
 export default function Home() {
-  const liveCount = useLiveCount()
+  const season = useSeasonalStatus()
     <div className="overflow-x-hidden">
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
@@ -173,10 +176,10 @@ export default function Home() {
 
                 <div className="absolute top-4 left-4">
                   <div className="bg-white/96 backdrop-blur-sm rounded-card shadow-card-hover px-3 py-2 flex items-center gap-2.5">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
+                    <span className={`w-2 h-2 rounded-full animate-pulse flex-shrink-0 ${season.dot}`} />
                     <div>
-                      <p className="text-xs font-bold text-textPrimary leading-none mb-0.5">{liveCount} puppies vaccinated at home</p>
-                      <p className="text-[10px] text-textMuted leading-none">in New Zealand this week</p>
+                      <p className="text-xs font-bold text-textPrimary leading-none mb-0.5">{season.label}</p>
+                      <p className="text-[10px] text-textMuted leading-none">{season.sub}</p>
                     </div>
                   </div>
                 </div>
