@@ -9,6 +9,7 @@ import Checkout from './pages/Checkout'
 import PlanPage from './pages/PlanPage'
 import OrderConfirmation from './pages/OrderConfirmation'
 import InsuranceTerms from './pages/InsuranceTerms'
+import ContactPage from './pages/ContactPage'
 import Dashboard from './pages/Dashboard'
 import VetPortal from './pages/VetPortal'
 import NotFound from './pages/NotFound'
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/plan" element={<PlanPage />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/insurance-terms" element={<InsuranceTerms />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/vet-portal" element={<VetPortal />} />
           <Route path="*" element={<NotFound />} />

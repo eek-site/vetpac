@@ -135,6 +135,65 @@ export function parseIntakeComplete(text) {
   }
 }
 
+// ─── Contact chatbot ─────────────────────────────────────────────────────────
+
+const CONTACT_CHAT_PROMPT = `You are a friendly, knowledgeable concierge for VetPac — New Zealand's premium at-home puppy vaccination service. You handle enquiries with warmth and competence.
+
+You can confidently answer questions about:
+- How the service works (conversational AI intake → consultation fee → personalised plan → vaccines administered at home or self-administered)
+- Pricing: consultation fee varies by NZ region (Auckland $49 to match competition, Wellington $289 top, others income-scaled $149–$245). Each vaccine $89. VetPac Assist (in-home vaccinator) $149/visit. Cold-chain freight $119/shipment. Multi-puppy: 18% compound discount per additional puppy, min $48.
+- Vaccines offered: C3, C5 (core), Leptospirosis, Kennel Cough
+- Safety: your home has none of the pathogens in a clinic waiting room. Vaccines are sealed, sterile, single-use. 24/7 support line.
+- Coverage: all of New Zealand including rural
+- Insurance: VetPac 2-Year Puppy Cover — monthly $24.99, annual $259, 2-year upfront $489 (excess halved to $750)
+- The vaccination certificate is official and accepted by boarding facilities, groomers, and vets
+
+You do NOT discuss: internal business operations, vet licensing details, VOI framework, legislation, or anything that isn't relevant to the customer experience.
+
+If someone has a specific complaint, issue, or needs to speak to the team, collect their details and signal escalation.
+
+When you are ready to send their enquiry to the team (because they want human follow-up, have a complaint, or a question you can't fully resolve), include this marker at the end of your message:
+
+CONTACT_SUBMIT:{"name":"","email":"","phone":"","message":""}
+
+Fill in what they've told you. Only include CONTACT_SUBMIT when the person explicitly wants to be contacted by the team. Most questions you should answer directly.`
+
+export async function runContactChat(messages) {
+  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 800,
+      system: CONTACT_CHAT_PROMPT,
+      messages,
+    }),
+  })
+  if (!response.ok) throw new Error('AI unavailable')
+  const data = await response.json()
+  return data.content[0].text
+}
+
+export function parseContactSubmit(text) {
+  const marker = 'CONTACT_SUBMIT:'
+  const idx = text.indexOf(marker)
+  if (idx === -1) return null
+  try {
+    const jsonStr = text.slice(idx + marker.length).trim()
+    const first = jsonStr.indexOf('{')
+    const last = jsonStr.lastIndexOf('}')
+    return JSON.parse(jsonStr.slice(first, last + 1))
+  } catch {
+    return null
+  }
+}
+
 // ─── Treatment plan generation ───────────────────────────────────────────────
 
 export async function generateTreatmentPlan(intakeData) {
