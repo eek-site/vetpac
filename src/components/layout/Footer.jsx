@@ -66,6 +66,14 @@ export default function Footer() {
             Made with <Heart className="w-3 h-3 text-accent fill-accent" /> for NZ puppy owners
           </p>
         </div>
+        <p className="text-center mt-6">
+          <Link
+            to="/admin"
+            className="text-[10px] text-white/25 hover:text-white/45 transition-colors tracking-wide"
+          >
+            Admin
+          </Link>
+        </p>
       </div>
     </footer>
   )

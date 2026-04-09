@@ -11,6 +11,7 @@ import FloatingChat from '../components/FloatingChat'
 import { useIntakeStore, buildVaccinePlan } from '../store/intakeStore'
 import { FREIGHT, ADDONS, SCALES, INSURANCE } from '../lib/constants'
 import { generateTreatmentPlan } from '../lib/claude'
+import { logSiteEvent } from '../lib/logSiteEvent'
 import { SITE_EMAIL } from '../lib/site-email'
 
 // ─── Step progress bar ───────────────────────────────────────────────────────
@@ -544,6 +545,7 @@ export default function PlanPage() {
     setAiError(null)
     try {
       const result = await generateTreatmentPlan({ dogProfile, healthHistory, lifestyle })
+      logSiteEvent('treatment_plan_generated', { path: '/plan' })
       setAiAssessment(result)
     } catch {
       setAiError('Plan built using standard protocol — a vet will review before anything is confirmed.')

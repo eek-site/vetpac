@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 import { runContactChat, parseContactSubmit } from '../lib/claude'
+import { logSiteEvent } from '../lib/logSiteEvent'
 
 const OPENING = {
   role: 'assistant',
@@ -34,6 +35,7 @@ export default function FloatingChat() {
     setLoading(true)
     try {
       const reply = await runContactChat(updated.map(({ role, content }) => ({ role, content })))
+      logSiteEvent('contact_ai_message', { context: 'floating_chat' })
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
       const contact = parseContactSubmit(reply)
       if (contact && !sent) {

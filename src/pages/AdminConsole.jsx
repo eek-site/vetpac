@@ -38,11 +38,32 @@ function loadScript(src) {
   })
 }
 
+function getAdminKey() {
+  try {
+    return sessionStorage.getItem('vetpac_admin_key') || ''
+  } catch {
+    return ''
+  }
+}
+
+function setAdminKeyStorage(key) {
+  try {
+    if (key) sessionStorage.setItem('vetpac_admin_key', key)
+  } catch {
+    /* ignore */
+  }
+}
+
 export default function AdminConsole() {
   const [phase, setPhase] = useState('loading')
   const [error, setError] = useState(null)
   const [account, setAccount] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [stats, setStats] = useState(null)
+  const [statsError, setStatsError] = useState(null)
+  const [statsLoading, setStatsLoading] = useState(false)
+  const [backfillResult, setBackfillResult] = useState(null)
+  const [backfillLoading, setBackfillLoading] = useState(false)
 
   useEffect(() => {
     document.title = 'Admin — VetPac'
@@ -120,6 +141,56 @@ export default function AdminConsole() {
       console.error(e)
       setError(e.message || 'Sign-in failed')
       setBusy(false)
+    }
+  }
+
+  const ensureAdminKey = () => {
+    let key = getAdminKey()
+    if (!key) {
+      key = window.prompt('Enter admin key (same as ADMIN_KEY in Vercel):')?.trim() || ''
+      if (key) setAdminKeyStorage(key)
+    }
+    return key
+  }
+
+  const loadStats = async () => {
+    const key = ensureAdminKey()
+    if (!key) return
+    setStatsLoading(true)
+    setStatsError(null)
+    setStats(null)
+    try {
+      const r = await fetch('/api/admin-site-stats', {
+        headers: { Authorization: `Bearer ${key}` },
+      })
+      const data = await r.json()
+      if (!r.ok) throw new Error(data.error || 'Failed to load stats')
+      setStats(data.stats)
+    } catch (e) {
+      setStatsError(e.message || 'Could not load stats. If this is the first time, run the SQL migration in Supabase (supabase/migrations/001_site_events.sql).')
+    } finally {
+      setStatsLoading(false)
+    }
+  }
+
+  const runStripeBackfill = async () => {
+    const key = ensureAdminKey()
+    if (!key) return
+    setBackfillLoading(true)
+    setBackfillResult(null)
+    try {
+      const r = await fetch('/api/backfill-stripe-events', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${key}` },
+      })
+      const data = await r.json()
+      if (!r.ok) throw new Error(data.error || 'Backfill failed')
+      setBackfillResult(data)
+      await loadStats()
+    } catch (e) {
+      setStatsError(e.message || 'Backfill failed')
+    } finally {
+      setBackfillLoading(false)
     }
   }
 
@@ -252,10 +323,62 @@ export default function AdminConsole() {
           </Link>
         </div>
 
+        <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="font-semibold text-textPrimary">AI &amp; intake analytics</h3>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={loadStats} loading={statsLoading} disabled={statsLoading}>
+                Refresh stats
+              </Button>
+              <Button variant="outline" size="sm" onClick={runStripeBackfill} loading={backfillLoading} disabled={backfillLoading}>
+                Backfill from Stripe
+              </Button>
+            </div>
+          </div>
+          <p className="text-sm text-textSecondary leading-relaxed">
+            Live events (intake page, first message, completed intake, contact AI, treatment plan) are logged from the browser. Historical funnel data is not in Vercel logs (the app is a SPA — routes like{' '}
+            <code className="text-xs bg-bg px-1 rounded font-mono">/intake</code> all hit the same HTML). Use <strong>Backfill from Stripe</strong> once to import paid Checkout sessions as proxy events (consult vs order). Times below use <strong>NZ (Pacific/Auckland)</strong> calendar days.
+          </p>
+          {statsError && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{statsError}</p>
+          )}
+          {backfillResult && (
+            <p className="text-sm text-textSecondary">
+              Stripe backfill: inserted {backfillResult.inserted}, skipped {backfillResult.skipped} (duplicates or unpaid), scanned {backfillResult.pages} page(s).
+            </p>
+          )}
+          {stats && (
+            <div className="grid sm:grid-cols-3 gap-4 text-sm">
+              <div className="bg-bg rounded-lg p-4 border border-border">
+                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Today (NZ)</p>
+                <pre className="text-xs text-textPrimary whitespace-pre-wrap font-mono overflow-x-auto">
+                  {JSON.stringify(stats.counts_today_nz, null, 2)}
+                </pre>
+              </div>
+              <div className="bg-bg rounded-lg p-4 border border-border">
+                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Yesterday (NZ)</p>
+                <pre className="text-xs text-textPrimary whitespace-pre-wrap font-mono overflow-x-auto">
+                  {JSON.stringify(stats.counts_yesterday_nz, null, 2)}
+                </pre>
+              </div>
+              <div className="bg-bg rounded-lg p-4 border border-border">
+                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Last 7 days (NZ)</p>
+                <p className="text-lg font-bold text-primary mb-1">{stats.totals_last_7_days_nz} events</p>
+                <pre className="text-xs text-textPrimary whitespace-pre-wrap font-mono overflow-x-auto max-h-40 overflow-y-auto">
+                  {JSON.stringify(stats.counts_last_7_days_nz, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
+          {!stats && !statsError && !statsLoading && (
+            <p className="text-xs text-textMuted">Click &quot;Refresh stats&quot; after entering the admin key once (stored in this browser tab session).</p>
+          )}
+        </div>
+
         <div className="bg-white rounded-card-lg border border-border p-6">
           <h3 className="font-semibold text-textPrimary mb-2">Operations</h3>
           <p className="text-sm text-textSecondary leading-relaxed">
-            Add order tools, WhatsApp template checks, or Stripe dashboards here. Authentication uses the same MSAL SPA redirect as your other sites — redirect URI must be{' '}
+            Authentication uses the same MSAL SPA redirect as your other sites — redirect URI must be{' '}
             <code className="text-xs bg-bg px-1.5 py-0.5 rounded font-mono">https://vetpac.nz/admin</code> (and localhost for dev).
           </p>
         </div>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Send, Loader2, CheckCircle } from 'lucide-react'
 import { runContactChat, parseContactSubmit } from '../lib/claude'
+import { logSiteEvent } from '../lib/logSiteEvent'
 
 const OPENING_MESSAGE = {
   role: 'assistant',
@@ -98,6 +99,7 @@ export default function ContactPage() {
     try {
       const apiMessages = updatedMessages.map(({ role, content }) => ({ role, content }))
       const reply = await runContactChat(apiMessages)
+      logSiteEvent('contact_ai_message', { context: 'contact_page' })
       const assistantMsg = { role: 'assistant', content: reply }
       setMessages((prev) => [...prev, assistantMsg])
 

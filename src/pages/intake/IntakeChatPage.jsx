@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Send, Loader2, CheckCircle, ArrowRight } from 'lucide-react'
 import { useIntakeStore } from '../../store/intakeStore'
 import { runIntakeChat, parseIntakeComplete } from '../../lib/claude'
+import { logSiteEvent } from '../../lib/logSiteEvent'
 
 const OPENING_MESSAGE = {
   role: 'assistant',
@@ -91,6 +92,15 @@ export default function IntakeChatPage() {
 
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
+  const loggedPageView = useRef(false)
+  const loggedFirstMessage = useRef(false)
+
+  useEffect(() => {
+    if (!loggedPageView.current) {
+      loggedPageView.current = true
+      logSiteEvent('intake_page_view', { path: '/intake' })
+    }
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -105,6 +115,10 @@ export default function IntakeChatPage() {
     if (!text || loading) return
 
     const userMsg = { role: 'user', content: text }
+    if (!loggedFirstMessage.current) {
+      loggedFirstMessage.current = true
+      logSiteEvent('intake_user_message', { path: '/intake' })
+    }
     const updatedMessages = [...messages, userMsg]
     setMessages(updatedMessages)
     setInput('')
@@ -122,6 +136,7 @@ export default function IntakeChatPage() {
       // Check if intake is complete
       const intakeData = parseIntakeComplete(reply)
       if (intakeData) {
+        logSiteEvent('intake_completed', { path: '/intake' })
         if (intakeData.dogProfile) updateDogProfile(intakeData.dogProfile)
         if (intakeData.healthHistory) updateHealthHistory(intakeData.healthHistory)
         if (intakeData.lifestyle) updateLifestyle(intakeData.lifestyle)
