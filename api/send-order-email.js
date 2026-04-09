@@ -2,6 +2,7 @@
 // Uses MS Graph API for email and Meta WhatsApp Cloud API for WhatsApp.
 
 import { sendTemplate, isConfigured as isWaConfigured } from './lib/whatsapp.js'
+import { registerDashboardEmail } from './lib/dashboard-access.js'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -160,6 +161,8 @@ export default async function handler(req, res) {
         console.warn('[WA] Order notification failed (non-fatal):', waErr.message)
       }
     }
+
+    await registerDashboardEmail(customerEmail).catch(() => {})
 
     return res.status(200).json({ ok: true })
   } catch (err) {

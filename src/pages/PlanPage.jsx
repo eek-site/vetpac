@@ -517,8 +517,17 @@ export default function PlanPage() {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
 
   useEffect(() => {
-    if (searchParams.get('paid') === '1') setConsultPaid(true)
-  }, [])
+    if (searchParams.get('paid') !== '1') return
+    setConsultPaid(true)
+    const sid = searchParams.get('session_id')
+    if (sid) {
+      fetch('/api/register-dashboard-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: sid }),
+      }).catch(() => {})
+    }
+  }, [searchParams, setConsultPaid])
 
   useEffect(() => {
     if (!aiAssessment) runAi()
