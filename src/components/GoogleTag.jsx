@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 /**
  * Loads gtag.js when VITE_GOOGLE_ADS_MEASUREMENT_ID is set.
- * Use your Google tag ID (GT-…) or Ads ID (AW-…); both work with gtag/js.
+ * Prefer the Google tag ID (GT-…) when you have one; AW-… also works for Ads-only loads.
  */
 export default function GoogleTag() {
   const id = import.meta.env.VITE_GOOGLE_ADS_MEASUREMENT_ID
