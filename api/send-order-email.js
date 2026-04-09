@@ -1,5 +1,7 @@
-// Sends a branded order confirmation email to the customer + internal copy to woof@vetpac.nz
-// Uses MS Graph API (client credentials) — same pattern as send-contact.js
+// Sends a branded order confirmation email + WhatsApp to the customer.
+// Uses MS Graph API for email and Meta WhatsApp Cloud API for WhatsApp.
+
+import { sendTemplate, isConfigured as isWaConfigured } from './lib/whatsapp.js'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -11,6 +13,7 @@ export default async function handler(req, res) {
   const {
     customerEmail,
     customerName,
+    customerMobile,
     orderRef,
     puppyName,
     puppyCount,
@@ -142,6 +145,21 @@ export default async function handler(req, res) {
       subject: `[Order] ${orderRef} — ${puppyName} (${customerName || customerEmail})`,
       html: internalHtml,
     })
+
+    // ── Send WhatsApp to customer ─────────────────────────────────────────
+    if (customerMobile && isWaConfigured()) {
+      const firstName = (customerName || '').split(' ')[0] || 'there'
+      try {
+        if (isConsult) {
+          await sendTemplate(customerMobile, 'vetpac_consult_confirmed', [firstName, puppyName])
+        } else {
+          await sendTemplate(customerMobile, 'vetpac_order_confirmed', [firstName, puppyName, orderRef])
+        }
+      } catch (waErr) {
+        // WhatsApp failure is non-fatal — email already sent
+        console.warn('[WA] Order notification failed (non-fatal):', waErr.message)
+      }
+    }
 
     return res.status(200).json({ ok: true })
   } catch (err) {

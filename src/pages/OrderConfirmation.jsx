@@ -166,7 +166,8 @@ export default function OrderConfirmation() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         customerEmail: email,
-        customerName: ownerDetails?.name || dogProfile?.ownerName || '',
+        customerName: ownerDetails?.full_name || ownerDetails?.name || '',
+        customerMobile: ownerDetails?.mobile || '',
         orderRef,
         puppyName: dogName,
         puppyCount,
