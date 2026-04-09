@@ -5,7 +5,7 @@ import {
   CheckCircle, Package, ClipboardList, Shield, Home as HomeIcon,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
-import { FAQ_ITEMS, CONSULTATION_FEE, VACCINE_PRODUCTS, FREIGHT } from '../lib/constants'
+import { FAQ_ITEMS } from '../lib/constants'
 
 function useIntersection(ref, threshold = 0.12) {
   const [visible, setVisible] = useState(false)
@@ -205,36 +205,111 @@ export default function Home() {
             {[
               {
                 num: '01',
+                accent: 'bg-primary',
                 title: 'A calm puppy is a healthy puppy.',
                 body: 'Research shows that stress hormones actively affect how well a vaccine works. A puppy vaccinated at home — in familiar surroundings, with you beside them — is physiologically calmer and responds better. The waiting room is the worst possible place to be vaccinated.',
-                color: 'text-primary/8',
               },
               {
                 num: '02',
+                accent: 'bg-accent',
                 title: 'At a time that works for both of you.',
-                body: 'Puppies are not always at their best at 9am on a Tuesday. Neither are their owners. We work around your schedule — evenings, weekends, whenever your dog is settled and you have time. Your appointment is the one that works for you.',
-                color: 'text-accent/10',
+                body: 'Puppies are not always at their best at 9am on a Tuesday. Neither are their owners. We work around your schedule — evenings, weekends, whenever your dog is settled and you have time.',
               },
               {
                 num: '03',
+                accent: 'bg-primary',
                 title: 'No clinics. No car trips. No stress.',
-                body: 'The car trip alone is enough to spike a puppy\'s anxiety before the appointment even starts. At home, they are already where they feel safest. The whole experience is quieter, calmer, and kinder — for them and for you.',
-                color: 'text-primary/8',
+                body: 'The car trip alone is enough to spike a puppy\'s anxiety before the appointment even starts. At home, they are already where they feel safest. The whole experience is quieter, calmer, and kinder.',
               },
             ].map((card, i) => (
               <Reveal key={i} delay={i * 100}>
-                <div className="relative bg-white rounded-card-lg p-8 border border-border shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 overflow-hidden h-full">
-                  <div className={`absolute -top-4 -right-2 font-display font-bold text-9xl leading-none select-none ${card.color}`}>
-                    {card.num}
-                  </div>
-                  <div className="relative">
-                    <h3 className="font-semibold text-textPrimary text-lg mb-4 leading-snug">{card.title}</h3>
+                <div className="bg-white rounded-card-lg border border-border shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 h-full flex flex-col overflow-hidden">
+                  <div className={`h-1 w-full ${card.accent}`} />
+                  <div className="p-8 flex flex-col flex-1">
+                    <div className="flex items-start gap-3 mb-4">
+                      <span className="w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 font-mono">
+                        {card.num}
+                      </span>
+                      <h3 className="font-semibold text-textPrimary text-lg leading-snug">{card.title}</h3>
+                    </div>
                     <p className="text-textSecondary text-sm leading-relaxed">{card.body}</p>
                   </div>
                 </div>
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── REAL COST OF THE CLINIC ──────────────────────────────────────────── */}
+      <section className="bg-white py-24">
+        <div className="max-w-content mx-auto px-4 sm:px-6">
+          <Reveal>
+            <div className="text-center mb-14">
+              <p className="text-accent font-semibold text-sm uppercase tracking-wider mb-3">The full picture</p>
+              <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-4">
+                The real cost of doing it the old way.
+              </h2>
+              <p className="text-textSecondary max-w-2xl mx-auto leading-relaxed">
+                Most people only count the appointment fee. A standard clinic visit costs far more — in time, money, and risk that most owners never think about until it is too late.
+              </p>
+            </div>
+          </Reveal>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+            {[
+              {
+                stat: '1.5–2 hrs',
+                label: 'Lost per visit',
+                body: 'Driving, parking, waiting, and the appointment itself. Most clinics close at 5pm — meaning you are fitting this around work, every single time.',
+                statColor: 'text-accent',
+                bg: 'border-accent/25 bg-accent/5',
+              },
+              {
+                stat: 'NZD $80+',
+                label: 'In hidden overhead',
+                body: 'Parking, petrol, and the time cost of travelling add up to NZD $60–90 per visit before you have even seen the vet. Across a 3-dose puppy course, that is over NZD $240 in overhead alone.',
+                statColor: 'text-primary',
+                bg: 'border-primary/25 bg-primary/5',
+              },
+              {
+                stat: 'NZD $1,000+',
+                label: 'If something goes wrong',
+                body: 'Vet waiting rooms are documented high-risk environments for partially-vaccinated puppies. Parvovirus survives on surfaces for months. In New Zealand, treatment starts at $1,000 — and the survival rate is not guaranteed.',
+                statColor: 'text-red-600',
+                bg: 'border-red-200 bg-red-50',
+              },
+              {
+                stat: '↓ Immune response',
+                label: 'Stress affects the vaccine itself',
+                body: 'A puppy\'s cortisol spikes sharply during car trips and in unfamiliar environments. Elevated stress hormones suppress immune function — meaning a vaccine given in a busy clinic may be less effective than one given calmly at home.',
+                statColor: 'text-textPrimary',
+                bg: 'border-border bg-bg',
+              },
+            ].map((item, i) => (
+              <Reveal key={i} delay={i * 80}>
+                <div className={`rounded-card-lg p-6 border h-full flex flex-col ${item.bg}`}>
+                  <p className={`font-display font-bold text-2xl mb-1 leading-none ${item.statColor}`}>{item.stat}</p>
+                  <p className="font-semibold text-textPrimary text-sm mb-3">{item.label}</p>
+                  <p className="text-textMuted text-xs leading-relaxed flex-1">{item.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal>
+            <div className="bg-primary rounded-card-lg p-7 text-center">
+              <p className="text-white font-display text-xl sm:text-2xl font-medium leading-snug mb-5 max-w-2xl mx-auto">
+                "With parvo treatment bills exceeding NZD $1,000 and outcomes that are not guaranteed, the question is not whether to vaccinate — it is where."
+              </p>
+              <Link to="/intake">
+                <Button variant="accent" size="md" className="shadow-md">
+                  Start your dog's health plan
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -325,85 +400,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── PRICING ──────────────────────────────────────────────────────────── */}
-      <section id="pricing" className="bg-white py-24">
-        <div className="max-w-content mx-auto px-4 sm:px-6">
-          <Reveal>
-            <div className="text-center mb-14">
-              <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">Pricing</p>
-              <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-4">
-                Simple. Transparent. No surprises.
-              </h2>
-              <p className="text-textSecondary max-w-xl mx-auto">
-                Your consultation is the first step. Once your plan is ready, you see exactly what vaccines are included and you approve everything before your programme begins.
-              </p>
-            </div>
-          </Reveal>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <Reveal>
-              <div className="bg-white rounded-card-lg border-2 border-primary p-8 h-full">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-9 h-9 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center flex-shrink-0">1</div>
-                  <div>
-                    <p className="font-semibold text-textPrimary">Initial Consultation</p>
-                    <p className="text-xs text-textMuted">Paid upfront. Fixed fee.</p>
-                  </div>
-                  <span className="ml-auto font-mono font-bold text-2xl text-primary">${CONSULTATION_FEE.price}</span>
-                </div>
-                <ul className="space-y-2.5 mb-5">
-                  {CONSULTATION_FEE.includes.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm text-textSecondary">
-                      <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Reveal>
-
-            <Reveal delay={100}>
-              <div className="bg-bg rounded-card-lg border-2 border-border p-8 h-full">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-9 h-9 rounded-full bg-accent text-white font-bold text-sm flex items-center justify-center flex-shrink-0">2</div>
-                  <div>
-                    <p className="font-semibold text-textPrimary">Your Vaccine Plan</p>
-                    <p className="text-xs text-textMuted">Confirmed after the consultation.</p>
-                  </div>
-                </div>
-                <div className="space-y-3 mb-5">
-                  {[
-                    { label: 'C3 — administered at home', price: VACCINE_PRODUCTS.C3.price },
-                    { label: 'C5 — administered at home', price: VACCINE_PRODUCTS.C5.price },
-                    { label: 'Leptospirosis — at home, if recommended', price: VACCINE_PRODUCTS.LEPTO.price },
-                    { label: 'Kennel Cough — at home, if recommended', price: VACCINE_PRODUCTS.KENNEL_COUGH.price },
-                    { label: 'Home visit or delivery', price: FREIGHT.pricePerShipment },
-                  ].map(row => (
-                    <div key={row.label} className="flex items-center justify-between text-sm border-b border-border pb-3 last:border-0">
-                      <span className="text-textSecondary">{row.label}</span>
-                      <span className="font-mono font-semibold text-textPrimary">NZD ${row.price}</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-textMuted">
-                  You see the full breakdown before confirming. Every dose administered in the comfort of your home.
-                </p>
-              </div>
-            </Reveal>
-          </div>
-
-          <Reveal>
-            <div className="bg-primary/5 rounded-card-lg p-5 border border-primary/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <p className="text-textSecondary text-sm">
-                <strong className="text-textPrimary">You see the full breakdown before confirming.</strong> No payment is taken for vaccines until your plan is set and you've approved it.
-              </p>
-              <Link to="/intake" className="flex-shrink-0">
-                <Button size="sm">Get started</Button>
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
       {/* ── TESTIMONIALS ─────────────────────────────────────────────────────── */}
       <section className="bg-bg py-24">
@@ -464,9 +460,12 @@ export default function Home() {
       <section id="faq" className="bg-white py-24">
         <div className="max-w-content mx-auto px-4 sm:px-6">
           <Reveal>
-            <div className="text-center mb-14">
+            <div className="max-w-3xl mx-auto text-center mb-14">
               <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">Questions</p>
-              <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary">Common questions</h2>
+              <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-4">Everything you need to know</h2>
+              <p className="text-textSecondary">
+                Most customers choose to administer vaccines themselves at home. It is straightforward, fully guided, and the most popular option by far. Here is everything that comes up.
+              </p>
             </div>
           </Reveal>
           <div className="max-w-3xl mx-auto">
@@ -475,6 +474,19 @@ export default function Home() {
                 <FAQItem key={i} q={item.q} a={item.a} />
               ))}
             </div>
+            <Reveal>
+              <div className="mt-10 p-6 bg-primary/5 rounded-card-lg border border-primary/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <p className="font-semibold text-textPrimary text-sm mb-0.5">Ready to get started?</p>
+                  <p className="text-textMuted text-xs">Begin your dog's health plan. Takes about 10 minutes.</p>
+                </div>
+                <Link to="/intake" className="flex-shrink-0">
+                  <Button size="sm" className="whitespace-nowrap">
+                    Start health plan <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </Link>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>

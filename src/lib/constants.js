@@ -189,27 +189,31 @@ export const INTAKE_STEPS = [
 export const FAQ_ITEMS = [
   {
     q: 'How does it work?',
-    a: 'Get started below — it takes less than 10 minutes to set up your dog\'s health plan. We design a personalised vaccination programme based on their age, breed, and lifestyle. From there, every vaccination is done at home, at a time that suits you. Already started? Pick up right where you left off.',
+    a: 'Start your dog\'s health plan below — it takes about 10 minutes. Our AI reviews your dog\'s history, age, breed, and lifestyle to build a personalised vaccination programme, reviewed and authorised by a NZ-registered veterinarian. Your vaccines are then administered at home, at a time that works for both of you.',
+  },
+  {
+    q: 'Which option do most customers choose?',
+    a: 'Most customers choose to administer the vaccines themselves at home. It is straightforward, fully guided, and significantly more affordable than the home-visit option. Every kit includes clear step-by-step instructions and everything you need — and our 0800 line is available around the clock if you have any questions.\n\nFor those who prefer someone else to take care of it, our VetPac Assist service sends a trained technician to your home. You can add this at any point — even after your programme has started.',
   },
   {
     q: 'What vaccines do you offer?',
-    a: 'We offer C3 and C5 — the standard core vaccinations for dogs in New Zealand. C3 covers Distemper, Hepatitis, and Parvovirus. C5 covers everything in C3 plus Parainfluenza and Kennel Cough. We also offer Leptospirosis and Kennel Cough vaccines where your dog\'s lifestyle warrants it.',
+    a: 'We offer C3 and C5 — the standard core vaccinations for dogs in New Zealand. C3 covers Distemper, Hepatitis, and Parvovirus. C5 adds Parainfluenza and Kennel Cough. We also offer Leptospirosis and Kennel Cough boosters where your dog\'s lifestyle warrants it.',
   },
   {
-    q: "Is it safe?",
-    a: 'Yes — and in many ways, your home is a better environment than a clinic waiting room. Every vaccine is sealed, sterile, and single-use. Your home has none of the pathogens that circulate in a waiting room, which is particularly important for unvaccinated puppies. We walk you through everything — you are supported at every step.',
+    q: 'Is it safe?',
+    a: 'Yes — and in many ways, your home is a better environment than a clinic waiting room. Every vaccine is sealed, sterile, and single-use. Your home has none of the pathogens that circulate in a waiting room, which is particularly important for unvaccinated or partially-vaccinated puppies. We walk you through every step.',
   },
   {
-    q: 'Can you send someone to do it at our home?',
-    a: 'Yes. A trained VetPac technician can come to your home and take care of everything. Same-day or next-day availability in Auckland. We will discuss all options with you once your plan is set up.',
+    q: 'Can you send someone to do it for me?',
+    a: 'Yes. A trained VetPac technician can come to your home and take care of everything. Same-day or next-day availability in Auckland. This is our VetPac Assist service and can be added at any point in your programme.',
   },
   {
     q: 'What if my dog seems unwell on the day?',
-    a: 'Never proceed if your dog is showing any signs of illness, however mild. We include a simple pre-vaccination checklist as part of the process. If anything flags, stop and call us. We will hold your programme until your dog is well and advise on next steps.',
+    a: 'Never proceed if your dog is showing any signs of illness, however mild. We include a simple pre-vaccination checklist. If anything flags, stop and call us. We will hold your programme until your dog is well.',
   },
   {
     q: 'What if something goes wrong after vaccination?',
-    a: 'Our 0800 VETPAC line is staffed 24 hours a day, 7 days a week. If your dog shows any unusual signs following vaccination, call us immediately. We will advise you on whether to monitor at home or attend an emergency clinic and stay with you throughout. The number is in your confirmation and on your documentation.',
+    a: 'Our 0800 VETPAC line is staffed 24 hours a day, 7 days a week. Call us immediately if your dog shows any unusual signs after vaccination. We will advise you on what to do and stay with you throughout.',
   },
   {
     q: 'Do you cover all of New Zealand?',
@@ -217,6 +221,6 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Is the vaccination record official?',
-    a: 'Yes. Every programme includes a signed vaccination certificate confirming your dog\'s vaccinations, the products used, and the dates administered. It is accepted by boarding facilities, groomers, and vets, and is the same standard of record you would receive from a clinic.',
+    a: 'Yes. Every programme includes a signed vaccination certificate confirming your dog\'s vaccinations, the products used, and the dates administered. It is accepted by boarding facilities, groomers, and vets.',
   },
 ]
