@@ -102,7 +102,7 @@ export default function Checkout() {
         checkoutInstanceRef.current = null
       }
 
-      const checkout = await stripe.initEmbeddedCheckout({ clientSecret: data.clientSecret })
+      const checkout = await stripe.createEmbeddedCheckoutPage({ clientSecret: data.clientSecret })
       checkoutInstanceRef.current = checkout
       checkout.mount(checkoutRef.current)
       setStripeReady(true)
