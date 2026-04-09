@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight, Star, ChevronDown, ChevronUp,
-  CheckCircle, Package, ClipboardList, Shield, Home,
+  CheckCircle, Package, ClipboardList, Shield, Home as HomeIcon,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
 import { FAQ_ITEMS, CONSULTATION_FEE, VACCINE_PRODUCTS, FREIGHT } from '../lib/constants'
@@ -255,7 +255,7 @@ export default function Home() {
               {[
                 { icon: ArrowRight, label: 'Get started', desc: 'Click below to begin your dog\'s health plan. Already on the journey? Pick up right where you left off.' },
                 { icon: ClipboardList, label: 'We design your plan', desc: 'A personalised vaccination plan tailored to your dog\'s age, breed, history, and lifestyle.' },
-                { icon: Home, label: 'Vaccinated at home', desc: 'At a time that works for both of you — including evenings and weekends. Your dog never leaves home.' },
+                { icon: HomeIcon, label: 'Vaccinated at home', desc: 'At a time that works for both of you — including evenings and weekends. Your dog never leaves home.' },
                 { icon: Shield, label: 'Quick post-vaccine check', desc: 'The usual 30-minute observation window. We are available if you need us, around the clock.' },
                 { icon: Star, label: 'Happy, healthy dog', desc: 'That\'s it. Your dog is protected and never had to step foot in a clinic.' },
               ].map((step, i) => {
