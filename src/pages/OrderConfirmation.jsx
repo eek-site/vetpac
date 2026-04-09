@@ -1,9 +1,113 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { CheckCircle, Package, Clock, FileText, Calendar, ArrowRight, Bell } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Nav from '../components/layout/Nav'
 import Footer from '../components/layout/Footer'
+import { useIntakeStore } from '../store/intakeStore'
+
+// ── .ics calendar helper ─────────────────────────────────────────────────────
+
+function toIcsDate(date) {
+  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+}
+
+function downloadIcs({ title, description, date }) {
+  const start = new Date(date)
+  start.setHours(9, 0, 0, 0)
+  const end = new Date(start.getTime() + 30 * 60 * 1000)
+  const uid = `vetpac-${Date.now()}@vetpac.nz`
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//VetPac//EN',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${toIcsDate(new Date())}`,
+    `DTSTART:${toIcsDate(start)}`,
+    `DTEND:${toIcsDate(end)}`,
+    `SUMMARY:${title}`,
+    `DESCRIPTION:${description}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n')
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.ics`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function addWeeks(weeks) {
+  const d = new Date()
+  d.setDate(d.getDate() + weeks * 7)
+  return d
+}
+
+function addMonths(months) {
+  const d = new Date()
+  d.setMonth(d.getMonth() + months)
+  return d
+}
+
+function DoseSchedule({ dogName }) {
+  const doses = [
+    {
+      label: `Dose 1 — C5`,
+      sub: 'Ships now',
+      date: new Date(),
+      description: `Administer Dose 1 of ${dogName}'s C5 vaccine. Guide included in your kit. WhatsApp support: 24/7.`,
+    },
+    {
+      label: `Dose 2 — C5`,
+      sub: 'Ships at 12 weeks',
+      date: addWeeks(4),
+      description: `Administer Dose 2 of ${dogName}'s C5 vaccine. Guide included in your kit. WhatsApp support: 24/7.`,
+    },
+    {
+      label: `Dose 3 — C5`,
+      sub: 'Ships at 16 weeks',
+      date: addWeeks(8),
+      description: `Administer Dose 3 of ${dogName}'s C5 vaccine. Guide included in your kit. WhatsApp support: 24/7.`,
+    },
+    {
+      label: `Annual Booster`,
+      sub: 'Reminder in 11 months',
+      date: addMonths(11),
+      description: `${dogName}'s annual booster is due. Log in to vetpac.nz/dashboard to reorder.`,
+    },
+  ]
+
+  return (
+    <div className="bg-white rounded-card-lg shadow-card p-8 mb-6">
+      <h2 className="font-display font-semibold text-xl text-textPrimary mb-2 flex items-center gap-2">
+        <Calendar className="w-5 h-5 text-primary" />
+        Your dose schedule
+      </h2>
+      <p className="text-textMuted text-sm mb-5">Auto-reminders will be sent 3 days before each dose ships.</p>
+      <div className="space-y-0">
+        {doses.map((dose, i) => (
+          <div key={i} className="flex items-center justify-between py-3 border-b border-border last:border-0">
+            <div>
+              <p className="text-sm font-semibold text-textPrimary">{dose.label}</p>
+              <p className="text-xs text-textMuted">{dose.sub}</p>
+            </div>
+            <button
+              onClick={() => downloadIcs({ title: `VetPac — ${dose.label} (${dogName})`, description: dose.description, date: dose.date })}
+              className="text-xs text-primary hover:text-primary-dark font-semibold border border-primary/30 hover:border-primary px-3 py-1.5 rounded-card transition-colors flex items-center gap-1"
+            >
+              <Calendar className="w-3 h-3" /> Add to calendar
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 function SuccessAnimation() {
   return (
@@ -29,7 +133,55 @@ const timeline = [
 export default function OrderConfirmation() {
   const [params] = useSearchParams()
   const dogName = params.get('puppy') || 'your puppy'
+  const mode = params.get('mode') || 'vaccines'
+  const total = params.get('total') || '0'
+  const consultFee = params.get('consult') || '0'
+  const vaccinesTotal = params.get('vaccines') || '0'
+  const freightTotal = params.get('freight') || '0'
+  const assistTotal = params.get('assist') || '0'
+  const insuranceTotal = params.get('insurance') || '0'
+  const insuranceBilling = params.get('insuranceBilling') || 'annual'
+  const puppyCount = parseInt(params.get('puppyCount') || '1')
+  let vaccineItems = []
+  try { vaccineItems = JSON.parse(decodeURIComponent(params.get('items') || '[]')) } catch {}
+
+  const { ownerDetails, dogProfile } = useIntakeStore()
   const [orderRef] = useState('VP-' + Math.random().toString(36).substr(2, 8).toUpperCase())
+  const emailSentRef = useRef(false)
+
+  useEffect(() => {
+    if (emailSentRef.current) return
+    const email = ownerDetails?.email
+    if (!email) return
+    emailSentRef.current = true
+
+    const itemsToSend = vaccineItems.length > 0
+      ? vaccineItems
+      : mode === 'consult'
+        ? [{ name: 'Initial Consultation', price: consultFee }]
+        : [{ name: 'Vaccine programme', price: vaccinesTotal }]
+
+    fetch('/api/send-order-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerEmail: email,
+        customerName: ownerDetails?.name || dogProfile?.ownerName || '',
+        orderRef,
+        puppyName: dogName,
+        puppyCount,
+        mode,
+        items: itemsToSend,
+        total,
+        consultFee,
+        vaccinesTotal,
+        freightTotal,
+        assistTotal,
+        insuranceTotal,
+        insuranceBilling,
+      }),
+    }).catch(() => {})
+  }, [])
 
   return (
     <div className="min-h-screen bg-bg">
@@ -93,21 +245,7 @@ export default function OrderConfirmation() {
         </div>
 
         {/* Dose schedule */}
-        <div className="bg-white rounded-card-lg shadow-card p-8 mb-6">
-          <h2 className="font-display font-semibold text-xl text-textPrimary mb-2 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            Your dose schedule
-          </h2>
-          <p className="text-textMuted text-sm mb-5">Auto-reminders will be sent 3 days before each dose ships.</p>
-          <div className="space-y-3">
-            {['Dose 1 — C5 (ships now)', 'Dose 2 — C5 (ships at 12 weeks)', 'Dose 3 — C5 (ships at 16 weeks)', 'Annual Booster (reminder in 11 months)'].map((item, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                <span className="text-sm text-textSecondary">{item}</span>
-                <button className="text-xs text-primary hover:underline font-semibold">Add to calendar</button>
-              </div>
-            ))}
-          </div>
-        </div>
+        <DoseSchedule dogName={dogName} />
 
         <div className="text-center">
           <Link to="/dashboard">
