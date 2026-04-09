@@ -9,7 +9,8 @@
  * Check status with GET after submitting.
  */
 
-import { ALL_TEMPLATES, submitTemplate, getTemplateStatus } from './lib/whatsapp.js'
+import { ALL_TEMPLATES } from './whatsapp-templates.js'
+import { submitTemplate, getTemplateStatus } from './lib/whatsapp.js'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')

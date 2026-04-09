@@ -99,15 +99,12 @@ export const PLAN_READY = {
     {
       type: 'HEADER',
       format: 'TEXT',
-      text: "{{2}}'s plan is ready",
+      text: 'Your plan is ready',
     },
     {
       type: 'BODY',
       text: "Hi {{1}}! {{2}}'s personalised vaccination plan has been reviewed and authorised by a NZ-registered vet.\n\nLog in to confirm your vaccines and complete your order.",
-      example: {
-        header_text: ["Biscuit's plan is ready"],
-        body_text: [['Sarah', 'Biscuit']],
-      },
+      example: { body_text: [['Sarah', 'Biscuit']] },
     },
     {
       type: 'FOOTER',
@@ -138,7 +135,7 @@ export const DOSE_DISPATCHED = {
     {
       type: 'HEADER',
       format: 'TEXT',
-      text: 'Vaccines on their way 📦',
+      text: 'Vaccines on their way',
     },
     {
       type: 'BODY',
@@ -210,7 +207,7 @@ export const WELCOME = {
     {
       type: 'HEADER',
       format: 'TEXT',
-      text: 'Hi from VetPac 👋',
+      text: 'Hi from VetPac',
     },
     {
       type: 'BODY',
