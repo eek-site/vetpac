@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard } from 'lucide-react'
 import Button from '../components/ui/Button'
@@ -54,6 +54,14 @@ function setAdminKeyStorage(key) {
   }
 }
 
+function clearAdminKeyStorage() {
+  try {
+    sessionStorage.removeItem('vetpac_admin_key')
+  } catch {
+    /* ignore */
+  }
+}
+
 export default function AdminConsole() {
   const [phase, setPhase] = useState('loading')
   const [error, setError] = useState(null)
@@ -65,6 +73,7 @@ export default function AdminConsole() {
   const [backfillResult, setBackfillResult] = useState(null)
   const [backfillLoading, setBackfillLoading] = useState(false)
   const [intakeStats, setIntakeStats] = useState(null)
+  const [adminKeyDraft, setAdminKeyDraft] = useState('')
 
   useEffect(() => {
     document.title = 'Admin — VetPac'
@@ -125,6 +134,49 @@ export default function AdminConsole() {
     }
   }, [])
 
+  const resolveAdminApiKey = () => {
+    let key = getAdminKey()
+    if (!key && adminKeyDraft.trim()) {
+      key = adminKeyDraft.trim()
+      setAdminKeyStorage(key)
+    }
+    return key
+  }
+
+  const fetchStats = useCallback(async (key) => {
+    if (!key) return
+    setStatsLoading(true)
+    setStatsError(null)
+    setStats(null)
+    setIntakeStats(null)
+    try {
+      const [r1, r2] = await Promise.all([
+        fetch('/api/admin-site-stats', { headers: { Authorization: `Bearer ${key}` } }),
+        fetch('/api/admin-intake-stats', { headers: { Authorization: `Bearer ${key}` } }),
+      ])
+      const d1 = await r1.json()
+      if (!r1.ok) throw new Error(d1.error || 'Failed to load site stats')
+      setStats(d1.stats)
+
+      const d2 = await r2.json()
+      if (r2.ok) setIntakeStats(d2.stats)
+    } catch (e) {
+      setStatsError(
+        e.message ||
+          'Could not load stats. Ensure Supabase migrations are applied and SUPABASE_SERVICE_ROLE_KEY is set on Vercel.'
+      )
+    } finally {
+      setStatsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (phase !== 'authed' || !account) return
+    const key = getAdminKey()
+    if (!key) return
+    fetchStats(key)
+  }, [phase, account, fetchStats])
+
   const signIn = async () => {
     const pca = window.__vetpacMsal
     if (!pca) {
@@ -145,46 +197,30 @@ export default function AdminConsole() {
     }
   }
 
-  const ensureAdminKey = () => {
-    let key = getAdminKey()
+  const loadStats = () => {
+    const key = resolveAdminApiKey()
     if (!key) {
-      key = window.prompt('Enter admin key (same as ADMIN_KEY in Vercel):')?.trim() || ''
-      if (key) setAdminKeyStorage(key)
+      setStatsError('Paste the admin API key (same as ADMIN_KEY in Vercel), then click Load metrics.')
+      return
     }
-    return key
+    return fetchStats(key)
   }
 
-  const loadStats = async () => {
-    const key = ensureAdminKey()
-    if (!key) return
-    setStatsLoading(true)
-    setStatsError(null)
+  const clearStoredAdminKey = () => {
+    clearAdminKeyStorage()
+    setAdminKeyDraft('')
     setStats(null)
     setIntakeStats(null)
-    try {
-      const [r1, r2] = await Promise.all([
-        fetch('/api/admin-site-stats', { headers: { Authorization: `Bearer ${key}` } }),
-        fetch('/api/admin-intake-stats', { headers: { Authorization: `Bearer ${key}` } }),
-      ])
-      const d1 = await r1.json()
-      if (!r1.ok) throw new Error(d1.error || 'Failed to load site stats')
-      setStats(d1.stats)
-
-      const d2 = await r2.json()
-      if (r2.ok) setIntakeStats(d2.stats)
-    } catch (e) {
-      setStatsError(
-        e.message ||
-          'Could not load stats. Run SQL in Supabase: supabase/migrations/001_site_events.sql and 002_intake_chat_messages.sql. Vercel needs SUPABASE_SERVICE_ROLE_KEY.'
-      )
-    } finally {
-      setStatsLoading(false)
-    }
+    setStatsError(null)
+    setBackfillResult(null)
   }
 
   const runStripeBackfill = async () => {
-    const key = ensureAdminKey()
-    if (!key) return
+    const key = resolveAdminApiKey()
+    if (!key) {
+      setStatsError('Paste the admin API key first.')
+      return
+    }
     setBackfillLoading(true)
     setBackfillResult(null)
     try {
@@ -331,17 +367,59 @@ export default function AdminConsole() {
         </div>
 
         <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-semibold text-textPrimary">Analytics</h3>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={loadStats} loading={statsLoading} disabled={statsLoading}>
-                Refresh stats
+          <h3 className="font-semibold text-textPrimary">Analytics</h3>
+
+          <div className="rounded-lg border border-border bg-bg/80 p-4 space-y-3">
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="flex-1 min-w-[min(100%,240px)]">
+                <label htmlFor="vetpac-admin-key" className="text-xs font-semibold text-textMuted uppercase tracking-wide block mb-1.5">
+                  Admin API key
+                </label>
+                <input
+                  id="vetpac-admin-key"
+                  type="password"
+                  autoComplete="off"
+                  placeholder="Same as ADMIN_KEY in Vercel (stored in this tab only)"
+                  value={adminKeyDraft}
+                  onChange={(e) => setAdminKeyDraft(e.target.value)}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-textPrimary bg-white placeholder:text-textMuted/70"
+                />
+              </div>
+              <Button type="button" size="sm" onClick={() => loadStats()} loading={statsLoading} disabled={statsLoading}>
+                Load / refresh
               </Button>
-              <Button variant="outline" size="sm" onClick={runStripeBackfill} loading={backfillLoading} disabled={backfillLoading}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={runStripeBackfill}
+                loading={backfillLoading}
+                disabled={backfillLoading || statsLoading}
+              >
                 Backfill from Stripe
               </Button>
             </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-textMuted">
+              {getAdminKey() ? (
+                <span>
+                  Key saved for this tab.{' '}
+                  <button type="button" className="text-primary font-medium hover:underline" onClick={clearStoredAdminKey}>
+                    Clear
+                  </button>
+                </span>
+              ) : (
+                <span>Microsoft sign-in protects this page; the key authorizes the stats APIs.</span>
+              )}
+            </div>
           </div>
+
+          {statsLoading && (
+            <div className="flex items-center gap-2 text-sm text-textSecondary py-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" />
+              Loading metrics…
+            </div>
+          )}
+
           {statsError && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{statsError}</p>
           )}
