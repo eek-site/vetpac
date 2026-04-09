@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 
 /**
- * Loads gtag.js when VITE_GOOGLE_ADS_MEASUREMENT_ID is set (format AW-XXXXXXXX).
- * Configure final URL / conversion in Google Ads; this fires page_view + enhanced data from URL.
+ * Loads gtag.js when VITE_GOOGLE_ADS_MEASUREMENT_ID is set.
+ * Use your Google tag ID (GT-…) or Ads ID (AW-…); both work with gtag/js.
  */
 export default function GoogleTag() {
   const id = import.meta.env.VITE_GOOGLE_ADS_MEASUREMENT_ID
