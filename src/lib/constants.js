@@ -4,14 +4,13 @@ export const CONSULTATION_FEE = {
   price: 289,
   description: 'Full health assessment and personalised vaccine plan for your dog.',
   includes: [
-    'Personalised health intake (10-15 min)',
+    'Personalised health intake',
     'Video assessment of your dog',
-    'Tailored vaccine schedule for your dog\'s age, history, and lifestyle',
-    'Full vaccine plan confirmed before anything ships',
+    'Vaccine plan designed for your puppy\'s age, breed, and lifestyle',
     'Digital health record and vaccination certificate',
-    'Step-by-step administration guide with every delivery',
+    'Around-the-clock support throughout your dog\'s programme',
   ],
-  refundNote: 'Refunded in full if an in-person visit is recommended for your dog.',
+  refundNote: 'Full refund if we determine your dog needs an alternative approach.',
 }
 
 export const VACCINE_PRODUCTS = {
@@ -190,46 +189,46 @@ export const INTAKE_STEPS = [
 export const FAQ_ITEMS = [
   {
     q: 'How does it work?',
-    a: 'Fill in a short form about your dog — takes around 10 minutes. Record a quick video of your dog. Your vaccine plan is confirmed within a few hours. The vaccines arrive cold-chain couriered to your door, usually next day. Everything you need is in the box — just follow the step-by-step guide and you are done.',
+    a: 'Get started below — it takes less than 10 minutes to set up your dog\'s health plan. We design a personalised vaccination programme for your dog based on their age, breed, and lifestyle. From there, every vaccination is done at home, at a time that suits you. Already started? Pick up right where you left off.',
   },
   {
     q: 'What vaccines do you offer?',
-    a: 'We offer C3 and C5 — the standard core vaccinations for dogs in New Zealand. C3 covers Distemper, Hepatitis, and Parvovirus. C5 covers everything in C3 plus Parainfluenza and Kennel Cough. We also offer Leptospirosis and standalone Kennel Cough vaccines where needed based on your dog\'s lifestyle.',
+    a: 'We offer C3 and C5 — the standard core vaccinations for dogs in New Zealand. C3 covers Distemper, Hepatitis, and Parvovirus. C5 covers everything in C3 plus Parainfluenza and Kennel Cough. We also offer Leptospirosis and Kennel Cough vaccines where your dog\'s lifestyle warrants it.',
   },
   {
-    q: "I've never given an injection before. Is this something I can actually do?",
-    a: 'Yes — most owners are surprised by how easy it is. It is a simple under-the-skin injection at the scruff of the neck. Every box includes a step-by-step video guide and a printed quick-reference card. Pre-loaded syringes, alcohol wipes, and a sharps disposal bag are all included. If you would rather not do it yourself, add our home visit option at checkout and we will send a trained technician to your door.',
+    q: "I've never done it this way before. Is it safe and sterile at home?",
+    a: 'Yes — and in many ways, your home is a better environment than a clinic waiting room. Every vaccine arrives in sealed, sterile, single-use packaging. The equipment is pharmaceutical grade. Your home has none of the pathogens that circulate in a clinic waiting room, which is particularly important for unvaccinated puppies. We walk you through everything — you are supported at every step.',
   },
   {
-    q: 'What is included in the box?',
-    a: 'The vaccines your dog needs, pre-loaded to the correct dose. Step-by-step administration guide (printed card and video link). Alcohol wipes and a sharps disposal bag. A temperature indicator strip confirming the cold chain held during delivery. Our 0800 emergency number printed on the packaging.',
+    q: 'What is included?',
+    a: 'Everything needed for a safe, complete vaccination at home. The vaccines your dog needs, sealed and sterile. Full clinical documentation confirming what was administered and when. Temperature indicator confirming the cold chain was maintained throughout delivery. Our 0800 support line available around the clock.',
   },
   {
-    q: 'How are the vaccines kept cold?',
-    a: 'Every shipment is packed in pharmaceutical-grade insulated packaging with a certified gel ice pack rated to hold 2-8 degrees Celsius for a minimum of 48 hours. A colour-change temperature indicator strip is included in every box. If it is green when your order arrives, the cold chain held. If it has changed colour, do not use the vaccine — contact us and we will send a replacement within 24 hours.',
+    q: 'How are the vaccines kept safe during delivery?',
+    a: 'Every shipment is packed in pharmaceutical-grade insulated packaging with a certified gel ice pack rated to maintain 2-8 degrees Celsius for a minimum of 48 hours. A colour-change temperature indicator strip is included. If it is green on arrival, the cold chain held throughout. If it has changed colour, contact us and we will send a replacement within 24 hours.',
   },
   {
-    q: 'Can someone come and do the injection for me?',
-    a: 'Yes. Add VetPac Assist at checkout. A trained technician comes to your home and administers the vaccine for you. Same-day or next-day availability. Currently available in Auckland only.',
+    q: 'Can you send someone to do it at our home?',
+    a: 'Yes. A trained VetPac technician can come to your home and take care of everything. Same-day or next-day availability in Auckland. We will discuss all options with you once your plan is set up.',
   },
   {
-    q: 'What if my dog seems unwell when the vaccines arrive?',
-    a: 'Do not vaccinate a dog that is unwell, even mildly. Every box includes a short pre-administration checklist to run through before you start. If your dog fails any item on it, hold off and call us. We can delay your next shipment or hold your order — just get in touch.',
+    q: 'What if my dog seems unwell on the day?',
+    a: 'Never proceed if your dog is showing any signs of illness, however mild. We include a simple pre-vaccination checklist as part of the process. If anything flags, stop and call us. We will hold your programme until your dog is well and advise on next steps.',
   },
   {
-    q: 'What if something goes wrong after the injection?',
-    a: 'Our 0800 VETPAC line is staffed 24 hours a day, 7 days a week. The number is on the box, in your confirmation email, and in your account. If your dog shows any unusual signs after vaccination, call us immediately and we will advise you on what to do. Keep an eye on your dog for around 30 minutes after administering.',
+    q: 'What if something goes wrong after vaccination?',
+    a: 'Our 0800 VETPAC line is staffed 24 hours a day, 7 days a week. If your dog shows any unusual signs following vaccination, call us immediately. We will advise you on whether to monitor at home or attend an emergency clinic and stay with you throughout. The number is in your confirmation and on your documentation.',
   },
   {
-    q: 'Do you deliver everywhere in New Zealand?',
-    a: 'Yes — we deliver to all regions of New Zealand including rural addresses. Auckland is typically next day. Wellington and Christchurch 1-2 business days. Rest of New Zealand 2-3 business days. Signature required on delivery.',
+    q: 'Do you cover all of New Zealand?',
+    a: 'Yes — we cover all regions of New Zealand including rural addresses. Auckland is typically next day. Wellington and Christchurch 1-2 business days. Rest of New Zealand 2-3 business days.',
   },
   {
-    q: 'Is my dog\'s vaccination record official?',
-    a: 'Yes. Every order includes a signed vaccination certificate confirming your dog\'s vaccinations, the products used, and the dates administered. This is the same record you would receive from a clinic visit and is accepted by boarding facilities, groomers, and border crossings.',
+    q: 'Is the vaccination record official?',
+    a: 'Yes. Every programme includes a signed vaccination certificate confirming your dog\'s vaccinations, the products used, and the dates administered. It is accepted by boarding facilities, groomers, and vets, and is the same standard of record you would receive from a clinic.',
   },
   {
     q: 'What is your refund policy?',
-    a: 'If we recommend an in-person visit for your dog after your assessment, you are refunded in full. If your delivery arrives with a triggered temperature strip, we replace it free and refund the original. If you cancel before dispatch, full refund. If you cancel after dispatch, a restocking fee applies. Once vaccines have been administered we cannot accept returns.',
+    a: 'If following your consultation we determine your dog needs an alternative approach, you are refunded in full. If your delivery arrives with a triggered temperature indicator, we replace it at no cost. If you cancel before your programme begins, full refund. Once your programme is underway and vaccines have been administered, we are unable to refund.',
   },
 ]

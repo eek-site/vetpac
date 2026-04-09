@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight, Star, ChevronDown, ChevronUp,
-  CheckCircle, Package, Syringe, Bot, Truck, Video,
+  CheckCircle, Package, ClipboardList, Shield, Home,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
 import { FAQ_ITEMS, CONSULTATION_FEE, VACCINE_PRODUCTS, FREIGHT } from '../lib/constants'
@@ -64,21 +64,21 @@ function FAQItem({ q, a }) {
 const testimonials = [
   {
     name: 'Sarah M.', location: 'Auckland',
-    text: 'Done before my morning coffee was cold. Milo was calm the whole time — totally different to dragging him to the clinic.',
+    text: 'Done before my morning coffee was cold. Milo was completely calm the whole time — such a different experience to dragging him to the clinic.',
     stars: 5,
     dogPhoto: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=120&h=120&fit=crop&q=80',
     dogName: 'Milo', breed: 'Golden Retriever',
   },
   {
     name: 'Tom K.', location: 'Wellington',
-    text: 'Biscuit shook the entire drive to the vet, every single time. This was just... easy. Box arrived, ten minutes, done.',
+    text: 'Biscuit used to shake the entire drive to the vet. This time he was calm the whole way through. Ten minutes and it was done.',
     stars: 5,
     dogPhoto: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=120&h=120&fit=crop&q=80',
     dogName: 'Biscuit', breed: 'Labrador mix',
   },
   {
     name: 'Rachel B.', location: 'Christchurch',
-    text: 'I added the home visit option. The technician was at my door at 9am, done by 9:08. Luna slept through the whole thing.',
+    text: 'The technician was at my door at 9am, done by 9:08. Luna slept through the whole thing. I honestly could not believe how easy it was.',
     stars: 5,
     dogPhoto: 'https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=120&h=120&fit=crop&q=80',
     dogName: 'Luna', breed: 'Border Collie',
@@ -105,16 +105,16 @@ export default function Home() {
             <div className="lg:col-span-6 order-2 lg:order-1">
               <div className="inline-flex items-center gap-2 bg-primary/8 text-primary text-xs font-semibold px-3.5 py-1.5 rounded-full mb-7 border border-primary/15">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                NZ's first at-home pet vaccination service
+                The premium at-home pet vaccination service
               </div>
 
               <h1 className="font-display font-bold text-4xl sm:text-5xl xl:text-[3.5rem] text-textPrimary mb-6 leading-[1.08]">
-                Your puppy's vaccines,<br />
-                <span className="text-primary">at home. Today.</span>
+                Your puppy, vaccinated<br />
+                <span className="text-primary">in the comfort of home.</span>
               </h1>
 
               <p className="text-lg text-textSecondary leading-relaxed mb-8 max-w-[480px]">
-                Fill in a 10-minute form. Your dog's vaccine plan is confirmed. The vaccines arrive cold-chain couriered to your door — you give them at home, on your schedule.
+                The easiest, safest way to get your new puppy vaccinated — calm, relaxed, at home, completely on your schedule.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-10">
@@ -132,7 +132,7 @@ export default function Home() {
               </div>
 
               <div className="flex flex-wrap gap-x-6 gap-y-2">
-                {['No appointment needed', 'Delivered to your door', 'No waiting room', 'NZ-wide delivery'].map(tag => (
+                {['Calm, stress-free experience', 'Available outside clinic hours', 'Your schedule, not ours', 'NZ-wide'].map(tag => (
                   <span key={tag} className="flex items-center gap-1.5 text-sm text-textSecondary">
                     <CheckCircle className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                     {tag}
@@ -156,8 +156,8 @@ export default function Home() {
                       <Package className="w-4 h-4 text-green-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-textPrimary truncate">Bella's vaccines — dose 2</p>
-                      <p className="text-xs text-green-600 font-medium">Approved · Dispatched today</p>
+                      <p className="text-sm font-semibold text-textPrimary truncate">Bella · Auckland</p>
+                      <p className="text-xs text-green-600 font-medium">Vaccinated at home today</p>
                     </div>
                     <div className="w-7 h-7 rounded-full bg-success/15 flex items-center justify-center flex-shrink-0">
                       <CheckCircle className="w-4 h-4 text-green-600" />
@@ -167,7 +167,7 @@ export default function Home() {
 
                 <div className="absolute top-4 left-4">
                   <div className="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
-                    Confirmed within 4 hrs
+                    Available this week
                   </div>
                 </div>
               </div>
@@ -205,20 +205,20 @@ export default function Home() {
             {[
               {
                 num: '01',
-                title: 'Your puppy stays calm.',
-                body: 'A dog vaccinated in a familiar environment with their owner present is a relaxed dog. No car. No strange smells. No other anxious animals in the waiting room. Just home.',
+                title: 'A calm puppy is a healthy puppy.',
+                body: 'Research shows that stress hormones actively affect how well a vaccine works. A puppy vaccinated at home — in familiar surroundings, with you beside them — is physiologically calmer and responds better. The waiting room is the worst possible place to be vaccinated.',
                 color: 'text-primary/8',
               },
               {
                 num: '02',
-                title: 'No appointments. Ever.',
-                body: 'You fill in one form. Your plan is confirmed. The vaccines ship. Every dose arrives at the right time — you don\'t book anything, chase anything, or wait for anything.',
+                title: 'At a time that works for both of you.',
+                body: 'Puppies are not always at their best at 9am on a Tuesday. Neither are their owners. We work around your schedule — evenings, weekends, whenever your dog is settled and you have time. Your appointment is the one that works for you.',
                 color: 'text-accent/10',
               },
               {
                 num: '03',
-                title: 'Three trips become one form.',
-                body: 'A full puppy course normally means 3 separate clinic visits. With VetPac you do the intake once and your doses arrive on schedule. Your afternoons stay yours.',
+                title: 'No clinics. No car trips. No stress.',
+                body: 'The car trip alone is enough to spike a puppy\'s anxiety before the appointment even starts. At home, they are already where they feel safest. The whole experience is quieter, calmer, and kinder — for them and for you.',
                 color: 'text-primary/8',
               },
             ].map((card, i) => (
@@ -244,8 +244,8 @@ export default function Home() {
           <Reveal>
             <div className="text-center mb-16">
               <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">How it works</p>
-              <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-4">Done in 24 hours.</h2>
-              <p className="text-textSecondary max-w-xl mx-auto">One form. Vaccines confirmed. Box at your door.</p>
+              <h2 className="font-display font-bold text-3xl sm:text-4xl text-textPrimary mb-4">Everything done at home.</h2>
+              <p className="text-textSecondary max-w-xl mx-auto">On your schedule, in your space, at a time that suits you and your dog.</p>
             </div>
           </Reveal>
 
@@ -253,11 +253,11 @@ export default function Home() {
             <div className="hidden md:block absolute top-[38px] left-[10%] right-[10%] h-px bg-border" />
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
               {[
-                { icon: Bot, label: 'Tell us about your dog', desc: 'Answer a few questions about your dog\'s history and lifestyle. Takes about 10 minutes.' },
-                { icon: Video, label: 'Record a quick video', desc: 'A short clip of your dog walking and their face. No special setup needed.' },
-                { icon: CheckCircle, label: 'Plan confirmed', desc: 'Your personalised vaccine plan is reviewed and confirmed. You\'ll hear back within 4 hours.' },
-                { icon: Truck, label: 'Vaccines delivered', desc: 'Cold-chain couriered to your door with a temperature indicator strip. Usually next day.' },
-                { icon: Syringe, label: 'Give at home', desc: 'Follow the step-by-step guide included in the box. Under 2 minutes. Or add our home visit.' },
+                { icon: ArrowRight, label: 'Get started', desc: 'Click below to begin your dog\'s health plan. Already on the journey? Pick up right where you left off.' },
+                { icon: ClipboardList, label: 'We design your plan', desc: 'A personalised vaccination plan tailored to your dog\'s age, breed, history, and lifestyle.' },
+                { icon: Home, label: 'Vaccinated at home', desc: 'At a time that works for both of you — including evenings and weekends. Your dog never leaves home.' },
+                { icon: Shield, label: 'Quick post-vaccine check', desc: 'The usual 30-minute observation window. We are available if you need us, around the clock.' },
+                { icon: Star, label: 'Happy, healthy dog', desc: 'That\'s it. Your dog is protected and never had to step foot in a clinic.' },
               ].map((step, i) => {
                 const Icon = step.icon
                 return (
@@ -277,18 +277,6 @@ export default function Home() {
               })}
             </div>
           </div>
-
-          <Reveal>
-            <div className="mt-14 bg-accent/8 rounded-card-lg p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-accent/20">
-              <div>
-                <p className="font-semibold text-textPrimary">Would you rather we do the injection for you?</p>
-                <p className="text-textSecondary text-sm mt-0.5">Add VetPac Assist — a trained technician comes to your home. Auckland only.</p>
-              </div>
-              <Link to="/intake" className="flex-shrink-0">
-                <Button variant="accent">Add VetPac Assist</Button>
-              </Link>
-            </div>
-          </Reveal>
         </div>
       </section>
 
@@ -388,11 +376,11 @@ export default function Home() {
                 </div>
                 <div className="space-y-3 mb-5">
                   {[
-                    { label: 'C3 vaccine (first dose)', price: VACCINE_PRODUCTS.C3.price },
-                    { label: 'C5 vaccine (per dose)', price: VACCINE_PRODUCTS.C5.price },
-                    { label: 'Leptospirosis (if needed)', price: VACCINE_PRODUCTS.LEPTO.price },
-                    { label: 'Kennel Cough (if needed)', price: VACCINE_PRODUCTS.KENNEL_COUGH.price },
-                    { label: 'Delivery (per shipment)', price: FREIGHT.pricePerShipment },
+                    { label: 'C3 — administered at home', price: VACCINE_PRODUCTS.C3.price },
+                    { label: 'C5 — administered at home', price: VACCINE_PRODUCTS.C5.price },
+                    { label: 'Leptospirosis — at home, if recommended', price: VACCINE_PRODUCTS.LEPTO.price },
+                    { label: 'Kennel Cough — at home, if recommended', price: VACCINE_PRODUCTS.KENNEL_COUGH.price },
+                    { label: 'Home visit or delivery', price: FREIGHT.pricePerShipment },
                   ].map(row => (
                     <div key={row.label} className="flex items-center justify-between text-sm border-b border-border pb-3 last:border-0">
                       <span className="text-textSecondary">{row.label}</span>
@@ -401,7 +389,7 @@ export default function Home() {
                   ))}
                 </div>
                 <p className="text-xs text-textMuted">
-                  You see the full breakdown before confirming. Only what your dog actually needs is included.
+                  You see the full breakdown before confirming. Every dose administered in the comfort of your home.
                 </p>
               </div>
             </Reveal>
@@ -507,10 +495,10 @@ export default function Home() {
         <div className="relative max-w-content mx-auto px-4 sm:px-6 text-center">
           <Reveal>
             <h2 className="font-display font-bold text-3xl sm:text-5xl text-white mb-5 leading-tight">
-              Your puppy's vaccines,<br />sorted from your sofa.
+              Your puppy, vaccinated<br />at home. On your terms.
             </h2>
             <p className="text-primary-light text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-              Fill in the form. Plan confirmed. Box arrives. Done.
+              Calm. Safe. At a time that suits you and your dog.
             </p>
             <Link to="/intake">
               <Button variant="accent" size="xl" className="shadow-lg">
