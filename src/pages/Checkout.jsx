@@ -1,11 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { Lock, Shield, CheckCircle, ChevronDown, ChevronUp, AlertCircle, Tag } from 'lucide-react'
+import { Lock, Shield, CheckCircle, ChevronDown, ChevronUp, Tag, AlertCircle, Loader2 } from 'lucide-react'
+import { loadStripe } from '@stripe/stripe-js'
 import Button from '../components/ui/Button'
 
-function LineItemRow({ label, description, price, muted = false }) {
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+
+function LineItemRow({ label, description, price }) {
   return (
-    <div className={`flex justify-between items-start gap-4 text-sm ${muted ? 'opacity-60' : ''}`}>
+    <div className="flex justify-between items-start gap-4 text-sm">
       <div>
         <span className="text-textSecondary font-medium">{label}</span>
         {description && <p className="text-xs text-textMuted mt-0.5">{description}</p>}
@@ -19,14 +22,10 @@ function LineItemRow({ label, description, price, muted = false }) {
 
 export default function Checkout() {
   const [params] = useSearchParams()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [orderOpen, setOrderOpen] = useState(true)
-  const [discountCode, setDiscountCode] = useState('')
-  const [discountApplied, setDiscountApplied] = useState(false)
-  const [discountInput, setDiscountInput] = useState('')
+  const checkoutRef = useRef(null)
+  const checkoutInstanceRef = useRef(null)
 
-  // Parse URL params first — before any derived values
+  // URL params
   const mode = params.get('mode') || 'consult'
   const isConsult = mode === 'consult'
   const dogName = params.get('puppy') || 'your puppy'
@@ -40,11 +39,18 @@ export default function Checkout() {
   const insuranceBilling = params.get('insuranceBilling') || 'annual'
 
   let vaccineItems = []
-  try {
-    vaccineItems = JSON.parse(decodeURIComponent(params.get('items') || '[]'))
-  } catch {}
+  try { vaccineItems = JSON.parse(decodeURIComponent(params.get('items') || '[]')) } catch {}
 
-  // Derived values — after params are read
+  // State
+  const [orderOpen, setOrderOpen] = useState(true)
+  const [discountInput, setDiscountInput] = useState('')
+  const [discountCode, setDiscountCode] = useState('')
+  const [discountApplied, setDiscountApplied] = useState(false)
+  const [discountError, setDiscountError] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [stripeReady, setStripeReady] = useState(false)
+  const [error, setError] = useState(null)
+
   const isBossMode = discountApplied && discountCode.toLowerCase() === 'bossmode'
   const displayTotal = isBossMode ? 1.00 : total
 
@@ -53,68 +59,77 @@ export default function Checkout() {
     if (code.toLowerCase() === 'bossmode') {
       setDiscountCode(code)
       setDiscountApplied(true)
-      setError(null)
+      setDiscountError(null)
     } else {
-      setError('Invalid discount code.')
+      setDiscountError('Invalid discount code.')
     }
   }
 
-  const handlePayment = async () => {
+  const mountEmbeddedCheckout = async () => {
     setLoading(true)
     setError(null)
-
     try {
       const origin = window.location.origin
       const successUrl = isConsult
-        ? params.get('successUrl') || `${origin}/plan?paid=1&puppy=${encodeURIComponent(dogName)}`
+        ? params.get('successUrl') || `${origin}/plan?paid=1&puppy=${encodeURIComponent(dogName)}&session_id={CHECKOUT_SESSION_ID}`
         : `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&puppy=${encodeURIComponent(dogName)}`
       const cancelUrl = params.get('cancelUrl') || `${origin}/checkout?${params.toString()}`
 
-      // Build Stripe line items based on mode
       const items = isConsult
-        ? [{
-            name: `Consultation & vet review${puppyCount > 1 ? ` (${puppyCount} puppies)` : ''}`,
-            description: 'AI health assessment, NZ-registered vet sign-off, personalised vaccination plan',
-            price: consultFee,
-          }]
+        ? [{ name: `Consultation & vet review${puppyCount > 1 ? ` (${puppyCount} puppies)` : ''}`, description: 'AI health assessment, NZ-registered vet sign-off, personalised vaccination plan', price: consultFee }]
         : [
             ...vaccineItems.map((v) => ({ name: v.name, price: v.price })),
-            ...(vaccineItems.length === 0 && vaccinesTotal > 0
-              ? [{ name: 'Vaccines', price: vaccinesTotal }]
-              : []),
-            ...(freightTotal > 0
-              ? [{ name: 'Cold-chain freight', description: '2–8°C certified courier · temperature indicator strip', price: freightTotal }]
-              : []),
-            ...(assistTotal > 0
-              ? [{ name: 'VetPac Assist — in-home vaccinator', description: 'Trained technician administers vaccines at your home', price: assistTotal }]
-              : []),
-            ...(insuranceTotal > 0
-              ? [{ name: `VetPac Cover (${insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})`, price: insuranceTotal }]
-              : []),
-          ].filter((item) => item.price > 0)
+            ...(vaccineItems.length === 0 && vaccinesTotal > 0 ? [{ name: 'Vaccines', price: vaccinesTotal }] : []),
+            ...(freightTotal > 0 ? [{ name: 'Cold-chain freight', price: freightTotal }] : []),
+            ...(assistTotal > 0 ? [{ name: 'VetPac Assist — in-home vaccinator', price: assistTotal }] : []),
+            ...(insuranceTotal > 0 ? [{ name: `VetPac Cover (${insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})`, price: insuranceTotal }] : []),
+          ].filter((i) => i.price > 0)
 
-      const response = await fetch('/api/create-checkout-session', {
+      const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items, dogName, successUrl, cancelUrl, discountCode: discountApplied ? discountCode : '' }),
       })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Could not create payment session')
 
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Could not create payment session')
-      window.location.href = data.url
+      const stripe = await stripePromise
+      if (!stripe) throw new Error('Stripe failed to load')
+
+      // Destroy previous instance if remounting
+      if (checkoutInstanceRef.current) {
+        checkoutInstanceRef.current.destroy()
+        checkoutInstanceRef.current = null
+      }
+
+      const checkout = await stripe.initEmbeddedCheckout({ clientSecret: data.clientSecret })
+      checkoutInstanceRef.current = checkout
+      checkout.mount(checkoutRef.current)
+      setStripeReady(true)
     } catch (err) {
-      console.error('Payment error:', err)
+      console.error('Checkout error:', err)
       setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (checkoutInstanceRef.current) {
+        checkoutInstanceRef.current.destroy()
+      }
+    }
+  }, [])
 
   const backUrl = isConsult ? '/intake/review' : '/plan'
   const backLabel = isConsult ? '← Back to review' : '← Back to your plan'
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-bg py-10 px-4">
+      <div className="max-w-lg mx-auto">
+
         {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="font-display font-bold text-2xl text-primary">VetPac</Link>
@@ -123,23 +138,21 @@ export default function Checkout() {
           </p>
         </div>
 
-        <div className="bg-white rounded-card-lg shadow-card overflow-hidden">
-          {/* Order summary toggle */}
+        {/* Order summary */}
+        <div className="bg-white rounded-card-lg shadow-card overflow-hidden mb-4">
           <button
             onClick={() => setOrderOpen(!orderOpen)}
             className="w-full flex items-center justify-between p-5 border-b border-border hover:bg-bg transition-colors"
           >
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-textPrimary">Order summary</span>
-              {orderOpen
-                ? <ChevronUp className="w-4 h-4 text-textMuted" />
-                : <ChevronDown className="w-4 h-4 text-textMuted" />}
+              {orderOpen ? <ChevronUp className="w-4 h-4 text-textMuted" /> : <ChevronDown className="w-4 h-4 text-textMuted" />}
             </div>
             <span className="font-mono font-bold text-accent">NZD ${displayTotal.toFixed(2)}</span>
           </button>
 
           {orderOpen && (
-            <div className="p-5 border-b border-border space-y-3 bg-bg/50">
+            <div className="p-5 space-y-3 bg-bg/50 border-b border-border">
               {isConsult ? (
                 <LineItemRow
                   label={`Consultation & vet review${puppyCount > 1 ? ` (${puppyCount} puppies)` : ''}`}
@@ -148,76 +161,30 @@ export default function Checkout() {
                 />
               ) : (
                 <>
-                  {vaccineItems.map((v, i) => (
-                    <LineItemRow key={i} label={v.name} price={v.price} />
-                  ))}
-                  {vaccineItems.length === 0 && vaccinesTotal > 0 && (
-                    <LineItemRow label="Vaccines" price={vaccinesTotal} />
-                  )}
-                  {freightTotal > 0 && (
-                    <LineItemRow
-                      label="Cold-chain freight"
-                      description="2–8°C certified · temperature strip · signature required"
-                      price={freightTotal}
-                    />
-                  )}
-                  {assistTotal > 0 && (
-                    <LineItemRow
-                      label="VetPac Assist — in-home vaccinator"
-                      description="Trained technician brings and administers vaccines at your home"
-                      price={assistTotal}
-                    />
-                  )}
-                  {insuranceTotal > 0 && (
-                    <LineItemRow
-                      label={`VetPac Cover (${insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})`}
-                      price={insuranceTotal}
-                    />
-                  )}
+                  {vaccineItems.map((v, i) => <LineItemRow key={i} label={v.name} price={v.price} />)}
+                  {vaccineItems.length === 0 && vaccinesTotal > 0 && <LineItemRow label="Vaccines" price={vaccinesTotal} />}
+                  {freightTotal > 0 && <LineItemRow label="Cold-chain freight" description="2–8°C certified · temperature strip" price={freightTotal} />}
+                  {assistTotal > 0 && <LineItemRow label="VetPac Assist — in-home vaccinator" price={assistTotal} />}
+                  {insuranceTotal > 0 && <LineItemRow label={`VetPac Cover (${insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})`} price={insuranceTotal} />}
                 </>
               )}
               <div className="border-t border-border pt-3 flex justify-between items-center font-semibold text-sm">
                 <span className="text-textPrimary">Total (NZD, incl. GST)</span>
                 <span className="font-mono text-accent text-base">NZD ${displayTotal.toFixed(2)}</span>
               </div>
-              {!isConsult && (
-                <p className="text-xs text-textMuted">Consultation fee already paid separately.</p>
+              {isBossMode && (
+                <p className="text-xs text-green-700 font-medium flex items-center gap-1">
+                  <CheckCircle className="w-3.5 h-3.5" /> BOSSMODE applied — $1.00 test charge
+                </p>
               )}
+              {!isConsult && <p className="text-xs text-textMuted">Consultation fee already paid.</p>}
             </div>
           )}
+        </div>
 
-          {/* Payment section */}
-          <div className="p-6 space-y-5">
-            <div className="flex items-center gap-2 text-sm text-textSecondary">
-              <Lock className="w-4 h-4 text-primary flex-shrink-0" />
-              <span>Payment secured by Stripe — 256-bit TLS encryption. Card details handled entirely by Stripe.</span>
-            </div>
-
-            <div className="bg-bg rounded-card border border-border p-4 space-y-2 text-sm text-textSecondary">
-              <p className="font-semibold text-textPrimary text-xs uppercase tracking-wider mb-2">What happens next</p>
-              <ol className="space-y-1.5 list-none">
-                {(isConsult ? [
-                  'You\'ll be taken to Stripe\'s secure payment page',
-                  'Payment processed in NZD — no currency conversion',
-                  'Your personalised plan is immediately unlocked',
-                  'Choose your vaccines, delivery method, and confirm',
-                ] : [
-                  'You\'ll be taken to Stripe\'s secure payment page',
-                  'Payment processed in NZD — no currency conversion',
-                  'Vaccines confirmed and dispatched on your schedule',
-                  'Your vaccination certificate is issued on completion',
-                ]).map((step, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="w-4 h-4 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                      {i + 1}
-                    </span>
-                    {step}
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            {/* Discount code */}
+        {/* Discount code — only show before Stripe mounts */}
+        {!stripeReady && !loading && (
+          <div className="bg-white rounded-card-lg shadow-card p-5 mb-4 space-y-3">
             {!discountApplied ? (
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -227,7 +194,7 @@ export default function Checkout() {
                     value={discountInput}
                     onChange={(e) => setDiscountInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && applyDiscount()}
-                    placeholder="Discount code"
+                    placeholder="Discount code (optional)"
                     className="w-full pl-9 pr-3 py-2.5 border border-border rounded-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-bg"
                   />
                 </div>
@@ -241,35 +208,55 @@ export default function Checkout() {
             ) : (
               <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-card text-sm text-green-800">
                 <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                <span>Code <strong>{discountCode.toUpperCase()}</strong> applied — total updated to NZD $1.00</span>
+                <span>Code <strong>{discountCode.toUpperCase()}</strong> applied — NZD $1.00</span>
               </div>
             )}
-
-            {error && (
-              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-card text-sm text-red-700">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span>{error}</span>
-              </div>
+            {discountError && (
+              <p className="text-xs text-red-600 flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" /> {discountError}
+              </p>
             )}
-
-            <Button fullWidth size="lg" onClick={handlePayment} loading={loading}>
-              Pay NZD ${displayTotal.toFixed(2)} with Stripe →
-            </Button>
-
-            <div className="flex items-center justify-center gap-4 text-xs text-textMuted pt-1">
-              <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> SSL secured</span>
-              <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3" /> No card data stored</span>
-              <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> Stripe encrypted</span>
-            </div>
-
-            <p className="text-xs text-textMuted text-center leading-relaxed">
-              By paying you agree to VetPac's{' '}
-              <Link to="/terms" className="text-primary underline">Terms of Service</Link>.
-            </p>
           </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="flex items-start gap-2 p-4 bg-red-50 border border-red-200 rounded-card-lg text-sm text-red-700 mb-4">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">Payment unavailable</p>
+              <p className="mt-0.5 opacity-80">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Proceed button — shown before Stripe mounts */}
+        {!stripeReady && (
+          <Button fullWidth size="lg" onClick={mountEmbeddedCheckout} loading={loading} disabled={loading}>
+            {loading
+              ? 'Setting up secure payment…'
+              : `Pay NZD ${displayTotal.toFixed(2)} — Secure checkout →`}
+          </Button>
+        )}
+
+        {/* Loading indicator while Stripe initialises */}
+        {loading && (
+          <div className="flex items-center justify-center gap-2 text-sm text-textMuted mt-4">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Loading secure payment form…
+          </div>
+        )}
+
+        {/* Embedded Stripe checkout mounts here */}
+        <div ref={checkoutRef} className={stripeReady ? 'mt-4' : 'hidden'} />
+
+        <div className="flex items-center justify-center gap-4 text-xs text-textMuted mt-5">
+          <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> SSL secured</span>
+          <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Stripe encrypted</span>
+          <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3" /> NZD · no conversion</span>
         </div>
 
-        <p className="text-center text-xs text-textMuted mt-5">
+        <p className="text-center text-xs text-textMuted mt-3">
           <Link to={backUrl} className="text-primary hover:underline">{backLabel}</Link>
         </p>
       </div>

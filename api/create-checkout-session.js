@@ -23,9 +23,9 @@ export default async function handler(req, res) {
 
     // Build Stripe form-encoded body (Stripe REST API uses urlencoded, not JSON)
     const body = new URLSearchParams()
+    body.append('ui_mode', 'embedded')
     body.append('mode', 'payment')
-    body.append('success_url', successUrl)
-    body.append('cancel_url', cancelUrl)
+    body.append('return_url', successUrl)
     body.append('billing_address_collection', 'auto')
     body.append('payment_intent_data[metadata][dog_name]', dogName || '')
     body.append('payment_intent_data[metadata][platform]', 'vetpac')
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: data.error?.message || 'Stripe request failed' })
     }
 
-    return res.status(200).json({ url: data.url, sessionId: data.id })
+    return res.status(200).json({ clientSecret: data.client_secret, sessionId: data.id })
   } catch (err) {
     console.error('Checkout session error:', err)
     return res.status(500).json({ error: err.message || 'Internal server error' })
