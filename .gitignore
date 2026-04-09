@@ -18,9 +18,11 @@ dist-ssr
 .env.*.local
 .env.production
 .env.vercel*
+.supabase-service-role
 
 # Vercel
 .vercel
+supabase/.temp
 
 # Editor
 .vscode/*
