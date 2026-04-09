@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "vercel:push-supabase": "node scripts/push-supabase-env.mjs",
     "db:apply": "node scripts/apply-supabase-sql.mjs",
-    "db:apply:remote": "supabase db query -f supabase/APPLY_ALL.sql --linked"
+    "db:apply:remote": "supabase db query -f supabase/APPLY_ALL.sql --linked",
+    "db:apply:api": "node scripts/apply-sql-management-api.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
