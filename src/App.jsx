@@ -13,6 +13,7 @@ import ContactPage from './pages/ContactPage'
 import Dashboard from './pages/Dashboard'
 import VetPortal from './pages/VetPortal'
 import NotFound from './pages/NotFound'
+import AdminConsole from './pages/AdminConsole'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -21,8 +22,8 @@ function ScrollToTop() {
 }
 
 const INTAKE_ROUTES = ['/intake', '/intake/review']
-const NO_NAV_ROUTES = ['/checkout', '/plan', ...INTAKE_ROUTES]
-const NO_FOOTER_ROUTES = ['/checkout', '/plan', ...INTAKE_ROUTES, '/dashboard', '/vet-portal']
+const NO_NAV_ROUTES = ['/checkout', '/plan', '/admin', ...INTAKE_ROUTES]
+const NO_FOOTER_ROUTES = ['/checkout', '/plan', '/admin', ...INTAKE_ROUTES, '/dashboard', '/vet-portal']
 
 function Layout({ children }) {
   const { pathname } = useLocation()
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="/insurance-terms" element={<InsuranceTerms />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin" element={<AdminConsole />} />
           <Route path="/vet-portal" element={<VetPortal />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
