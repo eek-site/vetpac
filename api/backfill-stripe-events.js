@@ -5,6 +5,7 @@
 
 import Stripe from 'stripe'
 import { getServiceSupabase } from './lib/site-events-db.js'
+import { requireMicrosoftJwt } from './lib/verify-msal-token.js'
 
 export const maxDuration = 60
 
@@ -23,11 +24,8 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const auth = req.headers.authorization || ''
-  const adminKey = process.env.ADMIN_KEY || ''
-  if (!adminKey || auth !== `Bearer ${adminKey}`) {
-    return res.status(401).json({ error: 'Unauthorized' })
-  }
+  const auth = await requireMicrosoftJwt(req)
+  if (!auth.ok) return res.status(auth.status).json({ error: auth.error })
 
   const secretKey = process.env.STRIPE_SECRET_KEY
   const sb = getServiceSupabase()

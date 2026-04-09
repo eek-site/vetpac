@@ -11,6 +11,7 @@
 
 import { ALL_TEMPLATES } from './whatsapp-templates.js'
 import { submitTemplate, getTemplateStatus } from './lib/whatsapp.js'
+import { requireMicrosoftJwt } from './lib/verify-msal-token.js'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -18,12 +19,8 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  // Simple admin key check
-  const authHeader = req.headers.authorization || ''
-  const adminKey   = process.env.ADMIN_KEY || ''
-  if (adminKey && authHeader !== `Bearer ${adminKey}`) {
-    return res.status(401).json({ error: 'Unauthorised' })
-  }
+  const auth = await requireMicrosoftJwt(req)
+  if (!auth.ok) return res.status(auth.status).json({ error: auth.error })
 
   if (req.method === 'GET') {
     // Check status of all templates

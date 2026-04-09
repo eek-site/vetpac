@@ -38,30 +38,6 @@ function loadScript(src) {
   })
 }
 
-function getAdminKey() {
-  try {
-    return sessionStorage.getItem('vetpac_admin_key') || ''
-  } catch {
-    return ''
-  }
-}
-
-function setAdminKeyStorage(key) {
-  try {
-    if (key) sessionStorage.setItem('vetpac_admin_key', key)
-  } catch {
-    /* ignore */
-  }
-}
-
-function clearAdminKeyStorage() {
-  try {
-    sessionStorage.removeItem('vetpac_admin_key')
-  } catch {
-    /* ignore */
-  }
-}
-
 export default function AdminConsole() {
   const [phase, setPhase] = useState('loading')
   const [error, setError] = useState(null)
@@ -73,7 +49,6 @@ export default function AdminConsole() {
   const [backfillResult, setBackfillResult] = useState(null)
   const [backfillLoading, setBackfillLoading] = useState(false)
   const [intakeStats, setIntakeStats] = useState(null)
-  const [adminKeyDraft, setAdminKeyDraft] = useState('')
 
   useEffect(() => {
     document.title = 'Admin — VetPac'
@@ -134,25 +109,42 @@ export default function AdminConsole() {
     }
   }, [])
 
-  const resolveAdminApiKey = () => {
-    let key = getAdminKey()
-    if (!key && adminKeyDraft.trim()) {
-      key = adminKeyDraft.trim()
-      setAdminKeyStorage(key)
+  const getAccessToken = useCallback(async () => {
+    const pca = window.__vetpacMsal
+    if (!pca || !account) return null
+    try {
+      const r = await pca.acquireTokenSilent({
+        scopes: ['User.Read'],
+        account,
+      })
+      return r.accessToken
+    } catch {
+      try {
+        const r = await pca.acquireTokenPopup({
+          scopes: ['User.Read'],
+          account,
+        })
+        return r.accessToken
+      } catch {
+        return null
+      }
     }
-    return key
-  }
+  }, [account])
 
-  const fetchStats = useCallback(async (key) => {
-    if (!key) return
+  const fetchStats = useCallback(async () => {
+    const token = await getAccessToken()
+    if (!token) {
+      setStatsError('Could not get a Microsoft token. Try refreshing the page or signing in again.')
+      return
+    }
     setStatsLoading(true)
     setStatsError(null)
     setStats(null)
     setIntakeStats(null)
     try {
       const [r1, r2] = await Promise.all([
-        fetch('/api/admin-site-stats', { headers: { Authorization: `Bearer ${key}` } }),
-        fetch('/api/admin-intake-stats', { headers: { Authorization: `Bearer ${key}` } }),
+        fetch('/api/admin-site-stats', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/admin-intake-stats', { headers: { Authorization: `Bearer ${token}` } }),
       ])
       const d1 = await r1.json()
       if (!r1.ok) throw new Error(d1.error || 'Failed to load site stats')
@@ -168,13 +160,11 @@ export default function AdminConsole() {
     } finally {
       setStatsLoading(false)
     }
-  }, [])
+  }, [getAccessToken])
 
   useEffect(() => {
     if (phase !== 'authed' || !account) return
-    const key = getAdminKey()
-    if (!key) return
-    fetchStats(key)
+    void fetchStats()
   }, [phase, account, fetchStats])
 
   const signIn = async () => {
@@ -197,28 +187,10 @@ export default function AdminConsole() {
     }
   }
 
-  const loadStats = () => {
-    const key = resolveAdminApiKey()
-    if (!key) {
-      setStatsError('Paste the admin API key (same as ADMIN_KEY in Vercel), then click Load metrics.')
-      return
-    }
-    return fetchStats(key)
-  }
-
-  const clearStoredAdminKey = () => {
-    clearAdminKeyStorage()
-    setAdminKeyDraft('')
-    setStats(null)
-    setIntakeStats(null)
-    setStatsError(null)
-    setBackfillResult(null)
-  }
-
   const runStripeBackfill = async () => {
-    const key = resolveAdminApiKey()
-    if (!key) {
-      setStatsError('Paste the admin API key first.')
+    const token = await getAccessToken()
+    if (!token) {
+      setStatsError('Could not get a Microsoft token. Try signing in again.')
       return
     }
     setBackfillLoading(true)
@@ -226,12 +198,12 @@ export default function AdminConsole() {
     try {
       const r = await fetch('/api/backfill-stripe-events', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${key}` },
+        headers: { Authorization: `Bearer ${token}` },
       })
       const data = await r.json()
       if (!r.ok) throw new Error(data.error || 'Backfill failed')
       setBackfillResult(data)
-      await loadStats()
+      await fetchStats()
     } catch (e) {
       setStatsError(e.message || 'Backfill failed')
     } finally {
@@ -367,49 +339,28 @@ export default function AdminConsole() {
         </div>
 
         <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
-          <h3 className="font-semibold text-textPrimary">Analytics</h3>
-
-          <div className="rounded-lg border border-border bg-bg/80 p-4 space-y-3">
-            <div className="flex flex-wrap items-end gap-2">
-              <div className="flex-1 min-w-[min(100%,240px)]">
-                <label htmlFor="vetpac-admin-key" className="text-xs font-semibold text-textMuted uppercase tracking-wide block mb-1.5">
-                  Admin API key
-                </label>
-                <input
-                  id="vetpac-admin-key"
-                  type="password"
-                  autoComplete="off"
-                  placeholder="Same as ADMIN_KEY in Vercel (stored in this tab only)"
-                  value={adminKeyDraft}
-                  onChange={(e) => setAdminKeyDraft(e.target.value)}
-                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-textPrimary bg-white placeholder:text-textMuted/70"
-                />
-              </div>
-              <Button type="button" size="sm" onClick={() => loadStats()} loading={statsLoading} disabled={statsLoading}>
-                Load / refresh
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="font-semibold text-textPrimary">Analytics</h3>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => void fetchStats()}
+                loading={statsLoading}
+                disabled={statsLoading}
+              >
+                Refresh
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={runStripeBackfill}
+                onClick={() => void runStripeBackfill()}
                 loading={backfillLoading}
                 disabled={backfillLoading || statsLoading}
               >
                 Backfill from Stripe
               </Button>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-textMuted">
-              {getAdminKey() ? (
-                <span>
-                  Key saved for this tab.{' '}
-                  <button type="button" className="text-primary font-medium hover:underline" onClick={clearStoredAdminKey}>
-                    Clear
-                  </button>
-                </span>
-              ) : (
-                <span>Microsoft sign-in protects this page; the key authorizes the stats APIs.</span>
-              )}
             </div>
           </div>
 
