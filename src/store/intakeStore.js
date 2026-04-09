@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { CONSULTATION_FEE, VACCINE_PRODUCTS, FREIGHT, ADDONS, INSURANCE } from '../lib/constants'
+import { CONSULTATION_FEE, VACCINE_PRODUCTS, FREIGHT, ADDONS, INSURANCE, calculateConsultFee } from '../lib/constants'
 
 const defaultDogProfile = {
   name: '',
@@ -150,6 +150,7 @@ export const useIntakeStore = create(
       consultationFee: CONSULTATION_FEE,
 
       // Stage 2: itemised vaccine plan built from AI output
+      numberOfPuppies: 1,
       vaccinePlan: [], // array of vaccine items with `selected` flag
       assistSelected: true,   // default: vaccinator included (full price)
       insuranceSelected: false,
@@ -186,6 +187,7 @@ export const useIntakeStore = create(
           ),
         })),
 
+      setNumberOfPuppies: (n) => set({ numberOfPuppies: Math.max(1, parseInt(n) || 1) }),
       setAssistSelected: (val) => set({ assistSelected: val }),
       setInsuranceSelected: (val) => set({ insuranceSelected: val }),
       setInsuranceBilling: (val) => set({ insuranceBilling: val }),
@@ -195,6 +197,8 @@ export const useIntakeStore = create(
       // ─── Computed totals ────────────────────────────────────────────────────
       getOrderTotals: () => {
         const s = get()
+        const region = s.ownerDetails.region || s.lifestyle.region || ''
+        const consultTotal = calculateConsultFee(region, s.numberOfPuppies)
         const selectedDoses = s.vaccinePlan.filter((v) => v.selected)
         const vaccineTotal = selectedDoses.reduce((sum, v) => sum + v.price, 0)
 
@@ -213,7 +217,7 @@ export const useIntakeStore = create(
           : 0
 
         return {
-          consultation: CONSULTATION_FEE.price,
+          consultation: consultTotal,
           vaccines: vaccineTotal,
           freight: freightTotal,
           shipmentCount,
@@ -221,7 +225,7 @@ export const useIntakeStore = create(
           assist: assistTotal,
           insurance: insuranceCost,
           insuranceBilling: s.insuranceBilling,
-          total: CONSULTATION_FEE.price + vaccineTotal + freightTotal + assistTotal + insuranceCost,
+          total: consultTotal + vaccineTotal + freightTotal + assistTotal + insuranceCost,
         }
       },
 
@@ -234,6 +238,7 @@ export const useIntakeStore = create(
           videoUrl: null,
           videoFile: null,
           aiAssessment: null,
+          numberOfPuppies: 1,
           vaccinePlan: [],
           assistSelected: true,
           insuranceSelected: false,
@@ -251,6 +256,7 @@ export const useIntakeStore = create(
         ownerDetails: s.ownerDetails,
         videoUrl: s.videoUrl,
         aiAssessment: s.aiAssessment,
+        numberOfPuppies: s.numberOfPuppies,
         vaccinePlan: s.vaccinePlan,
         assistSelected: s.assistSelected,
         insuranceSelected: s.insuranceSelected,

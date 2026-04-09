@@ -8,7 +8,7 @@ import Button from '../../components/ui/Button'
 import Alert from '../../components/ui/Alert'
 import IntakeLayout from '../../components/layout/IntakeLayout'
 import { useIntakeStore } from '../../store/intakeStore'
-import { CONSULTATION_FEE, FREIGHT, ADDONS, SCALES, INSURANCE } from '../../lib/constants'
+import { CONSULTATION_FEE, FREIGHT, ADDONS, SCALES, INSURANCE, REGIONAL_CONSULTATION_FEES, calculateConsultFee } from '../../lib/constants'
 import { generateTreatmentPlan } from '../../lib/claude'
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -28,21 +28,77 @@ function SectionHeading({ step, label, sublabel }) {
 }
 
 function ConsultationBlock() {
+  const { ownerDetails, lifestyle, numberOfPuppies, setNumberOfPuppies } = useIntakeStore()
   const [expanded, setExpanded] = useState(false)
+  const region = ownerDetails.region || lifestyle.region || ''
+  const basePrice = REGIONAL_CONSULTATION_FEES[region] ?? 289
+  const totalFee = calculateConsultFee(region, numberOfPuppies)
+  const isAuckland = region === 'Auckland'
+
+  // Build per-puppy breakdown for multi-puppy display
+  const puppyBreakdown = []
+  let price = basePrice
+  for (let i = 0; i < numberOfPuppies; i++) {
+    puppyBreakdown.push({ n: i + 1, fee: Math.max(Math.round(price), 48) })
+    price = price * 0.82
+  }
+
   return (
     <div className="border-2 border-primary/20 bg-primary/5 rounded-card-lg p-5">
       <SectionHeading
         step="1"
         label="Initial Consultation"
-        sublabel="Fixed fee — full health assessment and personalised vaccination plan"
+        sublabel="Full health assessment and personalised vaccination plan — reviewed by a NZ-registered vet"
       />
+
+      {/* Puppy count selector */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-medium text-textPrimary">How many puppies?</p>
+          {isAuckland && (
+            <p className="text-xs text-textMuted mt-0.5">Auckland rate — matched to local market</p>
+          )}
+          {!isAuckland && region && (
+            <p className="text-xs text-textMuted mt-0.5">{region} rate · based on regional data</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setNumberOfPuppies(numberOfPuppies - 1)}
+            disabled={numberOfPuppies <= 1}
+            className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-lg font-bold text-textSecondary hover:bg-primary/10 hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >−</button>
+          <span className="w-6 text-center font-bold text-textPrimary">{numberOfPuppies}</span>
+          <button
+            onClick={() => setNumberOfPuppies(numberOfPuppies + 1)}
+            disabled={numberOfPuppies >= 10}
+            className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-lg font-bold text-textSecondary hover:bg-primary/10 hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >+</button>
+        </div>
+      </div>
+
+      {/* Per-puppy breakdown (only for 2+) */}
+      {numberOfPuppies > 1 && (
+        <div className="bg-white/60 rounded-card border border-border p-3 mb-4 space-y-1">
+          {puppyBreakdown.map(({ n, fee }) => (
+            <div key={n} className="flex justify-between text-sm">
+              <span className="text-textSecondary">
+                Puppy {n}{n === 1 ? '' : ` · ${Math.round((1 - (fee / basePrice)) * 100)}% off`}
+              </span>
+              <span className="font-mono font-semibold text-textPrimary">${fee}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-primary">
           <Lock className="w-4 h-4" />
-          <span className="text-sm font-semibold">Included with every programme</span>
+          <span className="text-sm font-semibold">Paid now — before your plan is generated</span>
         </div>
-        <span className="font-mono font-bold text-xl text-primary">NZD ${CONSULTATION_FEE.price}.00</span>
+        <span className="font-mono font-bold text-xl text-primary">NZD ${totalFee}</span>
       </div>
+
       <button
         onClick={() => setExpanded(!expanded)}
         className="mt-3 text-xs text-textMuted flex items-center gap-1 hover:text-primary transition-colors"
@@ -400,6 +456,7 @@ export default function Step6Review() {
   const {
     dogProfile, healthHistory, lifestyle, ownerDetails,
     aiAssessment, setAiAssessment,
+    numberOfPuppies,
     vaccinePlan, toggleVaccineItem,
     assistSelected, setAssistSelected,
     insuranceSelected, setInsuranceSelected,
@@ -438,6 +495,7 @@ export default function Step6Review() {
     setCheckoutLoading(true)
     const params = new URLSearchParams({
       puppy: dogProfile.name,
+      puppyCount: numberOfPuppies.toString(),
       total: totals.total.toFixed(2),
       consult: totals.consultation.toString(),
       vaccines: totals.vaccines.toString(),

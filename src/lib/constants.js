@@ -1,7 +1,42 @@
+// ─── Regional consult fee pricing (Stats NZ 2023 median household income) ────
+// Auckland = $49 to meet local competition. All others income-scaled to $289 max.
+// Formula: $149 + $140 × (income − $61k) / ($95k − $61k), rounded to nearest $5
+export const REGIONAL_CONSULTATION_FEES = {
+  'Auckland':              49,   // competition pricing
+  'Wellington':           289,   // $95k income — top tier
+  'Waikato':              245,   // $84k
+  'Canterbury':           219,   // $77k
+  "Hawke's Bay":          209,   // $75k
+  'Bay of Plenty':        199,   // $73k
+  'Taranaki':             195,   // $72k
+  'Nelson':               195,   // $72k
+  'Marlborough':          189,   // $71k
+  'Tasman':               185,   // $70k
+  'Otago':                179,   // $69k
+  'Manawatu-Whanganui':   179,   // $68k
+  'Northland':            175,   // $67k
+  'Southland':            159,   // $64k
+  'West Coast':           155,   // $63k
+  'Gisborne':             149,   // $61k — floor
+}
+
+// 18% compound reduction per additional puppy, min $48/puppy, result as 1 number
+export function calculateConsultFee(region, numberOfPuppies = 1) {
+  const basePrice = REGIONAL_CONSULTATION_FEES[region] ?? 289
+  const MIN_PER_PUPPY = 48
+  let total = 0
+  let price = basePrice
+  for (let i = 0; i < numberOfPuppies; i++) {
+    total += Math.max(Math.round(price), MIN_PER_PUPPY)
+    price = price * 0.82
+  }
+  return total
+}
+
 export const CONSULTATION_FEE = {
   id: 'consultation',
   name: 'Initial Consultation',
-  price: 289,
+  price: 289, // default — overridden dynamically by region + puppy count
   description: 'Full health assessment and personalised vaccine plan for your puppy.',
   includes: [
     'Personalised health intake',
