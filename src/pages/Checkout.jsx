@@ -26,20 +26,8 @@ export default function Checkout() {
   const [discountApplied, setDiscountApplied] = useState(false)
   const [discountInput, setDiscountInput] = useState('')
 
-  const isBossMode = discountApplied && discountCode.toLowerCase() === 'bossmode'
-  const displayTotal = isBossMode ? 1.00 : total
-
-  const applyDiscount = () => {
-    const code = discountInput.trim()
-    if (code.toLowerCase() === 'bossmode') {
-      setDiscountCode(code)
-      setDiscountApplied(true)
-    } else {
-      setError('Invalid discount code.')
-    }
-  }
-
-  const mode = params.get('mode') || 'consult' // 'consult' | 'vaccines'
+  // Parse URL params first — before any derived values
+  const mode = params.get('mode') || 'consult'
   const isConsult = mode === 'consult'
   const dogName = params.get('puppy') || 'your puppy'
   const puppyCount = parseInt(params.get('puppyCount') || '1')
@@ -55,6 +43,21 @@ export default function Checkout() {
   try {
     vaccineItems = JSON.parse(decodeURIComponent(params.get('items') || '[]'))
   } catch {}
+
+  // Derived values — after params are read
+  const isBossMode = discountApplied && discountCode.toLowerCase() === 'bossmode'
+  const displayTotal = isBossMode ? 1.00 : total
+
+  const applyDiscount = () => {
+    const code = discountInput.trim()
+    if (code.toLowerCase() === 'bossmode') {
+      setDiscountCode(code)
+      setDiscountApplied(true)
+      setError(null)
+    } else {
+      setError('Invalid discount code.')
+    }
+  }
 
   const handlePayment = async () => {
     setLoading(true)
