@@ -2,35 +2,51 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import {
   CheckCircle, Lock, Loader2, ChevronDown, ChevronUp,
-  Shield, Heart, Star, AlertCircle, Tag, Syringe, Home, Truck, Phone,
+  Shield, Heart, Star, AlertCircle, Tag, Syringe, Home, Truck, MessageCircle, ArrowLeft,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
 import Modal from '../components/ui/Modal'
 import FloatingChat from '../components/FloatingChat'
 import { useIntakeStore, buildVaccinePlan } from '../store/intakeStore'
-import { FREIGHT, ADDONS, SCALES, INSURANCE, calculateConsultFee, REGIONAL_CONSULTATION_FEES } from '../lib/constants'
+import { FREIGHT, ADDONS, SCALES, INSURANCE } from '../lib/constants'
 import { generateTreatmentPlan } from '../lib/claude'
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Step progress bar ───────────────────────────────────────────────────────
 
-function SectionLabel({ number, label, sub }) {
+const STEPS = ['Your plan', 'Delivery', 'Cover', 'Confirm']
+
+function StepBar({ step }) {
   return (
-    <div className="flex items-start gap-3 mb-5">
-      <div className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{number}</div>
-      <div>
-        <h2 className="font-display font-bold text-lg text-textPrimary">{label}</h2>
-        {sub && <p className="text-sm text-textMuted mt-0.5">{sub}</p>}
-      </div>
+    <div className="flex items-center gap-0 w-full">
+      {STEPS.map((label, i) => {
+        const idx = i + 1
+        const done = idx < step
+        const active = idx === step
+        return (
+          <div key={label} className="flex-1 flex flex-col items-center">
+            <div className="flex items-center w-full">
+              {i > 0 && <div className={`h-0.5 flex-1 transition-colors ${done || active ? 'bg-primary' : 'bg-border'}`} />}
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-colors ${done ? 'bg-primary text-white' : active ? 'bg-primary text-white ring-4 ring-primary/20' : 'bg-bg border-2 border-border text-textMuted'}`}>
+                {done ? <CheckCircle className="w-3.5 h-3.5" /> : idx}
+              </div>
+              {i < STEPS.length - 1 && <div className={`h-0.5 flex-1 transition-colors ${done ? 'bg-primary' : 'bg-border'}`} />}
+            </div>
+            <span className={`text-[10px] mt-1 font-medium ${active ? 'text-primary' : done ? 'text-textSecondary' : 'text-textMuted'}`}>{label}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }
+
+// ─── Accordion ───────────────────────────────────────────────────────────────
 
 function Accordion({ q, a }) {
   const [open, setOpen] = useState(false)
   return (
     <div className="border-b border-border last:border-0">
-      <button onClick={() => setOpen(!open)} className="w-full flex items-start justify-between gap-3 py-4 text-left">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-start justify-between gap-3 py-3.5 text-left">
         <span className="text-sm font-semibold text-textPrimary pr-2">{q}</span>
         {open ? <ChevronUp className="w-4 h-4 text-textMuted flex-shrink-0 mt-0.5" /> : <ChevronDown className="w-4 h-4 text-textMuted flex-shrink-0 mt-0.5" />}
       </button>
@@ -39,7 +55,7 @@ function Accordion({ q, a }) {
   )
 }
 
-// ─── Vaccine plan ────────────────────────────────────────────────────────────
+// ─── Vaccine items ───────────────────────────────────────────────────────────
 
 function VaccineLineItem({ item, onToggle }) {
   return (
@@ -61,15 +77,15 @@ function VaccineLineItem({ item, onToggle }) {
   )
 }
 
-function PuppyPlanSection({ puppyName, vaccinePlan, toggleVaccineItem, aiAssessment, isLoading }) {
+function PuppyPlanSection({ puppyName, vaccinePlan, toggleVaccineItem, isLoading }) {
   return (
     <div className="border border-border rounded-card-lg overflow-hidden">
       <div className="bg-bg px-4 py-3 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-2">
-          <span className="text-lg">🐕</span>
+          <span className="text-base">🐕</span>
           <span className="font-semibold text-textPrimary text-sm">{puppyName}</span>
         </div>
-        {!isLoading && <span className="text-xs text-textMuted">{vaccinePlan.filter((v) => v.selected).length} vaccines selected</span>}
+        {!isLoading && <span className="text-xs text-textMuted">{vaccinePlan.filter((v) => v.selected).length} selected</span>}
       </div>
       <div className="p-3 space-y-2">
         {isLoading ? (
@@ -85,127 +101,139 @@ function PuppyPlanSection({ puppyName, vaccinePlan, toggleVaccineItem, aiAssessm
   )
 }
 
-// ─── Delivery ────────────────────────────────────────────────────────────────
+// ─── Delivery FAQs ───────────────────────────────────────────────────────────
 
-function DeliveryBlock({ assistSelected, setAssistSelected }) {
-  return (
-    <div className="space-y-3">
-      <div onClick={() => setAssistSelected(false)} className={`rounded-card-lg border-2 p-4 cursor-pointer transition-all ${!assistSelected ? 'border-primary bg-primary/5' : 'border-border bg-white hover:border-primary/40'}`}>
-        <div className="flex items-start gap-3">
-          <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center ${!assistSelected ? 'border-primary' : 'border-border'}`}>
-            {!assistSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-textPrimary text-sm">I'll administer at home</span>
-              <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">Most popular</span>
-            </div>
-            <p className="text-sm text-textSecondary mt-1">Vaccines cold-chain couriered to your door. Step-by-step guide included. 24/7 support line with you throughout.</p>
-            <p className="text-xs text-textMuted mt-1.5">${FREIGHT.pricePerShipment} per shipment · 2–8°C certified pharmaceutical courier</p>
-          </div>
-        </div>
-        {!assistSelected && (
-          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-card flex items-start gap-2">
-            <Star className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-amber-900">Free VetPac Digital Scales included</p>
-              <p className="text-xs text-amber-700 mt-0.5">Precision puppy scales (normally ${SCALES.retailPrice}) — free with your first order. Monitor weight at every dose for correct dosing.</p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div onClick={() => setAssistSelected(true)} className={`rounded-card-lg border-2 p-4 cursor-pointer transition-all ${assistSelected ? 'border-primary bg-primary/5' : 'border-border bg-white hover:border-primary/40'}`}>
-        <div className="flex items-start gap-3">
-          <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center ${assistSelected ? 'border-primary' : 'border-border'}`}>
-            {assistSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-          </div>
-          <div className="flex-1">
-            <span className="font-semibold text-textPrimary text-sm">VetPac Assist — in-home vaccinator</span>
-            <p className="text-sm text-textSecondary mt-1">A trained VetPac technician visits your home and administers the vaccine for you. Completely hands-off.</p>
-            <p className="text-xs text-textMuted mt-1.5">${ADDONS.ASSIST.price} per visit · {ADDONS.ASSIST.note}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Order summary ────────────────────────────────────────────────────────────
-
-function OrderSummary({ totals, puppyCount, discountApplied }) {
-  const vaccineAndDelivery = totals.vaccines + totals.assist + totals.freight
-  const displayTotal = discountApplied ? 1.00 : vaccineAndDelivery
-  return (
-    <div className="bg-bg border border-border rounded-card-lg p-4 space-y-2">
-      <p className="text-sm font-semibold text-textPrimary mb-3">Vaccine order total</p>
-      {totals.vaccines > 0 && (
-        <div className="flex justify-between text-sm">
-          <span className="text-textSecondary">Vaccines{puppyCount > 1 ? ` (${puppyCount} puppies)` : ''}</span>
-          <span className="font-mono font-semibold">NZD ${totals.vaccines}</span>
-        </div>
-      )}
-      {totals.assist > 0 && (
-        <div className="flex justify-between text-sm">
-          <span className="text-textSecondary">VetPac Assist ({totals.doseCount} visit{totals.doseCount !== 1 ? 's' : ''})</span>
-          <span className="font-mono font-semibold">NZD ${totals.assist}</span>
-        </div>
-      )}
-      {totals.freight > 0 && (
-        <div className="flex justify-between text-sm">
-          <span className="text-textSecondary">Cold-chain freight</span>
-          <span className="font-mono font-semibold">NZD ${totals.freight}</span>
-        </div>
-      )}
-      <div className="border-t border-border pt-2 flex justify-between items-center">
-        <span className="font-semibold text-textPrimary text-sm">Total due today</span>
-        <span className="font-mono font-bold text-accent text-base">NZD ${displayTotal.toFixed(2)}</span>
-      </div>
-      {discountApplied && <p className="text-xs text-green-700 font-medium">BOSSMODE applied — $1.00 test charge</p>}
-      <p className="text-xs text-textMuted">Consultation fee already paid. Insurance billed separately if added.</p>
-    </div>
-  )
-}
-
-// ─── Insurance section ───────────────────────────────────────────────────────
-
-const INSURANCE_FAQ = [
-  { q: 'What does VetPac Cover actually cover?', a: 'Accidents and illness including surgery, hospitalisation, specialist consultations, diagnostics (X-rays, ultrasounds, blood tests), emergency treatment, and prescription medications. We cover what matters most in the first two years.' },
-  { q: 'What is not covered?', a: 'Pre-existing conditions, routine preventive care (including the vaccinations you are purchasing now), elective procedures, dental disease, and breeding-related costs. Full exclusions are listed in the policy document.' },
-  { q: 'Why choose the 2-year plan?', a: 'The first two years of a puppy\'s life carry the highest risk of unexpected illness and injury. Locking in 2 years at once means your excess drops from $1,500 to $750, your rate is guaranteed for the full term, and you never have to think about renewal during the most vulnerable period.' },
-  { q: 'How do I make a claim?', a: 'Email your vet invoice to claims@vetpac.nz with your policy number. We process 80% of claims within 5 business days. We reimburse 80% of eligible costs above your excess directly to your nominated bank account.' },
-  { q: 'Is there a waiting period?', a: 'Yes — 14 days from the date cover commences for illness claims. Accidents are covered from day one. This is standard across all pet insurance policies in NZ.' },
-  { q: 'Can I cancel?', a: 'Monthly cover can be cancelled any time with no penalty. Annual and 2-year plans can be cancelled within 14 days of purchase for a full refund. After 14 days, the remaining premium is non-refundable but cover remains active for the paid period.' },
+const SELF_ADMIN_FAQ = [
+  { q: 'How hard is it to administer at home?', a: 'Very straightforward. The needle is small (25 gauge), the injection is subcutaneous (just under the skin at the scruff of the neck), and the whole process takes under two minutes. Our step-by-step guide walks you through every single action, and our 24/7 WhatsApp support is there the whole time if you want someone with you as you do it.' },
+  { q: "What if I'm nervous about injecting?", a: "Completely normal — most first-timers feel exactly the same. The guide is written for people with zero medical experience. Puppies generally tolerate it very well at home, especially compared to the stress of a clinic visit. If you try it and genuinely can't do it, message us on WhatsApp and we'll arrange a VetPac Assist visit." },
+  { q: 'What equipment do I need?', a: 'Nothing extra. Everything arrives in the kit — the vaccine vial, syringe, needle, swabs, and a step-by-step instruction card with photos. Free VetPac digital scales are included with your first order so you can monitor weight at every dose for correct dosing.' },
+  { q: 'What do I do before administering?', a: 'Run through the pre-vaccination checklist included in your kit. Your puppy should be alert, eating normally, showing no signs of illness (runny nose, lethargy, discharge, unusual behaviour), and not have eaten in the last two hours. If anything flags, stop and message us on WhatsApp — never proceed with a vaccine if your puppy is unwell.' },
+  { q: 'What happens after vaccination?', a: 'Monitor your puppy for 30 minutes. Mild lethargy or a small bump at the injection site is normal and resolves within 24 hours. If you see facial swelling, hives, vomiting, or collapse, message us on WhatsApp immediately — we respond 24/7. Serious reactions are very rare but we take them seriously.' },
+  { q: 'How does cold-chain shipping work?', a: 'Every shipment is packed in pharmaceutical-grade insulated packaging with a certified gel ice pack rated to hold 2–8°C for a minimum of 48 hours. A colour-change temperature indicator strip is included. If it shows green on arrival, the cold chain held. If it has changed colour, contact us — we will resend at no charge.' },
+  { q: 'Is it legal to administer vaccines at home in NZ?', a: 'Yes. VetPac operates under the ACVM Act 1997 VOI (Veterinary Operating Instruction) framework. Every vaccination plan is reviewed and authorised by a NZ-registered veterinarian before anything is dispatched. The VOI is the legal mechanism that permits administration of prescription veterinary medicines by a lay person under veterinary supervision.' },
 ]
+
+const ASSIST_FAQ = [
+  { q: 'What does the VetPac technician actually do?', a: 'They bring everything — the vaccine, syringe, and supplies — to your home and administer the injection themselves. You do not need to touch anything. They will also do a brief wellness check on your puppy before administering.' },
+  { q: 'How long does the visit take?', a: 'Typically 20–30 minutes including the wellness check, the injection itself, and the 10-minute post-vaccination observation period. Everything is done in your home at your convenience.' },
+  { q: 'What areas do you service?', a: 'VetPac Assist is available NZ-wide. Scheduling may vary by region — availability is shown when you book. Most metro areas have same-week availability.' },
+  { q: 'Do I need to be home for the visit?', a: 'Yes — a responsible adult needs to be present for the visit. You do not need to do anything except let the technician in and have your puppy ready.' },
+  { q: 'What if I need to reschedule?', a: 'No problem. Message us on WhatsApp up to 24 hours before your visit to reschedule. Rescheduling is free and unlimited — we work around your schedule.' },
+  { q: 'Is the vaccine the same as self-administration?', a: 'Identical. The same ACVM-registered vaccine, the same cold-chain logistics, the same vet-authorised plan. The only difference is who does the injection.' },
+]
+
+// ─── STEP 2: Delivery ────────────────────────────────────────────────────────
+
+function StepDelivery({ assistSelected, setAssistSelected, onNext, onBack }) {
+  return (
+    <div className="space-y-5">
+      <div>
+        <h1 className="font-display font-bold text-2xl text-textPrimary">How would you like it done?</h1>
+        <p className="text-sm text-textSecondary mt-1">Most customers choose to administer at home — it takes less than two minutes.</p>
+      </div>
+
+      {/* Self-admin card */}
+      <div className={`rounded-card-lg border-2 transition-all ${!assistSelected ? 'border-primary' : 'border-border'}`}>
+        <div onClick={() => setAssistSelected(false)} className={`p-4 cursor-pointer rounded-t-card-lg ${!assistSelected ? 'bg-primary/5' : 'bg-white hover:bg-bg/50'}`}>
+          <div className="flex items-start gap-3">
+            <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center ${!assistSelected ? 'border-primary' : 'border-border'}`}>
+              {!assistSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-textPrimary text-sm">I'll administer at home</span>
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">Most popular</span>
+              </div>
+              <p className="text-sm text-textSecondary mt-1">Vaccines cold-chain couriered to your door. Step-by-step guide included. 24/7 WhatsApp support throughout.</p>
+              <p className="text-xs text-textMuted mt-1.5">${FREIGHT.pricePerShipment} per shipment · 2–8°C certified pharmaceutical courier</p>
+            </div>
+          </div>
+          {!assistSelected && (
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-card flex items-start gap-2">
+              <Star className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-amber-900">Free VetPac Digital Scales included</p>
+                <p className="text-xs text-amber-700 mt-0.5">Precision puppy scales (normally ${SCALES.retailPrice}) — free with your first order. Monitor weight at every dose for correct dosing.</p>
+              </div>
+            </div>
+          )}
+        </div>
+        {/* Self-admin FAQ — always visible */}
+        <div className="border-t border-border px-4 bg-white rounded-b-card-lg divide-y divide-border">
+          {SELF_ADMIN_FAQ.map((item) => <Accordion key={item.q} q={item.q} a={item.a} />)}
+        </div>
+      </div>
+
+      {/* Assist card */}
+      <div className={`rounded-card-lg border-2 transition-all ${assistSelected ? 'border-primary' : 'border-border'}`}>
+        <div onClick={() => setAssistSelected(true)} className={`p-4 cursor-pointer rounded-t-card-lg ${assistSelected ? 'bg-primary/5' : 'bg-white hover:bg-bg/50'}`}>
+          <div className="flex items-start gap-3">
+            <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center ${assistSelected ? 'border-primary' : 'border-border'}`}>
+              {assistSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+            </div>
+            <div className="flex-1">
+              <span className="font-semibold text-textPrimary text-sm">VetPac Assist — in-home vaccinator</span>
+              <p className="text-sm text-textSecondary mt-1">A trained VetPac technician visits your home and administers the vaccine for you. Completely hands-off.</p>
+              <p className="text-xs text-textMuted mt-1.5">${ADDONS.ASSIST.price} per visit · {ADDONS.ASSIST.note}</p>
+            </div>
+          </div>
+        </div>
+        {/* Assist FAQ — always visible */}
+        <div className="border-t border-border px-4 bg-white rounded-b-card-lg divide-y divide-border">
+          {ASSIST_FAQ.map((item) => <Accordion key={item.q} q={item.q} a={item.a} />)}
+        </div>
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-textMuted hover:text-textPrimary transition-colors px-3 py-2.5">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+        <Button fullWidth size="lg" onClick={onNext}>Continue →</Button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Insurance terms modal content ──────────────────────────────────────────
 
 const INSURANCE_TERMS_CONTENT = (
   <div className="space-y-4 text-sm leading-relaxed">
     <p className="font-semibold text-textPrimary">VetPac 2-Year Puppy Cover — Policy Summary</p>
     <p>Issued by Forman Pacific LLC. This is a summary. The full policy document is available on request.</p>
-    <div className="space-y-3">
-      {[
-        { t: 'Cover limit', b: 'NZD $15,000 per policy period.' },
-        { t: 'Reimbursement', b: '80% of eligible costs above the excess.' },
-        { t: 'Excess', b: '$1,500 per claim (monthly/annual). $750 per claim (2-year upfront plan).' },
-        { t: 'Waiting period', b: '14 days for illness. Zero days for accidents.' },
-        { t: 'What is covered', b: 'Accidents, illness, surgery, hospitalisation, specialist consultations, diagnostics, emergency treatment, prescription medications.' },
-        { t: 'What is not covered', b: 'Pre-existing conditions, preventive care, elective procedures, dental disease, breeding costs, behavioural treatment.' },
-        { t: 'Claims', b: 'Email claims@vetpac.nz with vet invoice and policy number. 80% of claims processed within 5 business days.' },
-        { t: 'Billing', b: 'Monthly ($24.99/mo), Annual ($259/yr), or 2-Year upfront ($489). 2-year rate is guaranteed for the full term.' },
-        { t: 'Cancellation', b: 'Monthly: cancel any time. Annual/2-year: full refund within 14 days of purchase; no refund after 14 days.' },
-        { t: 'Renewal', b: '2-year plans do not auto-renew. Monthly and annual plans auto-renew unless cancelled.' },
-        { t: 'Governing law', b: 'New Zealand. Disputes resolved under the Insurance (Prudential Supervision) Act 2010.' },
-      ].map(({ t, b }) => (
-        <div key={t}>
-          <p className="font-semibold text-textPrimary">{t}</p>
-          <p className="text-textSecondary mt-0.5">{b}</p>
-        </div>
-      ))}
-    </div>
+    {[
+      { t: 'Cover limit', b: 'NZD $15,000 per policy period.' },
+      { t: 'Reimbursement', b: '80% of eligible costs above the excess.' },
+      { t: 'Excess', b: '$1,500 per claim (monthly/annual). $750 per claim (2-year upfront plan).' },
+      { t: 'Waiting period', b: '14 days for illness. Zero days for accidents.' },
+      { t: 'What is covered', b: 'Accidents, illness, surgery, hospitalisation, specialist consultations, diagnostics, emergency treatment, prescription medications.' },
+      { t: 'What is not covered', b: 'Pre-existing conditions, preventive care, elective procedures, dental disease, breeding costs, behavioural treatment.' },
+      { t: 'Claims', b: 'Email claims@vetpac.nz with vet invoice and policy number. 80% of claims processed within 5 business days.' },
+      { t: 'Billing', b: 'Monthly ($24.99/mo), Annual ($259/yr), or 2-Year upfront ($489). 2-year rate is guaranteed for the full term.' },
+      { t: 'Cancellation', b: 'Monthly: cancel any time. Annual/2-year: full refund within 14 days of purchase; no refund after 14 days.' },
+      { t: 'Renewal', b: '2-year plans do not auto-renew. Monthly and annual plans auto-renew unless cancelled.' },
+      { t: 'Governing law', b: 'New Zealand. Disputes resolved under the Insurance (Prudential Supervision) Act 2010.' },
+      { t: 'Contact', b: 'support@vetpac.nz · WhatsApp (24/7)' },
+    ].map(({ t, b }) => (
+      <div key={t}>
+        <p className="font-semibold text-textPrimary">{t}</p>
+        <p className="text-textSecondary mt-0.5">{b}</p>
+      </div>
+    ))}
   </div>
 )
 
-function InsuranceSection({ insuranceSelected, setInsuranceSelected, insuranceBilling, setInsuranceBilling }) {
+const INSURANCE_FAQ = [
+  { q: 'What does VetPac Cover actually cover?', a: 'Accidents and illness including surgery, hospitalisation, specialist consultations, diagnostics (X-rays, ultrasounds, blood tests), emergency treatment, and prescription medications. We cover what matters most in the first two years.' },
+  { q: 'What is not covered?', a: 'Pre-existing conditions, routine preventive care (including the vaccinations you are purchasing now), elective procedures, dental disease, and breeding-related costs. Full exclusions are listed in the policy document.' },
+  { q: 'Why choose the 2-year plan?', a: "The first two years of a puppy's life carry the highest risk of unexpected illness and injury. Locking in 2 years at once means your excess drops from $1,500 to $750, your rate is guaranteed for the full term, and you never have to think about renewal during the most vulnerable period." },
+  { q: 'How do I make a claim?', a: 'Email your vet invoice to claims@vetpac.nz with your policy number. We process 80% of claims within 5 business days. We reimburse 80% of eligible costs above your excess directly to your nominated bank account.' },
+  { q: 'Is there a waiting period?', a: 'Yes — 14 days from the date cover commences for illness claims. Accidents are covered from day one. This is standard across all pet insurance policies in NZ.' },
+  { q: 'Can I cancel?', a: 'Monthly cover can be cancelled any time with no penalty. Annual and 2-year plans can be cancelled within 14 days of purchase for a full refund. After 14 days, the remaining premium is non-refundable but cover remains active for the paid period.' },
+]
+
+// ─── STEP 3: Insurance ───────────────────────────────────────────────────────
+
+function StepInsurance({ insuranceSelected, setInsuranceSelected, insuranceBilling, setInsuranceBilling, onNext, onBack }) {
   const [termsOpen, setTermsOpen] = useState(false)
   const plans = [
     { id: 'monthly', label: 'Monthly', price: `$${INSURANCE.monthlyPrice}/mo`, sub: 'Pay month to month', excess: INSURANCE.excess, badge: null },
@@ -215,13 +243,18 @@ function InsuranceSection({ insuranceSelected, setInsuranceSelected, insuranceBi
 
   return (
     <>
-      <div className="space-y-4">
-        {/* Header */}
+      <div className="space-y-5">
+        <div>
+          <h1 className="font-display font-bold text-2xl text-textPrimary">Protect the next two years</h1>
+          <p className="text-sm text-textSecondary mt-1">The most important health window of your puppy's life.</p>
+        </div>
+
+        {/* Header callout */}
         <div className="flex items-start gap-3 p-4 bg-rose-50 border border-rose-100 rounded-card-lg">
           <Heart className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold text-textPrimary text-sm">{INSURANCE.name}</p>
-            <p className="text-sm text-textSecondary mt-1">The first two years of a puppy's life are the most unpredictable. One unexpected illness or surgery can cost $3,000–$8,000. VetPac Cover is designed for exactly this window.</p>
+            <p className="text-sm text-textSecondary mt-1">One unexpected illness or surgery can cost $3,000–$8,000. VetPac Cover is designed for exactly this window — comprehensive accident and illness cover for the first two years.</p>
           </div>
         </div>
 
@@ -260,7 +293,7 @@ function InsuranceSection({ insuranceSelected, setInsuranceSelected, insuranceBi
             </div>
           ))}
           <button onClick={() => setInsuranceSelected(false)}
-            className={`w-full text-left rounded-card border-2 p-3 transition-all ${!insuranceSelected ? 'border-primary/30 bg-primary/5' : 'border-border bg-white'}`}>
+            className={`w-full text-left rounded-card border-2 p-3 transition-all ${!insuranceSelected ? 'border-primary/30 bg-primary/5' : 'border-border bg-white hover:border-border'}`}>
             <div className="flex items-center gap-3">
               <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${!insuranceSelected ? 'border-primary' : 'border-border'}`}>
                 {!insuranceSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
@@ -281,11 +314,18 @@ function InsuranceSection({ insuranceSelected, setInsuranceSelected, insuranceBi
         {/* Insurance FAQ */}
         <div className="border border-border rounded-card-lg overflow-hidden">
           <div className="px-4 py-3 bg-bg border-b border-border">
-            <p className="font-semibold text-sm text-textPrimary">Cover questions</p>
+            <p className="font-semibold text-sm text-textPrimary">Cover questions answered</p>
           </div>
           <div className="px-4 divide-y divide-border">
             {INSURANCE_FAQ.map((item) => <Accordion key={item.q} q={item.q} a={item.a} />)}
           </div>
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-textMuted hover:text-textPrimary transition-colors px-3 py-2.5">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          <Button fullWidth size="lg" onClick={onNext}>Continue →</Button>
         </div>
       </div>
 
@@ -296,55 +336,173 @@ function InsuranceSection({ insuranceSelected, setInsuranceSelected, insuranceBi
   )
 }
 
-// ─── Plan FAQ ────────────────────────────────────────────────────────────────
+// ─── STEP 4: Summary + Pay ───────────────────────────────────────────────────
 
-const PLAN_FAQ = [
-  { q: 'How hard is it to administer at home?', a: 'Very straightforward. The needle is small (25 gauge), the injection is subcutaneous (just under the skin at the scruff of the neck), and the whole process takes less than two minutes. Most owners are surprised by how easy it is. Our step-by-step guide walks you through every single action, and our 0800 line is staffed 24/7 if you want someone on the phone while you do it.' },
-  { q: "What if I'm nervous about injecting?", a: 'That is completely normal and we hear it from most first-timers. The guide is written for people with zero medical experience. The technique is simple, the needle causes minimal discomfort, and puppies generally tolerate it very well at home — especially compared to the stress of a clinic visit. If you try it and genuinely cannot do it, call us and we will arrange a VetPac Assist visit.' },
-  { q: 'What equipment do I need?', a: 'Nothing. Everything arrives in the kit — the vaccine vial, syringe, needle, swabs, and a step-by-step instruction card. If you choose self-administration, we also include a free set of VetPac digital scales (normally $49) so you can monitor your puppy\'s weight at every dose.' },
-  { q: 'What is the difference between self-administration and VetPac Assist?', a: 'With self-administration, we ship the vaccines cold-chain to your door and you administer them at home with our full guidance. It costs less and gives you complete flexibility over timing. VetPac Assist sends a trained technician to your home — completely hands-off for you. Both result in exactly the same outcome for your puppy.' },
-  { q: 'How does the cold-chain work?', a: 'Every shipment is packed in pharmaceutical-grade insulated packaging with a certified gel ice pack rated to hold 2–8°C for a minimum of 48 hours. A colour-change temperature indicator strip is included. If it shows green on arrival, the cold chain held. If it has changed colour, contact us immediately — we will resend at no charge.' },
-  { q: 'What do I do before administering the vaccine?', a: 'Run through the pre-vaccination checklist included in your kit. Your puppy should be alert, eating normally, showing no signs of illness (runny nose, lethargy, discharge, unusual behaviour), and not have eaten in the last two hours. If anything flags, stop and call us — never proceed with a vaccine if your puppy is unwell.' },
-  { q: 'What happens after vaccination?', a: 'Monitor your puppy for 30 minutes. Mild lethargy or a small bump at the injection site is normal and resolves within 24 hours. If you see facial swelling, hives, vomiting, or collapse, call the 0800 VETPAC emergency line immediately. Serious reactions are very rare but we take them seriously and will guide you through exactly what to do.' },
-  { q: 'Will the certificate be accepted by my vet, groomer, or boarding facility?', a: 'Yes. Every completed programme generates a signed vaccination certificate confirming the products used, the dates administered, and the authorising veterinarian. It is accepted by boarding facilities, groomers, dog parks, and other vets across New Zealand.' },
-  { q: 'Is it legal to administer vaccines at home in New Zealand?', a: 'Yes. VetPac operates under the ACVM Act 1997 VOI (Veterinary Operating Instruction) framework. Every vaccination plan is reviewed and authorised by a NZ-registered veterinarian before anything is dispatched. The VOI is the legal mechanism that permits administration of prescription veterinary medicines by a lay person under veterinary supervision.' },
-]
+function StepSummary({ totals, puppyName, puppyCount, insuranceSelected, insuranceBilling, onBack, onPay, checkoutLoading }) {
+  const [discountInput, setDiscountInput] = useState('')
+  const [discountCode, setDiscountCode] = useState('')
+  const [discountApplied, setDiscountApplied] = useState(false)
+  const [discountError, setDiscountError] = useState(null)
 
-// ─── Trust elements ──────────────────────────────────────────────────────────
+  const vaccineAndDelivery = totals.vaccines + totals.assist + totals.freight
+  const displayTotal = discountApplied ? 1.00 : vaccineAndDelivery
 
-function TrustSection() {
+  const applyDiscount = () => {
+    if (discountInput.trim().toLowerCase() === 'bossmode') {
+      setDiscountCode(discountInput.trim())
+      setDiscountApplied(true)
+      setDiscountError(null)
+    } else {
+      setDiscountError('Invalid code.')
+    }
+  }
+
+  const rows = [
+    totals.vaccines > 0 && { label: `Vaccines${puppyCount > 1 ? ` (${puppyCount} puppies)` : ''}`, value: `NZD $${totals.vaccines}` },
+    totals.assist > 0 && { label: `VetPac Assist (${totals.doseCount} visit${totals.doseCount !== 1 ? 's' : ''})`, value: `NZD $${totals.assist}` },
+    totals.freight > 0 && { label: 'Cold-chain freight', value: `NZD $${totals.freight}` },
+    insuranceSelected && totals.insurance > 0 && {
+      label: `VetPac Cover (${insuranceBilling === 'twoYear' ? '2-year' : insuranceBilling})`,
+      value: `NZD $${insuranceBilling === 'twoYear' ? INSURANCE.twoYearPrice : insuranceBilling === 'annual' ? INSURANCE.annualPrice : `${INSURANCE.monthlyPrice}/mo`}`,
+      note: 'Billed separately',
+    },
+  ].filter(Boolean)
+
   return (
-    <div className="space-y-3">
-      {[
-        { icon: Shield, title: 'Every plan is vet-authorised', body: 'A NZ-registered veterinarian reviews and signs off every vaccination plan before anything is confirmed. Your puppy\'s programme is clinically reviewed — not just generated by an algorithm.' },
-        { icon: Syringe, title: 'Pharmaceutical-grade vaccines', body: 'We supply only ACVM-registered, cold-chain maintained vaccines from licensed distributors. Every vial is sealed, sterile, and single-use. We do not use compounded or grey-market products.' },
-        { icon: Home, title: 'Your home is safer than a waiting room', body: 'Clinic waiting rooms concentrate unvaccinated animals. Your home has none of those pathogens. For puppies with incomplete immunity, your living room is genuinely the safest place to complete their vaccination course.' },
-        { icon: Truck, title: 'Cold-chain guaranteed', body: 'Every shipment includes a pharmaceutical-grade insulated pack and a temperature indicator strip. If the cold chain breaks at any point, the indicator changes colour and we resend immediately at no cost.' },
-        { icon: Phone, title: '24/7 support throughout', body: 'The 0800 VETPAC line is staffed around the clock. Call before, during, or after vaccination — we stay with you. No voicemail, no ticket system. A person answers.' },
-      ].map(({ icon: Icon, title, body }) => (
-        <div key={title} className="flex gap-3 p-4 bg-white border border-border rounded-card-lg">
-          <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-            <Icon className="w-4 h-4 text-primary" />
+    <div className="space-y-5">
+      <div>
+        <h1 className="font-display font-bold text-2xl text-textPrimary">Confirm your order</h1>
+        <p className="text-sm text-textSecondary mt-1">Review everything before you pay.</p>
+      </div>
+
+      {/* Order rows */}
+      <div className="bg-white border border-border rounded-card-lg divide-y divide-border overflow-hidden">
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-center justify-between px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-textPrimary">{row.label}</p>
+              {row.note && <p className="text-xs text-textMuted">{row.note}</p>}
+            </div>
+            <span className="font-mono font-semibold text-sm text-textPrimary">{row.value}</span>
           </div>
-          <div>
-            <p className="font-semibold text-sm text-textPrimary">{title}</p>
-            <p className="text-sm text-textSecondary mt-0.5 leading-relaxed">{body}</p>
-          </div>
+        ))}
+
+        <div className="flex items-center justify-between px-4 py-3 bg-bg">
+          <span className="font-bold text-textPrimary text-sm">Vaccines due today</span>
+          <span className="font-mono font-bold text-accent text-base">NZD ${displayTotal.toFixed(2)}</span>
         </div>
-      ))}
+      </div>
+
+      {discountApplied
+        ? (
+          <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-card text-sm text-green-800">
+            <CheckCircle className="w-4 h-4" /> Code <strong className="mx-1">{discountCode.toUpperCase()}</strong> applied — NZD $1.00
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
+                <input
+                  type="text"
+                  value={discountInput}
+                  onChange={(e) => setDiscountInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && applyDiscount()}
+                  placeholder="Discount code"
+                  className="w-full pl-9 pr-3 py-2.5 border border-border rounded-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
+                />
+              </div>
+              <button onClick={applyDiscount} className="px-4 py-2.5 border border-border rounded-card text-sm font-medium text-textSecondary hover:bg-bg transition-colors flex-shrink-0">Apply</button>
+            </div>
+            {discountError && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {discountError}</p>}
+          </div>
+        )
+      }
+
+      {/* Trust row */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { icon: Shield, label: 'Vet-authorised' },
+          { icon: Truck, label: 'Cold-chain certified' },
+          { icon: MessageCircle, label: '24/7 WhatsApp' },
+        ].map(({ icon: Icon, label }) => (
+          <div key={label} className="flex flex-col items-center gap-1.5 p-2.5 bg-bg border border-border rounded-card text-center">
+            <Icon className="w-4 h-4 text-primary" />
+            <span className="text-xs text-textSecondary font-medium">{label}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-textMuted hover:text-textPrimary transition-colors px-3 py-2.5">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+        <Button fullWidth size="lg" onClick={() => onPay(displayTotal, discountApplied, discountCode)} loading={checkoutLoading}>
+          Pay NZD ${displayTotal.toFixed(2)} →
+        </Button>
+      </div>
+      <p className="text-xs text-center text-textMuted flex items-center justify-center gap-1">
+        <Lock className="w-3 h-3" /> Secured by Stripe · NZD · no currency conversion
+      </p>
+      {insuranceSelected && (
+        <p className="text-xs text-center text-textMuted">Insurance billed separately after your plan is confirmed.</p>
+      )}
     </div>
   )
 }
 
-// ─── Main page ───────────────────────────────────────────────────────────────
+// ─── STEP 1: Vaccines ─────────────────────────────────────────────────────────
+
+function StepVaccines({ puppyName, additionalPuppies, vaccinePlan, toggleVaccineItem, aiAssessment, aiLoading, aiError, onNext }) {
+  const selected = vaccinePlan.filter((v) => v.selected)
+  return (
+    <div className="space-y-5">
+      <div>
+        <div className="inline-flex items-center gap-2 bg-success/10 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-success/20 mb-3">
+          <CheckCircle className="w-3.5 h-3.5" /> Consultation confirmed — your plan is ready
+        </div>
+        <h1 className="font-display font-bold text-2xl text-textPrimary">
+          {additionalPuppies.length > 0 ? "Your puppies' vaccination plans" : `${puppyName}'s vaccination plan`}
+        </h1>
+        <p className="text-sm text-textSecondary mt-1">Reviewed and authorised by a NZ-registered veterinarian. Deselect any items you want to skip.</p>
+      </div>
+
+      {aiError && <Alert type="warning">{aiError}</Alert>}
+
+      <PuppyPlanSection
+        puppyName={puppyName}
+        vaccinePlan={vaccinePlan}
+        toggleVaccineItem={toggleVaccineItem}
+        isLoading={aiLoading}
+      />
+      {additionalPuppies.map((puppy, i) => (
+        <PuppyPlanSection
+          key={i}
+          puppyName={puppy.name || `Puppy ${i + 2}`}
+          vaccinePlan={buildVaccinePlan(aiAssessment, puppy)}
+          toggleVaccineItem={() => {}}
+          isLoading={aiLoading}
+        />
+      ))}
+
+      {selected.length === 0 && !aiLoading && <Alert type="warning">Select at least one vaccine to continue.</Alert>}
+
+      <Button fullWidth size="lg" onClick={onNext} disabled={selected.length === 0 || aiLoading}>
+        Continue →
+      </Button>
+    </div>
+  )
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function PlanPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const {
-    dogProfile, healthHistory, lifestyle, ownerDetails, additionalPuppies,
+    dogProfile, healthHistory, lifestyle,
+    additionalPuppies, numberOfPuppies,
     aiAssessment, setAiAssessment,
-    numberOfPuppies,
     vaccinePlan, toggleVaccineItem,
     assistSelected, setAssistSelected,
     insuranceSelected, setInsuranceSelected,
@@ -353,13 +511,10 @@ export default function PlanPage() {
     getOrderTotals,
   } = useIntakeStore()
 
+  const [step, setStep] = useState(1)
   const [aiLoading, setAiLoading] = useState(!aiAssessment)
   const [aiError, setAiError] = useState(null)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
-  const [discountInput, setDiscountInput] = useState('')
-  const [discountCode, setDiscountCode] = useState('')
-  const [discountApplied, setDiscountApplied] = useState(false)
-  const [discountError, setDiscountError] = useState(null)
 
   useEffect(() => {
     if (searchParams.get('paid') === '1') setConsultPaid(true)
@@ -368,6 +523,11 @@ export default function PlanPage() {
   useEffect(() => {
     if (!aiAssessment) runAi()
   }, [])
+
+  // Scroll to top on step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
 
   const runAi = async () => {
     setAiLoading(true)
@@ -383,32 +543,19 @@ export default function PlanPage() {
     }
   }
 
-  const applyDiscount = () => {
-    if (discountInput.trim().toLowerCase() === 'bossmode') {
-      setDiscountCode(discountInput.trim())
-      setDiscountApplied(true)
-      setDiscountError(null)
-    } else {
-      setDiscountError('Invalid code.')
-    }
-  }
-
   const totals = getOrderTotals()
-  const selectedVaccines = vaccinePlan.filter((v) => v.selected)
   const puppyName = dogProfile.name || 'your puppy'
-  const vaccineAndDelivery = totals.vaccines + totals.assist + totals.freight
-  const displayVaccineTotal = discountApplied ? 1.00 : vaccineAndDelivery
 
-  const handleConfirmPlan = () => {
-    if (selectedVaccines.length === 0) return
+  const handlePay = (displayTotal, discountApplied, discountCode) => {
     setCheckoutLoading(true)
+    const selectedVaccines = vaccinePlan.filter((v) => v.selected)
     const items = selectedVaccines.map((v) => ({ name: v.name, price: v.price }))
 
     const params = new URLSearchParams({
       mode: 'vaccines',
       puppy: puppyName,
       puppyCount: numberOfPuppies.toString(),
-      total: displayVaccineTotal.toFixed(2),
+      total: displayTotal.toFixed(2),
       consult: '0',
       vaccines: discountApplied ? '1' : totals.vaccines.toString(),
       freight: discountApplied ? '0' : totals.freight.toString(),
@@ -416,7 +563,7 @@ export default function PlanPage() {
       insurance: totals.insurance.toFixed(2),
       insuranceBilling: totals.insuranceBilling,
       items: encodeURIComponent(JSON.stringify(discountApplied ? [{ name: 'Vaccines (bossmode)', price: 1 }] : items)),
-      ...(discountApplied ? { discountCode: discountCode } : {}),
+      ...(discountApplied ? { discountCode } : {}),
     })
     navigate(`/checkout?${params.toString()}`)
     setCheckoutLoading(false)
@@ -424,133 +571,62 @@ export default function PlanPage() {
 
   return (
     <div className="min-h-screen bg-bg pb-24">
-      {/* Header */}
-      <div className="border-b border-border bg-white px-4 py-4 flex items-center justify-between sticky top-0 z-20">
-        <Link to="/" className="font-display font-bold text-lg text-primary">VetPac</Link>
-        <span className="text-xs text-textMuted">Your vaccination plan</span>
+      {/* Sticky header */}
+      <div className="border-b border-border bg-white px-4 py-3 sticky top-0 z-20">
+        <div className="max-w-lg mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <Link to="/" className="font-display font-bold text-base text-primary">VetPac</Link>
+            <span className="text-xs text-textMuted">Step {step} of {STEPS.length}</span>
+          </div>
+          <StepBar step={step} />
+        </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-8">
-
-        {/* Confirmed banner */}
-        <div className="inline-flex items-center gap-2 bg-success/10 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-success/20">
-          <CheckCircle className="w-3.5 h-3.5" /> Consultation confirmed — your plan is ready
-        </div>
-
-        <div>
-          <h1 className="font-display font-bold text-2xl text-textPrimary mb-1">
-            {numberOfPuppies > 1 ? 'Your puppies\' vaccination plan' : `${puppyName}'s vaccination plan`}
-          </h1>
-          <p className="text-textSecondary text-sm">Select your vaccines, choose how they're administered, and confirm.</p>
-        </div>
-
-        {/* ── STEP 1: Vaccines ── */}
-        <section>
-          <SectionLabel number="1" label="Recommended vaccines" sub="Reviewed and authorised by a NZ-registered veterinarian" />
-          {aiError && <Alert type="warning" className="mb-3">{aiError}</Alert>}
-          <PuppyPlanSection
+      <div className="max-w-lg mx-auto px-4 py-6">
+        {step === 1 && (
+          <StepVaccines
             puppyName={puppyName}
+            additionalPuppies={additionalPuppies}
             vaccinePlan={vaccinePlan}
             toggleVaccineItem={toggleVaccineItem}
             aiAssessment={aiAssessment}
-            isLoading={aiLoading}
+            aiLoading={aiLoading}
+            aiError={aiError}
+            onNext={() => setStep(2)}
           />
-          {additionalPuppies.map((puppy, i) => (
-            <PuppyPlanSection
-              key={i}
-              puppyName={puppy.name || `Puppy ${i + 2}`}
-              vaccinePlan={buildVaccinePlan(aiAssessment, { ...dogProfile, ...puppy })}
-              toggleVaccineItem={() => {}}
-              aiAssessment={aiAssessment}
-              isLoading={aiLoading}
-            />
-          ))}
-        </section>
-
-        {/* ── STEP 2: Delivery ── */}
-        <section>
-          <SectionLabel number="2" label="How would you like it done?" sub="Most customers administer at home — it takes less than two minutes." />
-          <DeliveryBlock assistSelected={assistSelected} setAssistSelected={setAssistSelected} />
-        </section>
-
-        {/* ── Order summary + discount + CTA ── */}
-        <section className="space-y-3">
-          <OrderSummary totals={totals} puppyCount={numberOfPuppies} discountApplied={discountApplied} />
-
-          {/* Discount code */}
-          {!discountApplied ? (
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
-                <input
-                  type="text"
-                  value={discountInput}
-                  onChange={(e) => setDiscountInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && applyDiscount()}
-                  placeholder="Discount code"
-                  className="w-full pl-9 pr-3 py-2.5 border border-border rounded-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
-                />
-              </div>
-              <button onClick={applyDiscount} className="px-4 py-2.5 border border-border rounded-card text-sm font-medium text-textSecondary hover:bg-bg transition-colors flex-shrink-0">Apply</button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-card text-sm text-green-800">
-              <CheckCircle className="w-4 h-4" /> Code <strong className="mx-1">{discountCode.toUpperCase()}</strong> applied — NZD $1.00
-            </div>
-          )}
-          {discountError && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {discountError}</p>}
-
-          {selectedVaccines.length === 0 && <Alert type="warning">Select at least one vaccine to continue.</Alert>}
-
-          <Button fullWidth size="lg" onClick={handleConfirmPlan} loading={checkoutLoading} disabled={selectedVaccines.length === 0 || aiLoading}>
-            Confirm vaccines — Pay NZD ${displayVaccineTotal.toFixed(2)} →
-          </Button>
-          <p className="text-xs text-center text-textMuted flex items-center justify-center gap-1">
-            <Lock className="w-3 h-3" /> Secured by Stripe · NZD · no currency conversion
-          </p>
-        </section>
-
-        {/* ── SECTION 2: Insurance ── */}
-        <section className="border-t-4 border-primary/10 pt-8">
-          <SectionLabel number="3" label="Protect the next two years" sub={`The most important health window of ${puppyName}'s life.`} />
-          <InsuranceSection
+        )}
+        {step === 2 && (
+          <StepDelivery
+            assistSelected={assistSelected}
+            setAssistSelected={setAssistSelected}
+            onNext={() => setStep(3)}
+            onBack={() => setStep(1)}
+          />
+        )}
+        {step === 3 && (
+          <StepInsurance
             insuranceSelected={insuranceSelected}
             setInsuranceSelected={setInsuranceSelected}
             insuranceBilling={insuranceBilling}
             setInsuranceBilling={setInsuranceBilling}
+            onNext={() => setStep(4)}
+            onBack={() => setStep(2)}
           />
-          {insuranceSelected && (
-            <div className="mt-4 p-4 bg-bg border border-border rounded-card-lg space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-textSecondary">
-                  {INSURANCE.name} ({insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})
-                </span>
-                <span className="font-mono font-semibold">
-                  ${insuranceBilling === 'twoYear' ? INSURANCE.twoYearPrice : insuranceBilling === 'annual' ? INSURANCE.annualPrice : `${INSURANCE.monthlyPrice}/mo`}
-                </span>
-              </div>
-              <p className="text-xs text-textMuted">Insurance is billed separately and is not included in the vaccine payment above. You will receive a separate invoice once your plan is confirmed.</p>
-            </div>
-          )}
-        </section>
-
-        {/* ── FAQ ── */}
-        <section className="border-t-4 border-primary/10 pt-8">
-          <SectionLabel number="4" label="Everything you need to know" sub="Comprehensive answers before you confirm." />
-          <div className="border border-border rounded-card-lg overflow-hidden px-4 divide-y divide-border">
-            {PLAN_FAQ.map((item) => <Accordion key={item.q} q={item.q} a={item.a} />)}
-          </div>
-        </section>
-
-        {/* ── Trust ── */}
-        <section className="border-t-4 border-primary/10 pt-8">
-          <SectionLabel number="5" label="Why you can trust this" />
-          <TrustSection />
-        </section>
-
+        )}
+        {step === 4 && (
+          <StepSummary
+            totals={totals}
+            puppyName={puppyName}
+            puppyCount={numberOfPuppies}
+            insuranceSelected={insuranceSelected}
+            insuranceBilling={insuranceBilling}
+            onBack={() => setStep(3)}
+            onPay={handlePay}
+            checkoutLoading={checkoutLoading}
+          />
+        )}
       </div>
 
-      {/* Floating chat */}
       <FloatingChat />
     </div>
   )

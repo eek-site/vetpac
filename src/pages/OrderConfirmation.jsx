@@ -116,7 +116,7 @@ export default function OrderConfirmation() {
             </Button>
           </Link>
           <p className="text-textMuted text-sm mt-4">
-            Emergency line: <a href="tel:0800838722" className="text-primary font-semibold">0800 VETPAC</a> (24/7)
+            Urgent? Message us on <span className="text-primary font-semibold">WhatsApp</span> (24/7)
           </p>
         </div>
       </div>

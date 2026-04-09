@@ -264,11 +264,11 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'What if my puppy seems unwell on the day?',
-    a: 'Never proceed if your puppy is showing any signs of illness, however mild. We include a simple pre-vaccination checklist. If anything flags, stop and call us. We will hold your programme until your puppy is well.',
+    a: 'Never proceed if your puppy is showing any signs of illness, however mild. We include a simple pre-vaccination checklist. If anything flags, stop and message us on WhatsApp. We will hold your programme until your puppy is well.',
   },
   {
     q: 'What if something goes wrong after vaccination?',
-    a: 'Our 0800 VETPAC line is staffed 24 hours a day, 7 days a week. Call us immediately if your puppy shows any unusual signs after vaccination. We will advise you on what to do and stay with you throughout.',
+    a: 'Our WhatsApp support is available 24 hours a day, 7 days a week. Message us immediately if your puppy shows any unusual signs after vaccination. We will advise you on what to do and stay with you throughout.',
   },
   {
     q: 'Do you cover all of New Zealand?',

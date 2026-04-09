@@ -41,7 +41,7 @@ Return a JSON object with this exact structure:
         "administration_instructions": "1. Remove from fridge 15 min before. 2. Check expiry. 3. Wash hands. 4. Gently tent the scruff skin. 5. Insert needle at 45 degrees. 6. Check no blood return. 7. Inject slowly. 8. Apply gentle pressure 5 seconds. 9. Monitor 30 minutes.",
         "post_administration_monitoring": "Monitor for 30 minutes. Watch for swelling, hives, vomiting, or lethargy.",
         "adverse_reaction_signs": "Facial swelling, hives, vomiting, diarrhoea, extreme lethargy, collapse",
-        "emergency_action": "If severe reaction within 30 minutes: call 0800 VETPAC emergency line immediately and take dog to nearest emergency vet."
+        "emergency_action": "If severe reaction within 30 minutes: message VetPac on WhatsApp immediately and take puppy to nearest emergency vet."
       }
     ],
     "full_schedule": [],

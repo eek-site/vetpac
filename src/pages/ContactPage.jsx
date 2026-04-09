@@ -196,7 +196,7 @@ export default function ContactPage() {
           </button>
         </div>
         <p className="text-center text-xs text-textMuted mt-2 max-w-2xl mx-auto">
-          Enter to send · need urgent help? Call <span className="font-medium text-textSecondary">0800 VETPAC</span>
+          Enter to send · need urgent help? Message us on <span className="font-medium text-textSecondary">WhatsApp</span>
         </p>
       </div>
     </div>

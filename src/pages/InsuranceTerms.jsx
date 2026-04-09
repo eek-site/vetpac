@@ -161,7 +161,7 @@ export default function InsuranceTerms() {
         <div className="mt-12 pt-6 border-t border-border text-xs text-textMuted space-y-1">
           <p>VetPac Health Cover is issued by <strong className="text-textPrimary">Forman Pacific LLC</strong>.</p>
           <p>Registered in the United States. Operating in New Zealand under a cross-border services arrangement.</p>
-          <p>For all policy enquiries: <a href="mailto:support@vetpac.nz" className="text-primary hover:underline">support@vetpac.nz</a> · 0800 VETPAC</p>
+          <p>For all policy enquiries: <a href="mailto:support@vetpac.nz" className="text-primary hover:underline">support@vetpac.nz</a> · WhatsApp (24/7)</p>
           <p className="mt-3">These terms were last updated on 1 January 2025. Forman Pacific LLC reserves the right to amend these terms with 30 days written notice.</p>
         </div>
 
