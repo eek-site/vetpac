@@ -312,7 +312,6 @@ export default function AdminConsole() {
               <p className="font-semibold text-textPrimary group-hover:text-primary flex items-center gap-1">
                 Customer dashboard <ExternalLink className="w-3.5 h-3.5 opacity-50" />
               </p>
-              <p className="text-sm text-textMuted mt-1">Public customer dashboard (opens in a new tab).</p>
             </div>
           </a>
 
@@ -327,14 +326,13 @@ export default function AdminConsole() {
             </div>
             <div>
               <p className="font-semibold text-textPrimary">Marketing site</p>
-              <p className="text-sm text-textMuted mt-1">Homepage, intake, and public pages.</p>
             </div>
           </Link>
         </div>
 
         <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-semibold text-textPrimary">AI &amp; intake analytics</h3>
+            <h3 className="font-semibold text-textPrimary">Analytics</h3>
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" onClick={loadStats} loading={statsLoading} disabled={statsLoading}>
                 Refresh stats
@@ -344,10 +342,6 @@ export default function AdminConsole() {
               </Button>
             </div>
           </div>
-          <p className="text-sm text-textSecondary leading-relaxed">
-            Previously, each intake Q&amp;A only lived in the browser (Anthropic is called from the client); structured answers are saved in local storage after completion — not each chat turn in the database. <strong>Now</strong> every user/assistant turn is appended to <code className="text-xs bg-bg px-1 rounded font-mono">intake_chat_messages</code> (after you run the SQL migration and set{' '}
-            <code className="text-xs bg-bg px-1 rounded font-mono">SUPABASE_SERVICE_ROLE_KEY</code> on Vercel). Funnel counters also use <code className="text-xs bg-bg px-1 rounded font-mono">site_events</code>. SPA routes are not visible in Vercel access logs; use <strong>Backfill from Stripe</strong> for historical paid sessions. Times: <strong>NZ (Pacific/Auckland)</strong>.
-          </p>
           {statsError && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{statsError}</p>
           )}
@@ -358,7 +352,7 @@ export default function AdminConsole() {
           )}
           {intakeStats && (
             <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
-              <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Intake chat stored in DB (per session / messages)</p>
+              <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Intake chat</p>
               <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm text-textSecondary">
                 <div>
                   <span className="text-textMuted text-xs block">Sessions yesterday (NZ)</span>
@@ -402,17 +396,6 @@ export default function AdminConsole() {
               </div>
             </div>
           )}
-          {!stats && !statsError && !statsLoading && (
-            <p className="text-xs text-textMuted">Click &quot;Refresh stats&quot; after entering the admin key once (stored in this browser tab session).</p>
-          )}
-        </div>
-
-        <div className="bg-white rounded-card-lg border border-border p-6">
-          <h3 className="font-semibold text-textPrimary mb-2">Operations</h3>
-          <p className="text-sm text-textSecondary leading-relaxed">
-            Authentication uses the same MSAL SPA redirect as your other sites — redirect URI must be{' '}
-            <code className="text-xs bg-bg px-1.5 py-0.5 rounded font-mono">https://vetpac.nz/admin</code> (and localhost for dev).
-          </p>
         </div>
       </main>
     </div>
