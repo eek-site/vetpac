@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { CheckCircle, Package, Clock, FileText, Calendar, ArrowRight, Mail, ChevronDown, ChevronUp } from 'lucide-react'
+import { CheckCircle, Package, Clock, FileText, Calendar, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
 import Button from '../components/ui/Button'
+import SupportChat from '../components/SupportChat'
 import { useIntakeStore } from '../store/intakeStore'
 import { SITE_EMAIL, mailtoHref } from '../lib/site-email'
 
@@ -211,6 +212,7 @@ export default function OrderConfirmation() {
   }, [ownerDetails?.email])
 
   return (
+    <>
     <div className="min-h-screen bg-bg">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-28 pb-20">
         <SuccessAnimation />
@@ -255,20 +257,15 @@ export default function OrderConfirmation() {
           </div>
         </div>
 
-        {/* Support card */}
+        {/* Support note */}
         <div className="bg-primary rounded-card-lg p-8 text-white mb-6">
           <h2 className="font-display font-semibold text-xl mb-3">Questions? We're here.</h2>
-          <p style={{color: 'rgba(255,255,255,0.75)'}} className="text-sm mb-2">
-            A step-by-step administration guide is included in your kit. For anything else, email us — we respond as quickly as possible.
+          <p style={{color: 'rgba(255,255,255,0.75)'}} className="text-sm">
+            A step-by-step administration guide is included in your kit. Use the <strong style={{color:'#fff'}}>Contact us</strong> button in the bottom-right corner for anything else — we respond as quickly as possible.
           </p>
-          <p style={{color: 'rgba(255,255,255,0.6)'}} className="text-xs mb-5">
-            If it's a medical emergency, call your local vet immediately.
+          <p style={{color: 'rgba(255,255,255,0.5)'}} className="text-xs mt-3">
+            Medical emergency? Call your local vet immediately — don't wait for a reply.
           </p>
-          <a href={mailtoHref('VetPac — question about my order')}>
-            <Button variant="accent">
-              <Mail className="w-4 h-4" /> Email {SITE_EMAIL}
-            </Button>
-          </a>
         </div>
 
         {/* Dose schedule */}
@@ -281,10 +278,12 @@ export default function OrderConfirmation() {
             </Button>
           </Link>
           <p className="text-textMuted text-sm mt-4">
-            Questions? Email <a href={mailtoHref()} className="text-primary font-semibold hover:underline">{SITE_EMAIL}</a>
+            Questions? Use the <strong className="text-textSecondary">Contact us</strong> button below.
           </p>
         </div>
       </div>
     </div>
+    <SupportChat />
+    </>
   )
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import SupportChat from '../components/SupportChat'
 import {
   PawPrint, Package, FileText, Settings, ChevronRight, Plus,
   CheckCircle, Loader2, Mail, ArrowRight, AlertCircle, ExternalLink,
@@ -365,6 +366,7 @@ export default function Dashboard() {
         )}
       </div>
       <Footer />
+      <SupportChat />
     </div>
   )
 }

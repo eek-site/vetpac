@@ -517,7 +517,7 @@ function StepSummary({ totals, puppyCount, insuranceSelected, vaccinePlan, addit
             {[
               { icon: Shield, label: 'Vet-authorised' },
               { icon: Truck, label: 'Cold-chain certified' },
-              { icon: MessageCircle, label: 'Email support' },
+              { icon: MessageCircle, label: 'Live chat support' },
             ].map(({ icon: TrustIcon, label }) => (
               <div key={label} className="flex flex-col items-center gap-1.5 p-2.5 bg-bg border border-border rounded-card text-center">
                 <TrustIcon className="w-4 h-4 text-primary" />
