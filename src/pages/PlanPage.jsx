@@ -250,31 +250,27 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack
     <>
       <div className="space-y-5">
         <div>
-          <h1 className="font-display font-bold text-2xl text-textPrimary">Back your programme</h1>
-          <p className="text-sm text-textSecondary mt-1">A one-time warranty on your puppy's vaccination programme — priced from the actual data.</p>
+          <h1 className="font-display font-bold text-2xl text-textPrimary">Don't get caught with a $5,000 vet bill.</h1>
+          <p className="text-sm text-textSecondary mt-1">Vaccines work — but not always. 5% of puppies don't build full immunity, and adverse reactions happen. A one-time $225 warranty means if something goes wrong during your programme, VetPac covers it.</p>
         </div>
 
         {/* What's covered */}
         <div className="space-y-2">
-          <div className="flex items-start gap-3 p-4 bg-white border border-border rounded-card-lg">
-            <Shield className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-sm text-textPrimary">If the vaccine doesn't take</p>
-              <p className="text-sm text-textSecondary mt-0.5">
-                Around 5% of puppies don't build full immunity — maternal antibodies, genetics, or timing can all block the vaccine from working.<sup className="text-primary">1</sup> If your puppy contracts a vaccine-preventable disease during the programme, VetPac covers the vet bill in full.
-              </p>
-              <p className="text-xs text-textMuted mt-1">Parvovirus treatment in NZ: $1,500–$5,000<sup className="text-primary">2</sup></p>
+          <div className="p-4 bg-white border border-border rounded-card-lg">
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="font-display font-bold text-2xl text-rose-600">5%</span>
+              <p className="font-semibold text-sm text-textPrimary">of puppies don't build full immunity<sup className="text-primary font-sans text-xs">1</sup></p>
             </div>
+            <p className="text-sm text-textSecondary">Maternal antibodies, genetics, or timing can all block the vaccine. If your puppy contracts parvovirus, distemper, or hepatitis during the programme, VetPac covers the vet bill in full.</p>
+            <p className="text-xs text-textMuted mt-2">Parvovirus treatment in NZ: $1,500–$5,000<sup className="text-primary">2</sup></p>
           </div>
-          <div className="flex items-start gap-3 p-4 bg-white border border-border rounded-card-lg">
-            <Shield className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-sm text-textPrimary">If your puppy reacts to a vaccine</p>
-              <p className="text-sm text-textSecondary mt-0.5">
-                About 1 in 88 puppies experience an adverse reaction requiring vet care across a 3-dose programme.<sup className="text-primary">3</sup> Facial swelling, anaphylaxis, severe lethargy — VetPac covers any vet costs resulting from a vaccine we administered.
-              </p>
-              <p className="text-xs text-textMuted mt-1">Reaction treatment: $150–$800</p>
+          <div className="p-4 bg-white border border-border rounded-card-lg">
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="font-display font-bold text-2xl text-rose-600">1 in 88</span>
+              <p className="font-semibold text-sm text-textPrimary">puppies have an adverse reaction<sup className="text-primary font-sans text-xs">3</sup></p>
             </div>
+            <p className="text-sm text-textSecondary">Facial swelling, anaphylaxis, severe lethargy — it's rare, but when it happens it needs immediate vet care. VetPac covers any costs resulting from a vaccine we administered.</p>
+            <p className="text-xs text-textMuted mt-2">Reaction treatment: $150–$800</p>
           </div>
         </div>
 
