@@ -343,7 +343,7 @@ export default function AdminConsole() {
             <Shield className="w-12 h-12 text-primary mx-auto mb-4" />
             <h1 className="font-display font-bold text-2xl text-textPrimary mb-2">VetPac admin</h1>
             <p className="text-sm text-textSecondary mb-8">
-              Sign in with your Microsoft work account (same tenant as Forman Pacific).
+              VetPac staff and vet portal access only.
             </p>
             {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
             <Button fullWidth size="lg" onClick={signIn} loading={busy} disabled={busy}>

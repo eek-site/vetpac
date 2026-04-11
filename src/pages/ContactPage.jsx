@@ -160,36 +160,13 @@ export default function ContactPage() {
         path="/contact"
       />
 
-      <div className="min-h-screen bg-slate-50 flex flex-col">
-
-        {/* ── Page header ─────────────────────────────────────── */}
-        <div className="bg-[#1a3c2e] text-white px-4 py-8 pt-24">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center flex-shrink-0">
-                <MessageCircle size={22} className="text-white" />
-              </div>
-              <div>
-                <h1 className="font-display font-bold text-2xl sm:text-3xl leading-tight mb-1">
-                  VetPac Concierge
-                </h1>
-                <p className="text-white/70 text-sm max-w-lg">
-                  AI-powered, with every conversation reviewed by the team. Ask anything — we'll escalate to a real person when it matters.
-                </p>
-              </div>
-              <div className="ml-auto hidden sm:flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5 flex-shrink-0">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-xs text-white/80 font-medium">Online</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
 
         {/* ── Body: sidebar + chat ─────────────────────────────── */}
-        <div className="flex-1 max-w-5xl mx-auto w-full px-4 py-6 flex gap-6 items-start">
+        <div className="flex-1 max-w-5xl mx-auto w-full px-4 py-6 flex gap-6 items-start overflow-hidden" style={{ height: '100%' }}>
 
           {/* Sidebar — desktop only */}
-          <aside className="hidden lg:flex flex-col gap-4 w-64 flex-shrink-0 sticky top-6">
+          <aside className="hidden lg:flex flex-col gap-4 w-64 flex-shrink-0 overflow-y-auto" style={{ maxHeight: '100%' }}>
 
             {/* Emergency */}
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
@@ -231,12 +208,29 @@ export default function ContactPage() {
           </aside>
 
           {/* Chat panel */}
-          <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" style={{ minHeight: 'calc(100vh - 260px)' }}>
+          <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" style={{ height: '100%' }}>
 
-            {/* Mobile emergency strip */}
-            <div className="lg:hidden flex items-start gap-2 px-4 py-3 bg-amber-50 border-b border-amber-200">
+            {/* Chat panel header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-[#1a3c2e] flex-shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                  <MessageCircle size={15} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-white leading-tight">VetPac Concierge</p>
+                  <p className="text-xs text-white/60 leading-tight">AI-powered · every chat reviewed by the team</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 rounded-full px-2.5 py-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-xs text-white/80 font-medium">Online</span>
+              </div>
+            </div>
+
+            {/* Emergency strip */}
+            <div className="flex items-start gap-2 px-4 py-2.5 bg-amber-50 border-b border-amber-200 flex-shrink-0">
               <AlertTriangle size={13} className="text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-800"><strong>Emergency?</strong> Contact your local vet immediately.</p>
+              <p className="text-xs text-amber-800"><strong>Veterinary emergency?</strong> Contact your local vet immediately — do not wait for a chat response.</p>
             </div>
 
             {/* Messages area */}
