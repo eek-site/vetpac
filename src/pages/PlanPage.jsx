@@ -251,7 +251,7 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack
       <div className="space-y-5">
         <div>
           <h1 className="font-display font-bold text-2xl text-textPrimary">Don't get caught with a $5,000 vet bill.</h1>
-          <p className="text-sm text-textSecondary mt-1">Vaccines work — but not always. 5% of puppies don't build full immunity, and adverse reactions happen. A one-time $225 warranty means if something goes wrong during your programme, VetPac covers it.</p>
+          <p className="text-sm text-textSecondary mt-1">Vaccines work — but not always. For $225 you can get a warranty so you know it's all going to work. If something goes wrong during your programme, VetPac covers the vet costs. Simple.</p>
         </div>
 
         {/* What's covered */}
@@ -312,9 +312,8 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack
 
         {insuranceSelected && (
           <p className="text-xs text-textMuted">
-            By adding the warranty you agree to the{' '}
-            <button onClick={() => setTermsOpen(true)} className="text-primary underline font-medium">VetPac Warranty terms</button>.
-            One-time fee · zero service fee · service warranty, not insurance.
+            You're covered. If the vaccine doesn't take or your puppy reacts, VetPac covers the vet costs — no questions, no service fee.{' '}
+            <button onClick={() => setTermsOpen(true)} className="text-primary underline font-medium">Warranty terms</button>.
           </p>
         )}
 
