@@ -22,7 +22,7 @@ const QUICK_SUGGESTIONS = [
 
 const HELP_LINKS = [
   { label: 'Puppy vaccination guide', to: '/guide', sub: 'C3, C5, schedules & more' },
-  { label: 'Warranty terms', to: '/warranty-terms', sub: 'What's covered & how to claim' },
+  { label: 'Warranty terms', to: '/warranty-terms', sub: "What's covered & how to claim" },
   { label: 'Privacy policy', to: '/privacy', sub: 'Your data & your rights' },
   { label: 'Terms of service', to: '/terms', sub: 'Our service agreement' },
 ]
