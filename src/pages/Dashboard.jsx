@@ -4,6 +4,7 @@ import SupportChat from '../components/SupportChat'
 import {
   PawPrint, Package, FileText, Settings, ChevronRight, Plus,
   CheckCircle, Loader2, Mail, ArrowRight, AlertCircle, ExternalLink,
+  Calendar, Heart, MapPin, Tag,
 } from 'lucide-react'
 import Nav from '../components/layout/Nav'
 import Footer from '../components/layout/Footer'
@@ -152,6 +153,136 @@ function OrderRow({ order }) {
   )
 }
 
+// ─── Puppy card ───────────────────────────────────────────────────────────────
+
+function age(dob) {
+  if (!dob) return null
+  const birth = new Date(dob)
+  const now = new Date()
+  const months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth())
+  if (months < 24) return `${months} month${months !== 1 ? 's' : ''} old`
+  const years = Math.floor(months / 12)
+  return `${years} year${years !== 1 ? 's' : ''} old`
+}
+
+function cap(s) {
+  if (!s) return null
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+function PuppyCard({ puppy }) {
+  const [open, setOpen] = useState(false)
+  const pillBase = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium'
+  return (
+    <div className="border border-border rounded-card-lg overflow-hidden bg-white shadow-sm">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-bg transition-colors"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <PawPrint className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <p className="font-display font-bold text-lg text-textPrimary leading-tight">{puppy.name}</p>
+            <p className="text-sm text-textSecondary mt-0.5">
+              {[cap(puppy.breed), cap(puppy.sex), age(puppy.dob)].filter(Boolean).join(' · ')}
+            </p>
+          </div>
+        </div>
+        <ChevronRight className={`w-5 h-5 text-textMuted transition-transform flex-shrink-0 ${open ? 'rotate-90' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="border-t border-border px-5 pb-5 pt-4 space-y-4">
+          {/* Key facts */}
+          <div className="flex flex-wrap gap-2">
+            {puppy.dob && (
+              <span className={`${pillBase} bg-primary/8 text-primary`}>
+                <Calendar className="w-3 h-3" /> {new Date(puppy.dob).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            )}
+            {puppy.desexed && puppy.desexed !== 'unknown' && (
+              <span className={`${pillBase} bg-bg text-textSecondary border border-border`}>
+                {puppy.desexed === 'yes' ? 'Desexed' : 'Entire'}
+              </span>
+            )}
+            {puppy.weight_kg && puppy.weight_kg !== 'unknown' && (
+              <span className={`${pillBase} bg-bg text-textSecondary border border-border`}>
+                {puppy.weight_kg} kg
+              </span>
+            )}
+            {puppy.colour && (
+              <span className={`${pillBase} bg-bg text-textSecondary border border-border`}>
+                <Tag className="w-3 h-3" /> {cap(puppy.colour)}
+              </span>
+            )}
+            {puppy.lifestyle?.region && (
+              <span className={`${pillBase} bg-bg text-textSecondary border border-border`}>
+                <MapPin className="w-3 h-3" /> {puppy.lifestyle.region}
+              </span>
+            )}
+          </div>
+
+          {/* Health snapshot */}
+          <div>
+            <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Health</p>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+              {[
+                ['Activity', cap(puppy.health?.activity_level)],
+                ['Allergies', puppy.health?.known_allergies === 'yes' ? 'Yes' : 'None known'],
+                ['Medications', puppy.health?.current_medications === 'yes' ? 'Yes' : 'None'],
+                ['Prior vaccines', puppy.vaccinated_before === 'yes' ? 'Yes' : 'None'],
+              ].map(([label, value]) => value && (
+                <div key={label} className="flex justify-between gap-2">
+                  <span className="text-textMuted">{label}</span>
+                  <span className="text-textPrimary font-medium text-right">{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Lifestyle */}
+          {(puppy.lifestyle?.living_environment || puppy.lifestyle?.dog_parks_boarding) && (
+            <div>
+              <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Lifestyle</p>
+              <div className="flex flex-wrap gap-2">
+                {puppy.lifestyle.living_environment && (
+                  <span className={`${pillBase} bg-bg text-textSecondary border border-border`}>
+                    {cap(puppy.lifestyle.living_environment)}
+                  </span>
+                )}
+                {puppy.lifestyle.dog_parks_boarding === 'yes' && (
+                  <span className={`${pillBase} bg-bg text-textSecondary border border-border`}>
+                    Dog parks / boarding
+                  </span>
+                )}
+                {puppy.lifestyle.waterway_access === 'yes' && (
+                  <span className={`${pillBase} bg-bg text-textSecondary border border-border`}>
+                    Waterway access
+                  </span>
+                )}
+                {puppy.lifestyle.livestock_contact === 'yes' && (
+                  <span className={`${pillBase} bg-bg text-textSecondary border border-border`}>
+                    Livestock contact
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {puppy.microchip_no && (
+            <p className="text-xs text-textMuted">
+              Microchip: <span className="font-mono text-textSecondary">{puppy.microchip_no}</span>
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Empty states ─────────────────────────────────────────────────────────────
 
 function EmptyState({ icon: Icon, title, body, cta }) {
@@ -176,6 +307,8 @@ export default function Dashboard() {
   const [orders, setOrders] = useState([])
   const [ordersLoading, setOrdersLoading] = useState(false)
   const [ordersError, setOrdersError] = useState(null)
+  const [puppies, setPuppies] = useState([])
+  const [puppiesLoading, setPuppiesLoading] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -220,6 +353,21 @@ export default function Dashboard() {
       }
     }
     load()
+    return () => { cancelled = true }
+  }, [session])
+
+  useEffect(() => {
+    if (!session?.access_token) return
+    let cancelled = false
+    setPuppiesLoading(true)
+    fetch('/api/dashboard-puppies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled && Array.isArray(d.puppies)) setPuppies(d.puppies) })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setPuppiesLoading(false) })
     return () => { cancelled = true }
   }, [session])
 
@@ -310,24 +458,43 @@ export default function Dashboard() {
         {/* Puppies tab */}
         {activeTab === 'puppies' && (
           <div>
-            <EmptyState
-              icon={PawPrint}
-              title="Add your first puppy"
-              body="Start a health intake to build a personalised vaccination plan. Your puppy's profile will appear here."
-              cta={
-                <Link to="/intake">
-                  <Card hover className="inline-flex flex-col items-center gap-3 p-6 text-center border-2 border-dashed border-border bg-transparent shadow-none hover:border-primary hover:bg-primary/5 transition-all">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Plus className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-textPrimary">Start a health intake</p>
-                      <p className="text-textMuted text-sm">Takes about 5 minutes</p>
-                    </div>
-                  </Card>
+            {puppiesLoading && (
+              <div className="flex items-center justify-center gap-3 py-12">
+                <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                <span className="text-sm text-textMuted">Loading your puppies…</span>
+              </div>
+            )}
+            {!puppiesLoading && puppies.length > 0 && (
+              <div className="space-y-4">
+                {puppies.map((p) => <PuppyCard key={p.id} puppy={p} />)}
+                <Link to="/intake?fresh=1" className="block mt-2">
+                  <div className="flex items-center gap-3 p-4 border-2 border-dashed border-border rounded-card-lg hover:border-primary hover:bg-primary/5 transition-all text-textMuted hover:text-primary">
+                    <Plus className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-sm font-medium">Add another puppy</span>
+                  </div>
                 </Link>
-              }
-            />
+              </div>
+            )}
+            {!puppiesLoading && puppies.length === 0 && (
+              <EmptyState
+                icon={PawPrint}
+                title="Add your first puppy"
+                body="Start a health intake to build a personalised vaccination plan. Your puppy's profile will appear here."
+                cta={
+                  <Link to="/intake">
+                    <Card hover className="inline-flex flex-col items-center gap-3 p-6 text-center border-2 border-dashed border-border bg-transparent shadow-none hover:border-primary hover:bg-primary/5 transition-all">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Plus className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-textPrimary">Start a health intake</p>
+                        <p className="text-textMuted text-sm">Takes about 5 minutes</p>
+                      </div>
+                    </Card>
+                  </Link>
+                }
+              />
+            )}
           </div>
         )}
 
