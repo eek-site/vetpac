@@ -14,6 +14,7 @@ import TermsOfService from './pages/TermsOfService'
 import LegalCompliance from './pages/LegalCompliance'
 import ContactPage from './pages/ContactPage'
 import Dashboard from './pages/Dashboard'
+import AuthCallback from './pages/AuthCallback'
 import VetPortal from './pages/VetPortal'
 import NotFound from './pages/NotFound'
 import AdminConsole from './pages/AdminConsole'
@@ -28,8 +29,8 @@ function ScrollToTop() {
 }
 
 const INTAKE_ROUTES = ['/intake', '/intake/review']
-const NO_NAV_ROUTES = ['/checkout', '/plan', '/admin', '/order-confirmation', ...INTAKE_ROUTES]
-const NO_FOOTER_ROUTES = ['/checkout', '/plan', '/admin', '/order-confirmation', ...INTAKE_ROUTES, '/dashboard', '/vet-portal']
+const NO_NAV_ROUTES = ['/checkout', '/plan', '/admin', '/order-confirmation', '/auth/callback', ...INTAKE_ROUTES]
+const NO_FOOTER_ROUTES = ['/checkout', '/plan', '/admin', '/order-confirmation', '/auth/callback', ...INTAKE_ROUTES, '/dashboard', '/vet-portal']
 
 function Layout({ children }) {
   const { pathname } = useLocation()
@@ -68,6 +69,7 @@ export default function App() {
           <Route path="/legal" element={<LegalCompliance />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/admin" element={<AdminConsole />} />
           <Route path="/vet-portal" element={<VetPortal />} />
           <Route path="*" element={<NotFound />} />

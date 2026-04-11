@@ -93,12 +93,18 @@ export default async function handler(req, res) {
       type: 'magiclink',
       email,
       options: {
-        redirectTo: `${SITE_URL.replace(/\/$/, '')}/dashboard`,
+        redirectTo: `${SITE_URL.replace(/\/$/, '')}/auth/callback`,
       },
     })
 
     if (error) throw error
-    const actionLink = data?.properties?.action_link
+
+    // Use token_hash directly in our own callback URL — bypasses Supabase "Site URL" config
+    const tokenHash = data?.properties?.hashed_token
+    const actionLink = tokenHash
+      ? `${SITE_URL.replace(/\/$/, '')}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink`
+      : data?.properties?.action_link   // fallback to Supabase action link
+
     if (!actionLink) throw new Error('No action link returned')
 
     await sendMagicLinkEmail(email, actionLink)
