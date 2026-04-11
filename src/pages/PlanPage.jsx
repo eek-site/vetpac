@@ -246,9 +246,33 @@ const WARRANTY_FAQ = [
 function StepInsurance({ insuranceSelected, setInsuranceSelected, insuranceBilling, setInsuranceBilling, onNext, onBack }) {
   const [termsOpen, setTermsOpen] = useState(false)
   const plans = [
-    { id: 'monthly', label: 'Monthly', price: `$${WARRANTY.monthlyPrice}/mo`, sub: 'Pay month to month', serviceFee: WARRANTY.serviceFee, badge: null },
-    { id: 'annual', label: 'Annual', price: `$${WARRANTY.annualPrice}/yr`, sub: `$${(WARRANTY.annualPrice / 12).toFixed(2)}/month`, serviceFee: WARRANTY.serviceFee, badge: 'Save vs monthly' },
-    { id: 'twoYear', label: '2-Year upfront', price: `$${WARRANTY.twoYearPrice}`, sub: `$${(WARRANTY.twoYearPrice / 24).toFixed(2)}/month · pay once`, serviceFee: WARRANTY.twoYearServiceFee, badge: 'Best value · service fee halved to $750' },
+    {
+      id: 'monthly',
+      label: 'Monthly',
+      price: `$${WARRANTY.monthlyPrice}/mo`,
+      perDay: '83¢ a day',
+      sub: 'No lock-in · cancel any time',
+      serviceFee: WARRANTY.serviceFee,
+      badge: null,
+    },
+    {
+      id: 'annual',
+      label: 'Annual',
+      price: `$${WARRANTY.annualPrice}/yr`,
+      perDay: '71¢ a day',
+      sub: `Save $${((WARRANTY.monthlyPrice * 12) - WARRANTY.annualPrice).toFixed(0)} vs monthly`,
+      serviceFee: WARRANTY.serviceFee,
+      badge: 'Popular',
+    },
+    {
+      id: 'twoYear',
+      label: '2-Year upfront',
+      price: `$${WARRANTY.twoYearPrice}`,
+      perDay: '67¢ a day',
+      sub: `Save $${((WARRANTY.monthlyPrice * 24) - WARRANTY.twoYearPrice).toFixed(0)} vs monthly · service fee halved`,
+      serviceFee: WARRANTY.twoYearServiceFee,
+      badge: 'Best value',
+    },
   ]
 
   return (
@@ -256,31 +280,26 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, insuranceBilli
       <div className="space-y-5">
         <div>
           <h1 className="font-display font-bold text-2xl text-textPrimary">Protect the next two years</h1>
-          <p className="text-sm text-textSecondary mt-1">The most important health window of your puppy's life.</p>
+          <p className="text-sm text-textSecondary mt-1">The most expensive vet bills happen in the first two years. The warranty pays for itself after a single claim.</p>
         </div>
 
-        {/* Header callout */}
-        <div className="flex items-start gap-3 p-4 bg-rose-50 border border-rose-100 rounded-card-lg">
-          <Heart className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-semibold text-textPrimary text-sm">{WARRANTY.name}</p>
-            <p className="text-sm text-textSecondary mt-1">One unexpected illness or surgery can cost $3,000–$8,000. The VetPac Warranty is a service guarantee on your puppy's health programme — VetPac covers eligible vet costs for the first two years.</p>
-            <p className="text-xs text-textMuted mt-1.5">This is a service warranty provided by VetPac, not an insurance product.</p>
-          </div>
-        </div>
-
-        {/* Key stats */}
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { v: `$${(WARRANTY.claimLimit / 1000).toFixed(0)}k`, l: 'Claim limit' },
-            { v: '100%', l: 'Costs covered' },
-            { v: '14 days', l: 'Activation period' },
-          ].map(({ v, l }) => (
-            <div key={l} className="bg-bg border border-border rounded-card p-2.5 text-center">
-              <p className="text-base font-bold text-primary">{v}</p>
-              <p className="text-xs text-textMuted">{l}</p>
+        {/* Risk vs cost callout */}
+        <div className="rounded-card-lg border border-rose-100 bg-rose-50 overflow-hidden">
+          <div className="flex items-start gap-3 p-4">
+            <Heart className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-textPrimary text-sm">What you're protected against</p>
+              <div className="mt-2 space-y-1 text-xs text-textSecondary">
+                <div className="flex justify-between"><span>Emergency vet visit</span><span className="font-semibold text-rose-700">$800 – $2,500</span></div>
+                <div className="flex justify-between"><span>Surgery</span><span className="font-semibold text-rose-700">$3,000 – $8,000</span></div>
+                <div className="flex justify-between"><span>Hospitalisation (3 nights)</span><span className="font-semibold text-rose-700">$1,500 – $4,000</span></div>
+                <div className="flex justify-between border-t border-rose-200 pt-1.5 mt-1.5"><span className="font-semibold text-textPrimary">VetPac Warranty covers up to</span><span className="font-bold text-primary">$15,000</span></div>
+              </div>
             </div>
-          ))}
+          </div>
+          <div className="bg-rose-100/60 px-4 py-2 text-xs text-rose-700">
+            1 in 3 puppies needs unexpected vet care in their first two years.
+          </div>
         </div>
 
         {/* Plan options */}
@@ -295,21 +314,24 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, insuranceBilli
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-sm text-textPrimary">{plan.label}</span>
-                    {plan.badge && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">{plan.badge}</span>}
+                    {plan.badge && <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${plan.id === 'twoYear' ? 'bg-primary/10 text-primary' : 'bg-amber-100 text-amber-800'}`}>{plan.badge}</span>}
                   </div>
                   <p className="text-xs text-textMuted mt-0.5">{plan.sub} · ${plan.serviceFee} service fee per claim</p>
                 </div>
-                <span className="font-mono font-bold text-sm text-textPrimary flex-shrink-0">{plan.price}</span>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-mono font-bold text-sm text-textPrimary">{plan.price}</p>
+                  <p className="text-xs text-textMuted">{plan.perDay}</p>
+                </div>
               </div>
             </div>
           ))}
           <button onClick={() => setInsuranceSelected(false)}
-            className={`w-full text-left rounded-card border-2 p-3 transition-all ${!insuranceSelected ? 'border-primary/30 bg-primary/5' : 'border-border bg-white hover:border-border'}`}>
+            className={`w-full text-left rounded-card border-2 p-3 transition-all ${!insuranceSelected ? 'border-border bg-white' : 'border-border bg-white hover:border-border'}`}>
             <div className="flex items-center gap-3">
               <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${!insuranceSelected ? 'border-primary' : 'border-border'}`}>
                 {!insuranceSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
               </div>
-              <span className="text-sm text-textSecondary">No warranty for now</span>
+              <span className="text-sm text-textSecondary">I'll cover vet costs myself</span>
             </div>
           </button>
         </div>
@@ -318,7 +340,7 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, insuranceBilli
           <p className="text-xs text-textMuted">
             By adding the warranty you agree to the{' '}
             <button onClick={() => setTermsOpen(true)} className="text-primary underline font-medium">VetPac Warranty terms</button>.
-            ${insuranceBilling === 'twoYear' ? WARRANTY.twoYearServiceFee : WARRANTY.serviceFee} service fee per claim · costs covered by VetPac.
+            ${insuranceBilling === 'twoYear' ? WARRANTY.twoYearServiceFee : WARRANTY.serviceFee} service fee per claim · costs covered by VetPac. Service warranty, not insurance.
           </p>
         )}
 
