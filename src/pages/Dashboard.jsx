@@ -272,58 +272,154 @@ function ProgressTracker({ dog }) {
 
 // ─── What to expect ───────────────────────────────────────────────────────────
 
+// ─── Administration Guide modal ───────────────────────────────────────────────
+
+function AdminGuideModal({ onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="sticky top-0 bg-white border-b border-slate-100 px-5 py-4 flex items-center justify-between">
+          <h2 className="font-bold text-slate-800">VetPac Administration Guide</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X size={20} /></button>
+        </div>
+        <div className="px-5 py-5 space-y-5 text-sm text-slate-700">
+
+          <section className="space-y-2">
+            <h3 className="font-semibold text-slate-800">Before you begin</h3>
+            <ul className="space-y-1.5 list-none">
+              {['Check the temperature strip on your cold-chain pack — all squares should be intact. If any are triggered, do not use the vaccines and contact us immediately.',
+                'Confirm your dog has eaten within the last 4 hours and is behaving normally.',
+                'Choose a calm, quiet space where your dog feels relaxed.',
+                'Wash your hands thoroughly before handling any equipment.'].map((s, i) => (
+                <li key={i} className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />{s}</li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="space-y-2">
+            <h3 className="font-semibold text-slate-800">Administering the vaccine</h3>
+            <ol className="space-y-2">
+              {['Remove the vaccine from the fridge 10–15 minutes before administration. Allow it to reach room temperature.',
+                'Inspect the vial — liquid should be clear or slightly cloudy with no particles. Do not use if it looks unusual.',
+                'Draw up the dose as indicated on the vial label using the supplied syringe.',
+                'Part the fur at the scruff of the neck (back of the neck, between the shoulder blades). This is the correct injection site.',
+                'Pinch the skin gently to form a small tent. Insert the needle at a 45° angle into the tent.',
+                'Depress the plunger smoothly and steadily. Remove the needle in one clean motion.',
+                'Dispose of the needle immediately in the sharps container provided. Never recap a used needle.'].map((s, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                  {s}
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="space-y-2">
+            <h3 className="font-semibold text-slate-800">After the dose — 30-minute observation</h3>
+            <p className="text-slate-600">Keep your dog calm and in your sight for 30 minutes after administration. Watch for:</p>
+            <ul className="space-y-1.5">
+              {['Facial swelling or hives — contact us immediately',
+                'Sudden lethargy or collapse — call your local vet',
+                'Vomiting — monitor closely, contact us if it continues',
+                'Mild tenderness at the injection site — normal, resolves within 24 hours'].map((s, i) => (
+                <li key={i} className="flex items-start gap-2 text-slate-600"><span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0 mt-2" />{s}</li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="space-y-2">
+            <h3 className="font-semibold text-slate-800">Storage</h3>
+            <p className="text-slate-600">Unused vaccines must be stored at 2–8°C. Never freeze. Keep away from direct light. Use by the date on the vial label.</p>
+          </section>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800">
+            <strong>Emergency:</strong> If your dog shows severe symptoms, contact your local vet immediately. For any other concerns, use the chat button — we respond quickly around the clock.
+          </div>
+
+          <button
+            onClick={() => { onClose(); window.dispatchEvent(new CustomEvent('vetpac:open-chat')) }}
+            className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium py-2.5 px-4 rounded-xl transition-colors"
+          >
+            Chat with us
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── What to expect ───────────────────────────────────────────────────────────
+
+function ChatButton({ label = 'Chat with us' }) {
+  return (
+    <button
+      onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))}
+      className="inline-flex items-center gap-1.5 text-xs bg-teal-600 hover:bg-teal-700 text-white font-medium px-3 py-1.5 rounded-lg transition-colors mt-1"
+    >
+      {label}
+    </button>
+  )
+}
+
 function WhatToExpect({ deliveryMethod }) {
+  const [guideOpen, setGuideOpen] = useState(false)
   if (!deliveryMethod) return null
   const isAssist = deliveryMethod === 'vetpac_assist'
 
-  const steps = isAssist ? [
-    "We'll contact you to schedule your first appointment — evenings and weekends available.",
-    'Your VetPac trainer arrives with everything: vaccines, cold-chain kit, syringes, and all paperwork. Nothing for you to source.',
-    'Your trainer administers each dose and stays for the full 30-minute observation window — included at no extra charge.',
-    "We'll book each follow-up and send a reminder before every appointment. You don't need to chase anything.",
-    'You receive a signed, official vaccination certificate after each dose. We keep a copy too.',
-  ] : [
-    'Your vaccines are hand-delivered by a VetPac trainer in a certified cold-chain pack with a temperature strip — intact strip means safe to use.',
-    'Store in the fridge at 2–8°C immediately. Do not freeze.',
-    'Your trainer walks you through the full administration process — included free with every self-administer order.',
-    'Administer each dose on the schedule below. The included VetPac Guide covers every step in plain language.',
-    'Any questions before, during, or after a dose — chat to us. We're available around the clock.',
-  ]
-
   const freebies = isAssist ? [
     '30-min post-dose observation — included',
-    'Official vaccination certificate — included',
-    'Follow-up scheduling & reminders — included',
+    'Official vaccination certificate after every dose — included',
+    'Follow-up scheduling & appointment reminders — included',
   ] : [
-    'Trainer delivery & orientation session — included',
+    'Hand delivery by a VetPac trainer + orientation session — included',
     'VetPac Administration Guide — included',
     'Around-the-clock chat support — included',
   ]
 
   return (
-    <Section title="What to expect" icon={Package} defaultOpen>
-      <div className="flex items-start gap-2.5 mb-3">
-        {isAssist ? <Home size={15} className="text-teal-600 mt-0.5 shrink-0" /> : <Package size={15} className="text-slate-500 mt-0.5 shrink-0" />}
-        <div>
-          <p className="text-sm font-medium text-slate-700">{isAssist ? 'VetPac Assist — In-home vaccinator' : 'Self-administer at home'}</p>
-          <p className="text-xs text-slate-500 mt-0.5">{isAssist ? 'A certified VetPac trainer comes to your home and administers every dose.' : 'Vaccines delivered by a VetPac trainer — you administer each dose with full guidance.'}</p>
+    <>
+      {guideOpen && <AdminGuideModal onClose={() => setGuideOpen(false)} />}
+      <Section title="What to expect" icon={Package} defaultOpen>
+        <div className="flex items-start gap-2.5 mb-3">
+          {isAssist ? <Home size={15} className="text-teal-600 mt-0.5 shrink-0" /> : <Package size={15} className="text-slate-500 mt-0.5 shrink-0" />}
+          <div>
+            <p className="text-sm font-medium text-slate-700">{isAssist ? 'VetPac Assist — In-home vaccinator' : 'Self-administer at home'}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{isAssist ? 'A certified VetPac trainer comes to your home and administers every dose.' : 'Vaccines hand-delivered by a VetPac trainer — you administer each dose with full guidance.'}</p>
+          </div>
         </div>
-      </div>
-      <ol className="space-y-2 mb-4">
-        {steps.map((s, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-            <span className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 ${isAssist ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-600'}`}>{i + 1}</span>
-            {s}
-          </li>
-        ))}
-      </ol>
-      <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 space-y-1.5">
-        <p className="text-xs font-semibold text-teal-800">Included at no extra charge</p>
-        {freebies.map((f, i) => (
-          <p key={i} className="text-xs text-teal-700 flex items-center gap-1.5"><CheckCircle size={11} className="shrink-0" />{f}</p>
-        ))}
-      </div>
-    </Section>
+
+        <ol className="space-y-3 mb-4">
+          {isAssist ? [
+            { text: "We'll contact you to schedule your first appointment — evenings and weekends available." },
+            { text: 'Your VetPac trainer arrives with everything: vaccines, cold-chain kit, syringes, and all paperwork. Nothing for you to source.' },
+            { text: 'Your trainer administers each dose and stays for the full 30-minute observation window.' },
+            { text: "We'll book each follow-up and send reminders. You don't need to chase anything." },
+            { text: 'You receive a signed, official vaccination certificate after each dose.', action: <ChatButton label="Questions? Chat with us" /> },
+          ] : [
+            { text: 'Your vaccines arrive in a certified cold-chain pack with a temperature strip — intact strip means safe to use.' },
+            { text: 'Store in the fridge at 2–8°C immediately. Do not freeze.' },
+            { text: 'Your trainer delivers and walks you through the full administration process.', action: <ChatButton label="Schedule orientation" /> },
+            { text: 'Administer each dose on the schedule below.', action: <button onClick={() => setGuideOpen(true)} className="inline-flex items-center gap-1 text-xs text-teal-700 hover:text-teal-900 font-medium underline underline-offset-2 mt-1">Read the Administration Guide →</button> },
+            { text: 'Any questions before, during, or after a dose — we\'re here.', action: <ChatButton label="Chat with us" /> },
+          ].map((step, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+              <span className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 ${isAssist ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-600'}`}>{i + 1}</span>
+              <div>
+                <span>{step.text}</span>
+                {step.action && <div>{step.action}</div>}
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 space-y-1.5">
+          <p className="text-xs font-semibold text-teal-800">Included at no extra charge</p>
+          {freebies.map((f, i) => (
+            <p key={i} className="text-xs text-teal-700 flex items-center gap-1.5"><CheckCircle size={11} className="shrink-0" />{f}</p>
+          ))}
+        </div>
+      </Section>
+    </>
   )
 }
 
@@ -540,15 +636,24 @@ function DogCard({ dog: initial, sessionToken, accessToken, onUpdate }) {
               >
                 <Shield size={14} /> File a claim
               </button>
-              <Link to="/warranty-terms" className="block text-center text-xs text-slate-400 hover:text-teal-700 transition-colors underline underline-offset-2">
-                View full warranty terms
+              <Link
+                to="/warranty-terms"
+                className="block text-center text-xs text-slate-500 hover:text-teal-700 transition-colors underline underline-offset-2"
+              >
+                View full warranty terms &amp; conditions
               </Link>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-sm text-slate-500">No warranty on this order.</p>
-              <p className="text-xs text-slate-400">Covers vaccine failure, adverse reactions, and illness during the vaccination window. No excess. No vet visit required to claim.</p>
-              <Link to="/plan"><Button size="sm" variant="outline">Add warranty <ArrowRight size={14} /></Button></Link>
+              <div className="space-y-1 text-xs text-slate-400">
+                <p>Warranty covers vaccine failure, adverse reactions, and illness during the vaccination window.</p>
+                <p>No excess. No vet visit required to claim.</p>
+              </div>
+              <div className="flex gap-2">
+                <Link to="/plan" className="flex-1"><Button size="sm" variant="outline" className="w-full">Add warranty</Button></Link>
+                <Link to="/warranty-terms" className="flex-1"><Button size="sm" variant="outline" className="w-full">View terms</Button></Link>
+              </div>
             </div>
           )}
         </Section>
