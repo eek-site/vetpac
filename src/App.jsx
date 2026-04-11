@@ -9,6 +9,9 @@ import Checkout from './pages/Checkout'
 import PlanPage from './pages/PlanPage'
 import OrderConfirmation from './pages/OrderConfirmation'
 import InsuranceTerms from './pages/InsuranceTerms'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
+import LegalCompliance from './pages/LegalCompliance'
 import ContactPage from './pages/ContactPage'
 import Dashboard from './pages/Dashboard'
 import VetPortal from './pages/VetPortal'
@@ -60,6 +63,9 @@ export default function App() {
           <Route path="/plan" element={<PlanPage />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/insurance-terms" element={<InsuranceTerms />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/legal" element={<LegalCompliance />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<AdminConsole />} />
