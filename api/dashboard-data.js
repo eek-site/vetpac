@@ -246,7 +246,9 @@ export default async function handler(req, res) {
     // Merge order data: prefer Stripe line items, fall back to stored vaccine_plan
     const orderDate = stripeOrder?.orderDate || s.order_date
     const deliveryMethod = stripeOrder?.deliveryMethod || s.delivery_method || null
-    const warrantySelected = stripeOrder?.hasWarranty ?? s.warranty_selected ?? false
+    // Use || so that warranty_selected=true from intake_session always wins
+    // even when the Stripe line items don't surface it (e.g. bossmode test payment)
+    const warrantySelected = stripeOrder?.hasWarranty || s.warranty_selected || false
     const vaccines = stripeOrder?.vaccines?.length
       ? stripeOrder.vaccines
       : (s.vaccine_plan || [])
