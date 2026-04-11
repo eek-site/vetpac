@@ -1,29 +1,28 @@
-// ─── Regional consult fee pricing (Stats NZ 2023 median household income) ────
-// Auckland = $49 to meet local competition. All others income-scaled to $289 max.
-// Formula: $149 + $140 × (income − $61k) / ($95k − $61k), rounded to nearest $5
+// ─── Regional consult fee pricing ────────────────────────────────────────────
+// Flat $49 across all regions.
 export const REGIONAL_CONSULTATION_FEES = {
-  'Auckland':              49,   // competition pricing
-  'Wellington':           289,   // $95k income — top tier
-  'Waikato':              245,   // $84k
-  'Canterbury':           219,   // $77k
-  "Hawke's Bay":          209,   // $75k
-  'Bay of Plenty':        199,   // $73k
-  'Taranaki':             195,   // $72k
-  'Nelson':               195,   // $72k
-  'Marlborough':          189,   // $71k
-  'Tasman':               185,   // $70k
-  'Otago':                179,   // $69k
-  'Manawatu-Whanganui':   179,   // $68k
-  'Northland':            175,   // $67k
-  'Southland':            159,   // $64k
-  'West Coast':           155,   // $63k
-  'Gisborne':             149,   // $61k — floor
+  'Auckland':              49,
+  'Wellington':            49,
+  'Waikato':               49,
+  'Canterbury':            49,
+  "Hawke's Bay":           49,
+  'Bay of Plenty':         49,
+  'Taranaki':              49,
+  'Nelson':                49,
+  'Marlborough':           49,
+  'Tasman':                49,
+  'Otago':                 49,
+  'Manawatu-Whanganui':    49,
+  'Northland':             49,
+  'Southland':             49,
+  'West Coast':            49,
+  'Gisborne':              49,
 }
 
 // 18% compound reduction per additional puppy, min $48/puppy, result as 1 number
 export function calculateConsultFee(region, numberOfPuppies = 1) {
-  const basePrice = REGIONAL_CONSULTATION_FEES[region] ?? 289
-  const MIN_PER_PUPPY = 48
+  const basePrice = REGIONAL_CONSULTATION_FEES[region] ?? 49
+  const MIN_PER_PUPPY = 49
   let total = 0
   let price = basePrice
   for (let i = 0; i < numberOfPuppies; i++) {
@@ -36,7 +35,7 @@ export function calculateConsultFee(region, numberOfPuppies = 1) {
 export const CONSULTATION_FEE = {
   id: 'consultation',
   name: 'Initial Consultation',
-  price: 289, // default — overridden dynamically by region + puppy count
+  price: 49, // default — overridden dynamically by region + puppy count
   description: 'Full health assessment and personalised vaccine plan for your puppy.',
   includes: [
     'Personalised health intake',
@@ -131,7 +130,7 @@ export const PRICING_EXAMPLES = [
     id: 'puppy_course',
     label: 'Full puppy course',
     scenario: '3-dose programme shipped at the right intervals',
-    consultation: 289,
+    consultation: 49,
     vaccines: [
       { name: 'C3 dose 1', price: 89 },
       { name: 'C5 dose 2', price: 89 },
@@ -144,7 +143,7 @@ export const PRICING_EXAMPLES = [
     id: 'single_dose',
     label: 'Annual booster',
     scenario: 'Adult puppy, single C5 booster',
-    consultation: 289,
+    consultation: 49,
     vaccines: [
       { name: 'C5 annual booster', price: 89 },
     ],
@@ -154,7 +153,7 @@ export const PRICING_EXAMPLES = [
     id: 'partial_course',
     label: 'Partially vaccinated puppy',
     scenario: '2 doses remaining',
-    consultation: 289,
+    consultation: 49,
     vaccines: [
       { name: 'C5 dose 2', price: 89 },
       { name: 'C5 dose 3', price: 89 },
