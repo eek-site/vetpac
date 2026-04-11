@@ -183,6 +183,7 @@ export default async function handler(req, res) {
     const lineItems = s.line_items?.data || []
     const pi = typeof s.payment_intent === 'object' ? s.payment_intent : null
     const receiptUrl = pi?.charges?.data?.[0]?.receipt_url || null
+    const meta = s.metadata || {}
 
     const vaccines = []
     let hasAssist = false, assistTotal = 0
@@ -198,6 +199,11 @@ export default async function handler(req, res) {
       else if (type === 'warranty') { hasWarranty = true; warrantyTotal = amount }
     }
 
+    // Fall back to Stripe session metadata for bossmode / flat-charge orders
+    // where individual line items don't itemise warranty separately
+    if (!hasWarranty && meta.warranty_selected === 'true') hasWarranty = true
+    if (!hasAssist && meta.delivery_method === 'vetpac_assist') hasAssist = true
+
     return {
       stripeSessionId: s.id,
       orderDate: new Date(s.created * 1000).toISOString(),
@@ -206,7 +212,7 @@ export default async function handler(req, res) {
       orderStatus: 'paid',
       receiptUrl,
       vaccines,
-      deliveryMethod: hasAssist ? 'vetpac_assist' : 'self_administer',
+      deliveryMethod: hasAssist ? 'vetpac_assist' : (meta.delivery_method || 'self_administer'),
       hasFreight, freightTotal,
       hasAssist, assistTotal,
       hasWarranty, warrantyTotal,

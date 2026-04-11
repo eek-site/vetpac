@@ -57,6 +57,10 @@ export default async function handler(req, res) {
     if (sessionToken) {
       body.append('metadata[session_token]', sessionToken)
     }
+    // Store plan selections in Stripe metadata so they can always be recovered from the purchase
+    body.append('metadata[warranty_selected]', warrantySelected ? 'true' : 'false')
+    body.append('metadata[delivery_method]', deliveryMethod || 'self_administer')
+    if (orderTotal) body.append('metadata[order_total]', String(orderTotal))
 
     lineItems.forEach((item, i) => {
       body.append(`line_items[${i}][quantity]`, '1')
