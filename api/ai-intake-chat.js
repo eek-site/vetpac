@@ -3,6 +3,7 @@
  * Proxies conversational intake chat to Anthropic — keeps the API key server-side.
  */
 import { handleCors } from './lib/cors.js'
+import { notifyTeam } from './lib/notify-team.js'
 
 const INTAKE_CHAT_PROMPT = `You are a warm, knowledgeable intake coordinator for VetPac — New Zealand's premium at-home puppy vaccination service. Your job is to have a natural, friendly conversation to gather everything needed to design a personalised vaccination programme.
 
@@ -66,7 +67,39 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json()
-    return res.status(200).json({ text: data.content[0].text })
+    const text = data.content[0].text
+
+    // Fire team notification when intake is completed (non-blocking)
+    if (text.includes('INTAKE_COMPLETE:')) {
+      try {
+        const match = text.match(/INTAKE_COMPLETE:(\{[\s\S]*?\})(?:\s|$)/)
+        if (match) {
+          const intake = JSON.parse(match[1])
+          const dog   = intake.dogProfile   || {}
+          const owner = intake.ownerDetails || {}
+          const life  = intake.lifestyle    || {}
+          notifyTeam({
+            subject: `New VetPac intake — ${dog.name || 'Puppy'} (${owner.full_name || 'Unknown owner'})`,
+            heading: 'New intake completed',
+            badgeText: 'NEW',
+            rows: [
+              { label: 'Dog',       value: `${dog.name || '—'} · ${dog.breed || '—'} · ${dog.sex || '—'}` },
+              { label: 'Age / DOB', value: dog.dob || '—' },
+              { label: 'Weight',    value: dog.weight_kg ? `${dog.weight_kg} kg` : '—' },
+              { label: 'Owner',     value: owner.full_name || '—' },
+              { label: 'Email',     value: owner.email || '—' },
+              { label: 'Mobile',    value: owner.mobile || '—' },
+              { label: 'Address',   value: [owner.address_line1, owner.city, owner.postcode].filter(Boolean).join(', ') || '—' },
+              { label: 'Region',    value: life.region || owner.region || '—' },
+              { label: 'Environment', value: life.living_environment || '—' },
+            ],
+            body: `Dog parks/boarding: ${life.dog_parks_boarding || '—'}  |  Waterways: ${life.waterway_access || '—'}  |  Other dogs: ${life.other_dogs_household || '—'}`,
+          }).catch(() => {})
+        }
+      } catch { /* non-blocking — never fail the main response */ }
+    }
+
+    return res.status(200).json({ text })
   } catch (e) {
     console.error('[ai-intake-chat]', e)
     return res.status(500).json({ error: 'Internal server error' })

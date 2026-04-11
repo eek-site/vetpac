@@ -3,6 +3,7 @@
  * Proxies the floating contact chat to Anthropic — keeps the API key server-side.
  */
 import { handleCors } from './lib/cors.js'
+import { notifyTeam } from './lib/notify-team.js'
 
 const CONTACT_CHAT_PROMPT = `You are a friendly, knowledgeable concierge for VetPac — New Zealand's at-home puppy vaccination service. You handle enquiries with warmth and confidence.
 
@@ -84,7 +85,31 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json()
-    return res.status(200).json({ text: data.content[0].text })
+    const text = data.content[0].text
+
+    // Notify team when customer explicitly asks for a follow-up
+    if (text.includes('CONTACT_SUBMIT:')) {
+      try {
+        const match = text.match(/CONTACT_SUBMIT:(\{.*?\})/)
+        if (match) {
+          const contact = JSON.parse(match[1])
+          notifyTeam({
+            subject: `VetPac chat escalation — ${contact.name || 'Customer needs help'}`,
+            heading: 'Chat escalation — customer wants contact',
+            badgeText: 'ACTION',
+            badgeColor: '#b45309',
+            rows: [
+              { label: 'Name',    value: contact.name    || '—' },
+              { label: 'Email',   value: contact.email   || '—' },
+              { label: 'Phone',   value: contact.phone   || '—' },
+              { label: 'Message', value: contact.message || '—' },
+            ],
+          }).catch(() => {})
+        }
+      } catch { /* non-blocking */ }
+    }
+
+    return res.status(200).json({ text })
   } catch (e) {
     console.error('[ai-contact-chat]', e)
     return res.status(500).json({ error: 'Internal server error' })

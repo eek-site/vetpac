@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard, ChevronDown, ChevronRight, User, PawPrint, MessageSquare, Eye, Globe, Monitor, Smartphone, RefreshCw } from 'lucide-react'
+import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard, ChevronDown, ChevronRight, User, PawPrint, MessageSquare, Globe, Monitor, Smartphone, RefreshCw, TrendingUp } from 'lucide-react'
 import Button from '../components/ui/Button'
 import StatusBadge from '../components/ui/StatusBadge'
 
@@ -37,6 +37,81 @@ function loadScript(src) {
     s.onerror = () => reject(new Error('Failed to load MSAL'))
     document.head.appendChild(s)
   })
+}
+
+const EVENT_LABELS = {
+  intake_page_view:          { label: 'Intake views',        emoji: '👀' },
+  intake_user_message:       { label: 'Chat messages',       emoji: '💬' },
+  intake_completed:          { label: 'Intakes completed',   emoji: '✅' },
+  treatment_plan_generated:  { label: 'Plans generated',     emoji: '📋' },
+  checkout_started:          { label: 'Checkouts started',   emoji: '🛒' },
+  checkout_completed:        { label: 'Orders placed',       emoji: '🎉' },
+  contact_ai_message:        { label: 'Contact chats',       emoji: '🤝' },
+  plan_page_view:            { label: 'Plan page views',     emoji: '📄' },
+  dashboard_view:            { label: 'Dashboard views',     emoji: '📊' },
+}
+
+function EventRow({ event, today, yesterday, week }) {
+  const { label, emoji } = EVENT_LABELS[event] || { label: event.replace(/_/g, ' '), emoji: '•' }
+  const weekVal = week || 0
+  if (!today && !yesterday && !weekVal) return null
+  return (
+    <tr className="border-b border-border last:border-0">
+      <td className="py-2.5 pr-4 text-sm text-textPrimary flex items-center gap-2">
+        <span className="text-base leading-none">{emoji}</span>
+        <span className="capitalize">{label}</span>
+      </td>
+      <td className="py-2.5 px-3 text-center text-sm font-semibold text-textPrimary">{today || 0}</td>
+      <td className="py-2.5 px-3 text-center text-sm font-medium text-textSecondary">{yesterday || 0}</td>
+      <td className="py-2.5 pl-3 text-center text-sm font-medium text-textMuted">{weekVal}</td>
+    </tr>
+  )
+}
+
+function SiteEventStats({ stats }) {
+  const today = stats.counts_today_nz || {}
+  const yesterday = stats.counts_yesterday_nz || {}
+  const week = stats.counts_last_7_days_nz || {}
+  const allKeys = [...new Set([...Object.keys(today), ...Object.keys(yesterday), ...Object.keys(week)])]
+    .sort((a, b) => (week[b] || 0) - (week[a] || 0))
+
+  if (allKeys.length === 0) return (
+    <p className="text-sm text-textMuted text-center py-3">No events recorded yet.</p>
+  )
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left">
+        <thead>
+          <tr className="border-b border-border">
+            <th className="pb-2 text-xs font-semibold text-textMuted uppercase tracking-wide">Event</th>
+            <th className="pb-2 px-3 text-center text-xs font-semibold text-primary uppercase tracking-wide">Today</th>
+            <th className="pb-2 px-3 text-center text-xs font-semibold text-textMuted uppercase tracking-wide">Yesterday</th>
+            <th className="pb-2 pl-3 text-center text-xs font-semibold text-textMuted uppercase tracking-wide">7 days</th>
+          </tr>
+        </thead>
+        <tbody>
+          {allKeys.map(k => (
+            <EventRow key={k} event={k} today={today[k]} yesterday={yesterday[k]} week={week[k]} />
+          ))}
+        </tbody>
+        <tfoot>
+          <tr className="border-t-2 border-border">
+            <td className="pt-2.5 text-xs font-semibold text-textMuted">Total events</td>
+            <td className="pt-2.5 px-3 text-center text-sm font-bold text-primary">
+              {Object.values(today).reduce((a, b) => a + b, 0)}
+            </td>
+            <td className="pt-2.5 px-3 text-center text-sm font-semibold text-textSecondary">
+              {Object.values(yesterday).reduce((a, b) => a + b, 0)}
+            </td>
+            <td className="pt-2.5 pl-3 text-center text-sm font-semibold text-textMuted">
+              {stats.totals_last_7_days_nz || 0}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  )
 }
 
 export default function AdminConsole() {
@@ -484,29 +559,7 @@ export default function AdminConsole() {
               </div>
             </div>
           )}
-          {stats && (
-            <div className="grid sm:grid-cols-3 gap-4 text-sm">
-              <div className="bg-bg rounded-lg p-4 border border-border">
-                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Site events — today (NZ)</p>
-                <pre className="text-xs text-textPrimary whitespace-pre-wrap font-mono overflow-x-auto">
-                  {JSON.stringify(stats.counts_today_nz, null, 2)}
-                </pre>
-              </div>
-              <div className="bg-bg rounded-lg p-4 border border-border">
-                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Site events — yesterday (NZ)</p>
-                <pre className="text-xs text-textPrimary whitespace-pre-wrap font-mono overflow-x-auto">
-                  {JSON.stringify(stats.counts_yesterday_nz, null, 2)}
-                </pre>
-              </div>
-              <div className="bg-bg rounded-lg p-4 border border-border">
-                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Site events — last 7 days (NZ)</p>
-                <p className="text-lg font-bold text-primary mb-1">{stats.totals_last_7_days_nz} events</p>
-                <pre className="text-xs text-textPrimary whitespace-pre-wrap font-mono overflow-x-auto max-h-40 overflow-y-auto">
-                  {JSON.stringify(stats.counts_last_7_days_nz, null, 2)}
-                </pre>
-              </div>
-            </div>
-          )}
+          {stats && <SiteEventStats stats={stats} />}
         </div>
 
         {/* ── Visitors ────────────────────────────────────────────────── */}
