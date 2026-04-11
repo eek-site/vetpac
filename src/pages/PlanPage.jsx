@@ -254,45 +254,29 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack
           <p className="text-sm text-textSecondary mt-1">A one-time warranty on your puppy's vaccination programme — priced from the actual data.</p>
         </div>
 
-        {/* Actuarial model */}
-        <div className="rounded-card-lg border border-border bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-border bg-bg">
-            <p className="font-semibold text-sm text-textPrimary">How we priced this — per 1,000 VetPac puppies</p>
-          </div>
-          <div className="divide-y divide-border">
-            {[
-              {
-                label: 'Vaccine non-response → disease',
-                detail: '5% don\'t build immunity (Decaro et al., Vet Microbiol 2020) · 15% of those get disease · 7.5 dogs × $2,500 avg NZ treatment',
-                cost: '$18,750',
-              },
-              {
-                label: 'Moderate adverse reaction',
-                detail: '0.78%/dose × 3 doses → 7.8 dogs (Moore et al., JAVMA 2005 — 1.2M dogs) × $280 avg',
-                cost: '$2,184',
-              },
-              {
-                label: 'Severe reaction / anaphylaxis',
-                detail: '0.065%/dose × 3 doses → ~2 dogs × $800 avg',
-                cost: '$1,560',
-              },
-            ].map(({ label, detail, cost }) => (
-              <div key={label} className="flex items-start justify-between gap-4 px-4 py-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-textPrimary">{label}</p>
-                  <p className="text-xs text-textMuted mt-0.5">{detail}</p>
-                </div>
-                <span className="text-sm font-semibold text-rose-600 flex-shrink-0">{cost}</span>
-              </div>
-            ))}
-            <div className="flex items-center justify-between px-4 py-3 bg-bg">
+        {/* What's covered */}
+        <div className="space-y-2">
+          {[
+            {
+              heading: 'If the vaccine doesn\'t take',
+              body: 'Some puppies don\'t build full immunity — maternal antibodies, genetics, or timing. If your puppy contracts a vaccine-preventable disease during the programme, VetPac covers the vet bill in full.',
+              cost: 'Parvo treatment: $1,500–$5,000',
+            },
+            {
+              heading: 'If your puppy reacts to a vaccine',
+              body: 'Adverse reactions are rare but real. Facial swelling, anaphylaxis, severe lethargy — VetPac covers any vet care required as a direct result of a vaccine we administered.',
+              cost: 'Reaction treatment: $150–$800',
+            },
+          ].map(({ heading, body, cost }) => (
+            <div key={heading} className="flex items-start gap-3 p-4 bg-white border border-border rounded-card-lg">
+              <Shield className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-textPrimary">Total per 1,000 puppies</p>
-                <p className="text-xs text-textMuted">÷ 1,000 = $22.49 per puppy · × 10 = <strong className="text-textPrimary">$225</strong></p>
+                <p className="font-semibold text-sm text-textPrimary">{heading}</p>
+                <p className="text-sm text-textSecondary mt-0.5">{body}</p>
+                <p className="text-xs text-textMuted mt-1">{cost}</p>
               </div>
-              <span className="font-mono font-bold text-primary">$22,494</span>
             </div>
-          </div>
+          ))}
         </div>
 
         {/* Yes / No */}
