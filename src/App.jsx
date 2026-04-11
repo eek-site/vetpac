@@ -22,6 +22,7 @@ import AdminConsole from './pages/AdminConsole'
 import GoogleAdsContext from './components/GoogleAdsContext'
 import GoogleTag from './components/GoogleTag'
 import VisitorTracker from './components/VisitorTracker'
+import SupportChat from './components/SupportChat'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -55,6 +56,7 @@ export default function App() {
       <GoogleAdsContext />
       <GoogleTag />
       <VisitorTracker />
+      <SupportChat />
       <ScrollToTop />
       <Layout>
         <Routes>

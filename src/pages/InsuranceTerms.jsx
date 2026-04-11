@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Shield, ArrowLeft } from 'lucide-react'
+import { openChat } from '../lib/openChat'
 // Contact is handled via the in-app chat — no direct email links
 
 function Section({ title, children }) {
@@ -114,7 +115,7 @@ export default function WarrantyTerms() {
           <p className="mt-3">VetPac reserves the right to request additional veterinary records, second opinions, or independent assessments to evaluate a claim.</p>
 
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))}
+            onClick={() => openChat('warranty-claim')}
             className="mt-5 w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-4 px-6 rounded-2xl transition-colors text-base shadow-sm"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -153,12 +154,12 @@ export default function WarrantyTerms() {
         <Section title="10. Privacy">
           <p>VetPac collects and holds personal and veterinary information for the purpose of administering your warranty and assessing claims. Your information will not be disclosed to third parties except where required by law, where necessary to assess a claim, or with your consent.</p>
           <p>You have the right to access and correct personal information held about you under the Privacy Act 2020 (NZ). To make a request, use the chat button.</p>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Submit a privacy request</button>
+          <button onClick={() => openChat('privacy-request')} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Submit a privacy request</button>
         </Section>
 
         <Section title="11. Disputes">
           <p>If you are not satisfied with a claim decision or any aspect of your warranty, you may lodge a complaint via the chat. VetPac will acknowledge within 2 business days and resolve within 20 business days.</p>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Lodge a complaint</button>
+          <button onClick={() => openChat('complaint')} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Lodge a complaint</button>
           <p>If you remain unsatisfied, disputes may be referred to the New Zealand Disputes Tribunal for claims up to NZD $30,000, or resolved under the Consumer Guarantees Act 1993.</p>
         </Section>
 
@@ -169,7 +170,7 @@ export default function WarrantyTerms() {
         {/* Footer */}
         <div className="mt-12 pt-6 border-t border-border text-xs text-textMuted space-y-1">
           <p>VetPac Puppy Warranty is provided by <strong className="text-textPrimary">VetPac</strong>. This is a service warranty, not an insurance product.</p>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-3 px-6 rounded-xl transition-colors">Warranty enquiries — chat with us 24/7</button>
+          <button onClick={() => openChat('warranty-claim')} className="w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-3 px-6 rounded-xl transition-colors">Warranty enquiries — chat with us 24/7</button>
           <p className="mt-3">These terms were last updated on 1 April 2026. VetPac reserves the right to amend these terms with 30 days written notice.</p>
         </div>
 

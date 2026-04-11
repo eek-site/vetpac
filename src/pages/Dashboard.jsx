@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import SupportChat from '../components/SupportChat'
+import { openChat } from '../lib/openChat'
 import {
   PawPrint, Settings, CheckCircle, Clock, AlertCircle, Loader2, Mail,
   ExternalLink, Heart, Leaf, CalendarDays, User, Syringe, Shield,
@@ -337,7 +337,7 @@ function AdminGuideModal({ onClose }) {
           </div>
 
           <button
-            onClick={() => { onClose(); window.dispatchEvent(new CustomEvent('vetpac:open-chat')) }}
+            onClick={() => { onClose(); openChat() }}
             className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium py-2.5 px-4 rounded-xl transition-colors"
           >
             Chat with us
@@ -350,10 +350,10 @@ function AdminGuideModal({ onClose }) {
 
 // ─── What to expect ───────────────────────────────────────────────────────────
 
-function ChatButton({ label = 'Chat with us' }) {
+function ChatButton({ label = 'Chat with us', intent }) {
   return (
     <button
-      onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))}
+      onClick={() => openChat(intent)}
       className="inline-flex items-center gap-1.5 text-xs bg-teal-600 hover:bg-teal-700 text-white font-medium px-3 py-1.5 rounded-lg transition-colors mt-1"
     >
       {label}
@@ -396,9 +396,9 @@ function WhatToExpect({ deliveryMethod }) {
             { text: "We'll book each follow-up and send reminders. You don't need to chase anything." },
             { text: 'You receive a signed, official vaccination certificate after each dose.', action: <ChatButton label="Questions? Chat with us" /> },
           ] : [
-            { text: 'Your vaccines arrive in a certified cold-chain pack with a temperature strip — intact strip means safe to use.' },
+            { text: 'Your vaccines arrive in a certified cold-chain pack with a temperature strip — intact strip means safe to use.', action: <ChatButton label="Product concern?" intent="product-concern" /> },
             { text: 'Store in the fridge at 2–8°C immediately. Do not freeze.' },
-            { text: 'Your trainer delivers and walks you through the full administration process.', action: <ChatButton label="Schedule orientation" /> },
+            { text: 'Your trainer delivers and walks you through the full administration process.', action: <ChatButton label="Schedule orientation" intent="reschedule" /> },
             { text: 'Administer each dose on the schedule below.', action: <button onClick={() => setGuideOpen(true)} className="inline-flex items-center gap-1 text-xs text-teal-700 hover:text-teal-900 font-medium underline underline-offset-2 mt-1">Read the Administration Guide →</button> },
             { text: 'Any questions before, during, or after a dose — we\'re here.', action: <ChatButton label="Chat with us" /> },
           ].map((step, i) => (
@@ -631,7 +631,7 @@ function DogCard({ dog: initial, sessionToken, accessToken, onUpdate }) {
                 <p className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />No excess. No vet visit required to make a claim.</p>
               </div>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))}
+                onClick={() => openChat('warranty-claim')}
                 className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium py-2.5 px-4 rounded-xl transition-colors"
               >
                 <Shield size={14} /> File a claim
@@ -810,7 +810,6 @@ export default function Dashboard() {
         {activeTab === 'account' && <AccountTab session={session} dogs={dogs} onSwitchToDogs={() => setActiveTab('dogs')} />}
       </main>
       <Footer />
-      <SupportChat />
     </div>
   )
 }

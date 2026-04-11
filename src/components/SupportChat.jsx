@@ -11,24 +11,45 @@ const QUICK_REPLIES = [
 export default function SupportChat() {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([])
+  const pendingIntentRef = useRef(null)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [escalated, setEscalated] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
-  // Allow any component to open via: window.dispatchEvent(new CustomEvent('vetpac:open-chat'))
+  const INTENT_OPENERS = {
+    'warranty-claim': "I can help you file a warranty claim. To get started, could you tell me:\n\n1. Your order reference number\n2. Your dog's name\n3. A brief description of what happened\n\nI'll make sure this goes straight to the right person.",
+    'privacy-request': "I can help with a privacy request under the NZ Privacy Act 2020. What would you like to do?\n\n• Access the personal information we hold\n• Correct inaccurate information\n• Request deletion of your data\n• Something else\n\nJust let me know and I'll take it from there.",
+    'complaint': "I'm sorry something hasn't gone right. I want to make sure this is resolved properly.\n\nCould you tell me what happened? I'll log this and make sure the right person follows up within 2 business days.",
+    'product-concern': "Please don't use the product until we've confirmed it's safe to do so.\n\nCould you describe the concern? For example — is the temperature strip triggered, is the packaging damaged, or is something else wrong?",
+    'dispute': "I'd like to help resolve this. Before any formal steps, let's see if we can sort it out directly.\n\nCan you tell me what the issue is about?",
+    'reschedule': "No problem — rescheduling is free and unlimited. What date and time works best for you, and which dog/order is this for?",
+  }
+
+  // Allow any component to open via: window.dispatchEvent(new CustomEvent('vetpac:open-chat', { detail: { intent: 'warranty-claim' } }))
   useEffect(() => {
-    const handler = () => setOpen(true)
+    const handler = (e) => {
+      const intent = e.detail?.intent
+      if (intent && INTENT_OPENERS[intent]) {
+        pendingIntentRef.current = intent
+        setMessages([])
+      }
+      setOpen(true)
+    }
     window.addEventListener('vetpac:open-chat', handler)
     return () => window.removeEventListener('vetpac:open-chat', handler)
   }, [])
 
   useEffect(() => {
     if (open && messages.length === 0) {
+      const intent = pendingIntentRef.current
+      pendingIntentRef.current = null
       setMessages([{
         role: 'assistant',
-        content: "Hi! I'm the VetPac assistant. I can answer questions about puppy vaccination, how the programme works, pricing, or anything else you'd like to know. What can I help you with?",
+        content: intent && INTENT_OPENERS[intent]
+          ? INTENT_OPENERS[intent]
+          : "Hi! I'm the VetPac assistant. I can answer questions about puppy vaccination, how the programme works, pricing, or anything else you'd like to know. What can I help you with?",
       }])
     }
     if (open) setTimeout(() => inputRef.current?.focus(), 100)

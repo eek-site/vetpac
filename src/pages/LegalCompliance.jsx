@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Scale, ArrowLeft, CheckCircle } from 'lucide-react'
+import { openChat } from '../lib/openChat'
 // Contact via chat only — no direct email links
 
 function Section({ title, children }) {
@@ -76,7 +77,7 @@ export default function LegalCompliance() {
             <li>Within their expiry date at the time of dispatch</li>
           </ul>
           <p className="mt-2">If you have any concerns about a product you have received, contact us immediately. Do not use the product until we have confirmed it is safe to do so.</p>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Contact us now</button>
+          <button onClick={() => openChat('product-concern')} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Contact us now</button>
         </Section>
 
         <Section title="Animal welfare">
@@ -113,7 +114,7 @@ export default function LegalCompliance() {
             <li>For privacy-related complaints: the <a href="https://www.privacy.org.nz/about-us/contact/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Office of the Privacy Commissioner</a></li>
             <li>For concerns about veterinary care: the <a href="https://www.veterinarycouncil.org.nz" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Veterinary Council of New Zealand</a></li>
           </ol>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-4 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
+          <button onClick={() => openChat('complaint')} className="mt-4 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
         </Section>
 
         <Section title="Company information">
@@ -121,7 +122,7 @@ export default function LegalCompliance() {
             <strong>VetPac</strong> is a trading name of <strong>Forman Pacific LLC</strong>.<br />
             New Zealand company.
           </p>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
+          <button onClick={() => openChat()} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
         </Section>
 
         <div className="mt-10 pt-8 border-t border-border flex flex-wrap gap-4 text-sm text-primary">

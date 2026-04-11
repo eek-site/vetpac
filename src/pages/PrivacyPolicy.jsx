@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Shield, ArrowLeft } from 'lucide-react'
+import { openChat } from '../lib/openChat'
 // Contact via chat only
 
 function Section({ title, children }) {
@@ -28,7 +29,7 @@ export default function PrivacyPolicy() {
         <Section title="Who we are">
           <p>VetPac is a trading name of Forman Pacific LLC, a company registered in New Zealand. We operate an at-home puppy vaccination platform at <strong>vetpac.nz</strong>.</p>
           <p>This policy explains what personal information we collect, why we collect it, how we use and store it, and your rights under the <strong>New Zealand Privacy Act 2020</strong>.</p>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-1 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
+          <button onClick={() => openChat()} className="mt-1 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
         </Section>
 
         <Section title="Information we collect">
@@ -118,7 +119,7 @@ export default function PrivacyPolicy() {
             <li><strong>Complain</strong> to the <a href="https://www.privacy.org.nz" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Office of the Privacy Commissioner</a> if you believe we have breached the Act</li>
           </ul>
           <p className="mt-2">To exercise any of these rights, contact us via the chat. We will respond within 20 working days as required by the Act.</p>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Submit a privacy request</button>
+          <button onClick={() => openChat('privacy-request')} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Submit a privacy request</button>
         </Section>
 
         <Section title="Children">
@@ -133,7 +134,7 @@ export default function PrivacyPolicy() {
           <p>For any privacy questions or requests:</p>
           <p>
             <strong>VetPac (Forman Pacific LLC)</strong><br />
-            <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-2 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
+            <button onClick={() => openChat('privacy-request')} className="mt-2 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
           </p>
         </Section>
 

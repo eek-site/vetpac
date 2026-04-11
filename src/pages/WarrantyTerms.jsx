@@ -1,6 +1,7 @@
 import Nav from '../components/layout/Nav'
 import Footer from '../components/layout/Footer'
 import { Shield, CheckCircle, X } from 'lucide-react'
+import { openChat } from '../lib/openChat'
 
 export default function WarrantyTerms() {
   return (
@@ -69,7 +70,7 @@ export default function WarrantyTerms() {
                 </li>
               ))}
             </ol>
-            <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-2 w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-3 px-6 rounded-xl transition-colors">File a warranty claim</button>
+            <button onClick={() => openChat('warranty-claim')} className="mt-2 w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-3 px-6 rounded-xl transition-colors">File a warranty claim</button>
           </section>
 
           <section className="space-y-3">
@@ -91,7 +92,7 @@ export default function WarrantyTerms() {
 
           <div className="bg-slate-50 rounded-xl p-4 text-sm text-slate-600 space-y-3">
             <p className="font-medium text-slate-700">Questions about your warranty?</p>
-            <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-3 px-6 rounded-xl transition-colors">Chat with us</button>
+            <button onClick={() => openChat()} className="w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-3 px-6 rounded-xl transition-colors">Chat with us</button>
           </div>
 
         </div>

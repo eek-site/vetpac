@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FileText, ArrowLeft } from 'lucide-react'
+import { openChat } from '../lib/openChat'
 // Contact is handled via the in-app chat
 
 function Section({ title, children }) {
@@ -124,12 +125,12 @@ export default function TermsOfService() {
         <Section title="Governing law and disputes">
           <p>These terms are governed by the laws of New Zealand. Any dispute that cannot be resolved informally should be referred to the <a href="https://www.disputes.co.nz" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Disputes Tribunal</a> or the New Zealand courts, which have exclusive jurisdiction.</p>
           <p>Before taking formal action, please contact us — we are committed to resolving issues fairly and promptly.</p>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
+          <button onClick={() => openChat('dispute')} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
         </Section>
 
         <Section title="Contact">
           <p className="mb-3"><strong>VetPac (Forman Pacific LLC)</strong></p>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
+          <button onClick={() => openChat()} className="inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
         </Section>
 
         <div className="mt-10 pt-8 border-t border-border flex flex-wrap gap-4 text-sm text-primary">
