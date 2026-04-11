@@ -4,32 +4,11 @@
  */
 
 import { getServiceSupabase } from './lib/site-events-db.js'
-
-function allowOrigin(origin) {
-  if (!origin) return false
-  try {
-    const h = new URL(origin).hostname
-    return (
-      h === 'vetpac.nz' ||
-      h === 'www.vetpac.nz' ||
-      h === 'localhost' ||
-      h.endsWith('.vercel.app')
-    )
-  } catch {
-    return false
-  }
-}
+import { handleCors } from './lib/cors.js'
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-  if (req.method === 'OPTIONS') return res.status(200).end()
+  if (handleCors(req, res)) return
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-
-  if (!allowOrigin(req.headers.origin || '')) {
-    return res.status(403).json({ error: 'Forbidden' })
-  }
 
   const sb = getServiceSupabase()
   if (!sb) {

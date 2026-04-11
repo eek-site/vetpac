@@ -152,5 +152,31 @@ AS $$
   );
 $$;
 
--- --- 003: RLS on EEK migrations table (Supabase linter 0013) ---
+-- === 003 intake_sessions ===
+
+CREATE TABLE IF NOT EXISTS public.intake_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_token UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+  email TEXT,
+  dog_name TEXT,
+  status TEXT NOT NULL DEFAULT 'in_progress' CHECK (status IN ('in_progress', 'complete', 'paid')),
+  messages JSONB NOT NULL DEFAULT '[]',
+  dog_profile JSONB NOT NULL DEFAULT '{}',
+  health_history JSONB NOT NULL DEFAULT '{}',
+  lifestyle JSONB NOT NULL DEFAULT '{}',
+  owner_details JSONB NOT NULL DEFAULT '{}',
+  ai_assessment JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_intake_sessions_email ON public.intake_sessions (email);
+CREATE INDEX IF NOT EXISTS idx_intake_sessions_created ON public.intake_sessions (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_intake_sessions_token ON public.intake_sessions (session_token);
+
+ALTER TABLE public.intake_sessions ENABLE ROW LEVEL SECURITY;
+-- All reads/writes go through service-role API routes — no direct client access needed.
+CREATE POLICY IF NOT EXISTS "service_only" ON public.intake_sessions FOR ALL TO service_role USING (true);
+
+-- --- 004: RLS on EEK migrations table (Supabase linter 0013) ---
 ALTER TABLE IF EXISTS public._eek_migrations ENABLE ROW LEVEL SECURITY;

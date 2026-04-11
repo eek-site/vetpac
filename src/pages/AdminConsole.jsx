@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard } from 'lucide-react'
+import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard, ChevronDown, ChevronRight, User, PawPrint, MessageSquare } from 'lucide-react'
 import Button from '../components/ui/Button'
+import StatusBadge from '../components/ui/StatusBadge'
 
 /** Same tenant / client as EEK Graph app — override with VITE_MSAL_* in env. */
 const MSAL_CDN = 'https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js'
@@ -49,6 +50,11 @@ export default function AdminConsole() {
   const [backfillResult, setBackfillResult] = useState(null)
   const [backfillLoading, setBackfillLoading] = useState(false)
   const [intakeStats, setIntakeStats] = useState(null)
+  const [intakeSessions, setIntakeSessions] = useState(null)
+  const [sessionsLoading, setSessionsLoading] = useState(false)
+  const [sessionsError, setSessionsError] = useState(null)
+  const [expandedSession, setExpandedSession] = useState(null)
+  const [sessionDetail, setSessionDetail] = useState({})
 
   useEffect(() => {
     document.title = 'Admin — VetPac'
@@ -162,10 +168,43 @@ export default function AdminConsole() {
     }
   }, [getAccessToken])
 
+  const fetchSessions = useCallback(async () => {
+    const token = await getAccessToken()
+    if (!token) return
+    setSessionsLoading(true)
+    setSessionsError(null)
+    try {
+      const r = await fetch('/api/admin-intake-sessions', { headers: { Authorization: `Bearer ${token}` } })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error || 'Failed to load sessions')
+      setIntakeSessions(d.sessions || [])
+    } catch (e) {
+      setSessionsError(e.message || 'Could not load intake sessions')
+    } finally {
+      setSessionsLoading(false)
+    }
+  }, [getAccessToken])
+
+  const loadSessionDetail = useCallback(async (sessionToken) => {
+    if (sessionDetail[sessionToken]) return
+    const msToken = await getAccessToken()
+    if (!msToken) return
+    try {
+      const r = await fetch(`/api/admin-intake-sessions?id=${encodeURIComponent(sessionToken)}`, {
+        headers: { Authorization: `Bearer ${msToken}` },
+      })
+      const d = await r.json()
+      if (r.ok && d.session) {
+        setSessionDetail((prev) => ({ ...prev, [sessionToken]: d.session }))
+      }
+    } catch { /* silent */ }
+  }, [getAccessToken, sessionDetail])
+
   useEffect(() => {
     if (phase !== 'authed' || !account) return
     void fetchStats()
-  }, [phase, account, fetchStats])
+    void fetchSessions()
+  }, [phase, account, fetchStats, fetchSessions])
 
   const signIn = async () => {
     const pca = window.__vetpacMsal
@@ -423,6 +462,169 @@ export default function AdminConsole() {
                   {JSON.stringify(stats.counts_last_7_days_nz, null, 2)}
                 </pre>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Intake sessions ─────────────────────────────────────────── */}
+        <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-textPrimary">Intake sessions</h3>
+              <p className="text-xs text-textMuted mt-0.5">Every chat session — structured data, owner details, and full conversation.</p>
+            </div>
+            <Button type="button" size="sm" onClick={() => void fetchSessions()} loading={sessionsLoading} disabled={sessionsLoading}>
+              Refresh
+            </Button>
+          </div>
+
+          {sessionsLoading && (
+            <div className="flex items-center gap-2 text-sm text-textSecondary py-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" /> Loading sessions…
+            </div>
+          )}
+          {sessionsError && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{sessionsError}</p>
+          )}
+
+          {intakeSessions && intakeSessions.length === 0 && (
+            <p className="text-sm text-textMuted py-4 text-center">No sessions yet — they will appear here once the DB migration is applied.</p>
+          )}
+
+          {intakeSessions && intakeSessions.length > 0 && (
+            <div className="space-y-2">
+              {intakeSessions.map((s) => {
+                const isExpanded = expandedSession === s.session_token
+                const detail = sessionDetail[s.session_token]
+                const owner = s.owner_details || {}
+                const dogName = s.dog_name || s.dog_profile?.name || '—'
+                const ownerName = owner.full_name || owner.name || '—'
+                const email = s.email || owner.email || '—'
+                const date = new Date(s.created_at).toLocaleString('en-NZ', {
+                  day: 'numeric', month: 'short', year: 'numeric',
+                  hour: '2-digit', minute: '2-digit', timeZone: 'Pacific/Auckland',
+                })
+
+                return (
+                  <div key={s.session_token} className="border border-border rounded-card overflow-hidden">
+                    <button
+                      type="button"
+                      className="w-full text-left p-4 hover:bg-bg transition-colors flex items-center gap-3"
+                      onClick={() => {
+                        if (!isExpanded) loadSessionDetail(s.session_token)
+                        setExpandedSession(isExpanded ? null : s.session_token)
+                      }}
+                    >
+                      {isExpanded
+                        ? <ChevronDown className="w-4 h-4 text-textMuted flex-shrink-0" />
+                        : <ChevronRight className="w-4 h-4 text-textMuted flex-shrink-0" />}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                          <span className="font-semibold text-textPrimary text-sm flex items-center gap-1">
+                            <PawPrint className="w-3.5 h-3.5 text-primary" /> {dogName}
+                          </span>
+                          {ownerName !== '—' && (
+                            <span className="text-textMuted text-xs flex items-center gap-1">
+                              <User className="w-3 h-3" /> {ownerName}
+                            </span>
+                          )}
+                          {email !== '—' && (
+                            <a href={`mailto:${email}`} className="text-primary text-xs hover:underline" onClick={(e) => e.stopPropagation()}>
+                              {email}
+                            </a>
+                          )}
+                        </div>
+                        <p className="text-xs text-textMuted">{date} · NZ</p>
+                      </div>
+                      <StatusBadge status={s.status} />
+                    </button>
+
+                    {isExpanded && (
+                      <div className="border-t border-border bg-bg p-4 space-y-4">
+                        {!detail && (
+                          <div className="flex items-center gap-2 text-xs text-textMuted">
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading…
+                          </div>
+                        )}
+                        {detail && (
+                          <>
+                            {/* Structured data */}
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              {detail.dog_profile && Object.keys(detail.dog_profile).length > 0 && (
+                                <div className="bg-white rounded-card border border-border p-3">
+                                  <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2 flex items-center gap-1">
+                                    <PawPrint className="w-3 h-3" /> Dog profile
+                                  </p>
+                                  <dl className="space-y-1">
+                                    {Object.entries(detail.dog_profile).map(([k, v]) => (
+                                      <div key={k} className="flex gap-2 text-xs">
+                                        <dt className="text-textMuted capitalize w-24 flex-shrink-0">{k.replace(/_/g, ' ')}</dt>
+                                        <dd className="text-textPrimary font-medium truncate">{String(v)}</dd>
+                                      </div>
+                                    ))}
+                                  </dl>
+                                </div>
+                              )}
+                              {detail.owner_details && Object.keys(detail.owner_details).length > 0 && (
+                                <div className="bg-white rounded-card border border-border p-3">
+                                  <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2 flex items-center gap-1">
+                                    <User className="w-3 h-3" /> Owner details
+                                  </p>
+                                  <dl className="space-y-1">
+                                    {Object.entries(detail.owner_details).map(([k, v]) => (
+                                      <div key={k} className="flex gap-2 text-xs">
+                                        <dt className="text-textMuted capitalize w-24 flex-shrink-0">{k.replace(/_/g, ' ')}</dt>
+                                        <dd className="text-textPrimary font-medium truncate">{String(v)}</dd>
+                                      </div>
+                                    ))}
+                                  </dl>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* AI assessment flags */}
+                            {detail.ai_assessment?.flags?.length > 0 && (
+                              <div className="bg-warning/5 border border-warning/20 rounded-card p-3">
+                                <p className="text-xs font-semibold text-amber-700 mb-1.5">AI flags</p>
+                                <ul className="space-y-1">
+                                  {detail.ai_assessment.flags.map((f, i) => (
+                                    <li key={i} className="text-xs text-amber-600">• {f}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Conversation */}
+                            {detail.messages?.length > 0 && (
+                              <div>
+                                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2 flex items-center gap-1">
+                                  <MessageSquare className="w-3 h-3" /> Conversation ({detail.messages.length} messages)
+                                </p>
+                                <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                                  {detail.messages.map((m, i) => {
+                                    const text = m.content.replace(/INTAKE_COMPLETE:\{[\s\S]*\}/, '').trim()
+                                    if (!text) return null
+                                    return (
+                                      <div key={i} className={`text-xs px-3 py-2 rounded-xl max-w-[85%] ${
+                                        m.role === 'user'
+                                          ? 'ml-auto bg-primary/10 text-primary border border-primary/20'
+                                          : 'bg-white border border-border text-textSecondary'
+                                      }`}>
+                                        <span className="font-semibold block mb-0.5 text-textMuted">{m.role === 'user' ? 'Owner' : 'VetPac AI'}</span>
+                                        <span className="whitespace-pre-wrap">{text}</span>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
