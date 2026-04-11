@@ -28,7 +28,7 @@ export default function TermsOfService() {
 
         <Section title="Agreement to these terms">
           <p>By accessing or using VetPac at <strong>vetpac.nz</strong>, you agree to be bound by these Terms of Service and our <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>. If you do not agree, do not use our platform.</p>
-          <p>These terms form a legally binding agreement between you and <strong>Forman Pacific LLC</strong> ("VetPac", "we", "us", "our").</p>
+          <p>These terms form a legally binding agreement between you and <strong>Forman Pacific LLC</strong>, a Limited Liability Company registered in Delaware, USA (File No. 10462509) ("VetPac", "we", "us", "our").</p>
         </Section>
 
         <Section title="The VetPac service">

@@ -119,8 +119,8 @@ export default function LegalCompliance() {
 
         <Section title="Company information">
           <p>
-            <strong>VetPac</strong> is a trading name of <strong>Forman Pacific LLC</strong>.<br />
-            New Zealand company.
+            <strong>VetPac</strong> is a trading name of <strong>Forman Pacific LLC</strong>, a Limited Liability Company registered in the State of Delaware, USA (File No. 10462509).<br />
+            Operating in New Zealand.
           </p>
           <button onClick={() => openChat()} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
         </Section>

@@ -27,7 +27,7 @@ export default function PrivacyPolicy() {
         <p className="text-textMuted text-sm mb-10">Last updated: April 2025 · Effective immediately</p>
 
         <Section title="Who we are">
-          <p>VetPac is a trading name of Forman Pacific LLC, a company registered in New Zealand. We operate an at-home puppy vaccination platform at <strong>vetpac.nz</strong>.</p>
+          <p>VetPac is a trading name of Forman Pacific LLC, a Limited Liability Company registered in Delaware, USA (File No. 10462509), operating in New Zealand. We operate an at-home puppy vaccination platform at <strong>vetpac.nz</strong>.</p>
           <p>This policy explains what personal information we collect, why we collect it, how we use and store it, and your rights under the <strong>New Zealand Privacy Act 2020</strong>.</p>
           <button onClick={() => openChat()} className="mt-1 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
         </Section>
