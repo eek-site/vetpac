@@ -160,10 +160,10 @@ export default function ContactPage() {
         path="/contact"
       />
 
-      <div className="bg-slate-50 px-4 py-5" style={{ minHeight: 'calc(100vh - 64px)' }}>
+      <div className="bg-slate-50 px-4 pb-5" style={{ paddingTop: '80px', minHeight: '100vh' }}>
 
         {/* ── Body: sidebar + chat ─────────────────────────────── */}
-        <div className="max-w-5xl mx-auto flex gap-6 items-start" style={{ height: 'calc(100vh - 64px - 40px)' }}>
+        <div className="max-w-5xl mx-auto flex gap-6 items-start" style={{ height: 'calc(100vh - 100px)' }}>
 
           {/* Sidebar — desktop only */}
           <aside className="hidden lg:flex flex-col gap-4 w-64 flex-shrink-0 overflow-y-auto h-full">
