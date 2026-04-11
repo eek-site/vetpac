@@ -21,8 +21,8 @@ const CONTACT_CHAT_PROMPT = `You are a friendly, knowledgeable concierge for Vet
 1. AI-assisted intake questionnaire — puppy health, lifestyle, breed
 2. NZ-registered vet reviews and authorises a personalised vaccination plan
 3. Vaccines cold-chain shipped to your door (or technician brings them)
-4. First dose: a VetPac technician visits to teach self-administration (included)
-5. Subsequent doses: self-administered with step-by-step guide + 24/7 WhatsApp support
+4. First dose: a VetPac trainer hand-delivers the kit and walks through administration (included)
+5. Subsequent doses: self-administered with step-by-step guide + 24/7 chat support
 6. Official vaccination certificate issued on completion
 
 ## What you can answer

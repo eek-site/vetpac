@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Shield, ArrowLeft } from 'lucide-react'
-import { SITE_EMAIL, mailtoHref } from '../lib/site-email'
+// Contact via chat only
 
 function Section({ title, children }) {
   return (
@@ -28,7 +28,7 @@ export default function PrivacyPolicy() {
         <Section title="Who we are">
           <p>VetPac is a trading name of Forman Pacific LLC, a company registered in New Zealand. We operate an at-home puppy vaccination platform at <strong>vetpac.nz</strong>.</p>
           <p>This policy explains what personal information we collect, why we collect it, how we use and store it, and your rights under the <strong>New Zealand Privacy Act 2020</strong>.</p>
-          <p>Contact: <a href={mailtoHref('Privacy enquiry')} className="text-primary hover:underline">{SITE_EMAIL}</a></p>
+          <p>Contact: use the chat on vetpac.nz</p>
         </Section>
 
         <Section title="Information we collect">
@@ -117,7 +117,7 @@ export default function PrivacyPolicy() {
             <li><strong>Object</strong> to processing where we rely on legitimate interests</li>
             <li><strong>Complain</strong> to the <a href="https://www.privacy.org.nz" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Office of the Privacy Commissioner</a> if you believe we have breached the Act</li>
           </ul>
-          <p className="mt-2">To exercise any of these rights, email us at <a href={mailtoHref('Privacy request')} className="text-primary hover:underline">{SITE_EMAIL}</a>. We will respond within 20 working days as required by the Act.</p>
+          <p className="mt-2">To exercise any of these rights, contact us via the chat on vetpac.nz. We will respond within 20 working days as required by the Act.</p>
         </Section>
 
         <Section title="Children">
@@ -132,7 +132,7 @@ export default function PrivacyPolicy() {
           <p>For any privacy questions or requests:</p>
           <p>
             <strong>VetPac (Forman Pacific LLC)</strong><br />
-            Email: <a href={mailtoHref('Privacy enquiry')} className="text-primary hover:underline">{SITE_EMAIL}</a>
+            Contact: chat with us at vetpac.nz
           </p>
         </Section>
 

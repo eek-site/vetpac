@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Shield, ArrowLeft } from 'lucide-react'
-import { SITE_EMAIL, mailtoHref } from '../lib/site-email'
+// Contact is handled via the in-app chat — no direct email links
 
 function Section({ title, children }) {
   return (
@@ -106,7 +106,7 @@ export default function WarrantyTerms() {
         <Section title="5. How to make a claim">
           <ol className="list-decimal pl-5 space-y-2">
             <li>Obtain a detailed invoice and clinical notes from your veterinarian following treatment.</li>
-            <li>Submit your claim within 90 days of treatment by emailing <a href={mailtoHref()} className="text-primary hover:underline">{SITE_EMAIL}</a> with your invoice, clinical notes, and warranty reference number.</li>
+            <li>Submit your claim within 90 days of treatment via the chat button on your dashboard, with your invoice, clinical notes, and warranty reference number.</li>
             <li>VetPac will assess your claim within 10 business days of receiving all required documentation.</li>
             <li>Approved claim payments will be made directly to your nominated bank account within 5 business days of approval.</li>
             <li>If your claim is declined, you will receive a written explanation with the reasons for the decision.</li>
@@ -143,11 +143,11 @@ export default function WarrantyTerms() {
 
         <Section title="10. Privacy">
           <p>VetPac collects and holds personal and veterinary information for the purpose of administering your warranty and assessing claims. Your information will not be disclosed to third parties except where required by law, where necessary to assess a claim, or with your consent.</p>
-          <p>You have the right to access and correct personal information held about you under the Privacy Act 2020 (NZ). To make a request, contact <a href={mailtoHref()} className="text-primary hover:underline">{SITE_EMAIL}</a>.</p>
+          <p>You have the right to access and correct personal information held about you under the Privacy Act 2020 (NZ). To make a request, use the chat button on vetpac.nz.</p>
         </Section>
 
         <Section title="11. Disputes">
-          <p>If you are not satisfied with a claim decision or any aspect of your warranty, you may lodge a complaint by emailing <a href={mailtoHref()} className="text-primary hover:underline">{SITE_EMAIL}</a>. VetPac will acknowledge your complaint within 2 business days and provide a resolution within 20 business days.</p>
+          <p>If you are not satisfied with a claim decision or any aspect of your warranty, you may lodge a complaint via the chat button on vetpac.nz. VetPac will acknowledge your complaint within 2 business days and provide a resolution within 20 business days.</p>
           <p>If you remain unsatisfied, disputes may be referred to the New Zealand Disputes Tribunal for claims up to NZD $30,000, or resolved under the Consumer Guarantees Act 1993.</p>
         </Section>
 
@@ -158,7 +158,7 @@ export default function WarrantyTerms() {
         {/* Footer */}
         <div className="mt-12 pt-6 border-t border-border text-xs text-textMuted space-y-1">
           <p>VetPac Puppy Warranty is provided by <strong className="text-textPrimary">VetPac</strong>. This is a service warranty, not an insurance product.</p>
-          <p>For all warranty enquiries: <a href={mailtoHref()} className="text-primary hover:underline">{SITE_EMAIL}</a> · WhatsApp (24/7)</p>
+          <p>For all warranty enquiries: use the chat button on <strong>vetpac.nz</strong> — available 24/7.</p>
           <p className="mt-3">These terms were last updated on 1 April 2026. VetPac reserves the right to amend these terms with 30 days written notice.</p>
         </div>
 

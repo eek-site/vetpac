@@ -13,7 +13,7 @@ import { useIntakeStore } from '../store/intakeStore'
 import { FREIGHT, ADDONS, SCALES, INSURANCE as WARRANTY } from '../lib/constants'
 import { generateTreatmentPlan } from '../lib/claude'
 import { logSiteEvent } from '../lib/logSiteEvent'
-import { SITE_EMAIL } from '../lib/site-email'
+// Contact via chat only
 
 // ─── Step progress bar ───────────────────────────────────────────────────────
 
@@ -108,10 +108,10 @@ function PuppyPlanSection({ puppyName, vaccinePlan, toggleVaccineItem, isLoading
 
 const SELF_ADMIN_FAQ = [
   { q: 'How hard is it to administer at home?', a: 'Very straightforward. For your first dose, a trained VetPac technician visits with the vaccine and walks you through the whole process in person — so you know exactly what to do. The needle is small (25 gauge), the injection is subcutaneous (just under the skin at the scruff of the neck), and the whole process takes under two minutes. From dose two onwards you do it yourself, with our step-by-step guide and email support throughout.' },
-  { q: "What if I'm nervous about injecting?", a: "Completely normal — most first-timers feel exactly the same. The guide is written for people with zero medical experience. Puppies generally tolerate it very well at home, especially compared to the stress of a clinic visit. If you try it and genuinely can't do it, email us at woof@vetpac.nz and we'll arrange a VetPac Assist visit." },
+  { q: "What if I'm nervous about injecting?", a: "Completely normal — most first-timers feel exactly the same. The guide is written for people with zero medical experience. Puppies generally tolerate it very well at home, especially compared to the stress of a clinic visit. If you try it and genuinely can't do it, chat with us and we'll arrange a VetPac Assist visit." },
   { q: 'What equipment do I need?', a: 'Nothing extra. Everything arrives in the kit — the vaccine vial, syringe, needle, swabs, and a step-by-step instruction card with photos. Free VetPac digital scales are included with your first order so you can monitor weight at every dose for correct dosing.' },
-  { q: 'What do I do before administering?', a: 'Run through the pre-vaccination checklist included in your kit. Your puppy should be alert, eating normally, showing no signs of illness (runny nose, lethargy, discharge, unusual behaviour), and not have eaten in the last two hours. If anything flags, stop and email us at woof@vetpac.nz — never proceed with a vaccine if your puppy is unwell.' },
-  { q: 'What happens after vaccination?', a: 'Monitor your puppy for 30 minutes. Mild lethargy or a small bump at the injection site is normal and resolves within 24 hours. If you see facial swelling, hives, vomiting, or collapse, call your local vet immediately. For non-emergency questions, email woof@vetpac.nz.' },
+  { q: 'What do I do before administering?', a: 'Run through the pre-vaccination checklist included in your kit. Your puppy should be alert, eating normally, showing no signs of illness (runny nose, lethargy, discharge, unusual behaviour), and not have eaten in the last two hours. If anything flags, stop and chat with us — never proceed with a vaccine if your puppy is unwell.' },
+  { q: 'What happens after vaccination?', a: 'Monitor your puppy for 30 minutes. Mild lethargy or a small bump at the injection site is normal and resolves within 24 hours. If you see facial swelling, hives, vomiting, or collapse, call your local vet immediately. For non-emergency questions, use the chat button.' },
   { q: 'How does cold-chain shipping work?', a: 'Every shipment is packed in pharmaceutical-grade insulated packaging with a certified gel ice pack rated to hold 2–8°C for a minimum of 48 hours. A colour-change temperature indicator strip is included. If it shows green on arrival, the cold chain held. If it has changed colour, contact us — we will resend at no charge.' },
   { q: 'Is it legal to administer vaccines at home in NZ?', a: 'Yes. VetPac operates under the ACVM Act 1997 VOI (Veterinary Operating Instruction) framework. Every vaccination plan is reviewed and authorised by a NZ-registered veterinarian before anything is dispatched. The VOI is the legal mechanism that permits administration of prescription veterinary medicines by a lay person under veterinary supervision.' },
 ]
@@ -121,7 +121,7 @@ const ASSIST_FAQ = [
   { q: 'How long does the visit take?', a: 'Typically 20–30 minutes including the wellness check, the injection itself, and the 10-minute post-vaccination observation period. Everything is done in your home at your convenience.' },
   { q: 'What areas do you service?', a: 'VetPac Assist is available NZ-wide. Scheduling may vary by region — availability is shown when you book. Most metro areas have same-week availability.' },
   { q: 'Do I need to be home for the visit?', a: 'Yes — a responsible adult needs to be present for the visit. You do not need to do anything except let the technician in and have your puppy ready.' },
-  { q: 'What if I need to reschedule?', a: 'No problem. Email us at woof@vetpac.nz to reschedule. Rescheduling is free and unlimited — we work around your schedule.' },
+  { q: 'What if I need to reschedule?', a: 'No problem. Use the chat to reschedule. Rescheduling is free and unlimited — we work around your schedule.' },
   { q: 'Is the vaccine the same as self-administration?', a: 'Identical. The same ACVM-registered vaccine, the same cold-chain logistics, the same vet-authorised plan. The only difference is who does the injection.' },
 ]
 
@@ -219,11 +219,11 @@ const WARRANTY_TERMS_CONTENT = (
       { t: 'Activation period', b: '14 days from warranty start for illness claims. Adverse reactions covered from day one.' },
       { t: 'What is not covered', b: 'Illness or injury unrelated to the VetPac programme, pre-existing conditions, elective procedures, dental disease, and breeding costs.' },
       { t: 'Actuarial basis', b: 'Priced at 10× expected cost per programme (~$29), based on peer-reviewed vaccine failure and adverse reaction data.' },
-      { t: 'Claims', b: `Email vet invoice to ${SITE_EMAIL} with your warranty reference. Processed within 5 business days.` },
+      { t: 'Claims', b: 'Submit vet invoice via the chat on your dashboard with your warranty reference. Processed within 5 business days.' },
       { t: 'Warranty fee', b: `NZD $${WARRANTY.oneTimePrice} — one-time payment, covers the full vaccination programme period.` },
       { t: 'Cancellation', b: 'Monthly: cancel any time. Annual/2-year: full refund within 14 days; no refund after 14 days.' },
       { t: 'Governing law', b: 'New Zealand. Consumer Guarantees Act 1993 and Fair Trading Act 1986.' },
-      { t: 'Contact', b: SITE_EMAIL },
+      { t: 'Contact', b: 'Chat with us at vetpac.nz — available 24/7.' },
     ].map(({ t, b }) => (
       <div key={t}>
         <p className="font-semibold text-textPrimary">{t}</p>
@@ -237,7 +237,7 @@ const WARRANTY_FAQ = [
   { q: 'What does the warranty cover?', a: 'Vet costs resulting from vaccine-programme failures — specifically: (1) vaccine-preventable disease (parvovirus, distemper, hepatitis, kennel cough) contracted despite completing your VetPac programme; and (2) adverse reactions to vaccines administered as part of your programme, including anaphylaxis, severe lethargy, facial swelling, or injection-site complications requiring vet care. VetPac covers 100% of eligible costs above the service fee, up to $5,000.' },
   { q: 'Why $225?', a: 'Because a single parvovirus treatment in NZ costs $1,500–$5,000, and some puppies don\'t make it through their programme without a hitch. $225 is a small price to know that if something goes wrong, it\'s covered — fully, no questions.' },
   { q: 'How long does the warranty last?', a: "It covers your puppy's VetPac vaccination programme — from the first dose until full immunity is established (typically 4 weeks after the final dose, so around 14 weeks total). It's a one-time add-on, not a subscription. Zero service fee — if something goes wrong, VetPac covers 100% of eligible costs up to $5,000." },
-  { q: 'How do I make a claim?', a: `Email your vet invoice to ${SITE_EMAIL} with your warranty reference number. We process claims within 5 business days and pay directly to your nominated bank account.` },
+  { q: 'How do I make a claim?', a: 'Submit your vet invoice via the chat on your dashboard with your warranty reference number. We process claims within 5 business days and pay directly to your nominated bank account.' },
   { q: 'What is not covered?', a: 'Illness or injury unrelated to your VetPac vaccination programme, pre-existing conditions, routine preventive care, elective procedures, dental disease, and breeding-related costs. This is a warranty on the vaccination programme outcomes — not a general health plan.' },
   { q: 'Can I get a refund?', a: 'The warranty is a one-time fee. If no claim has been made, you can request a full refund within 14 days of purchase. After 14 days or once a claim has been paid, the fee is non-refundable.' },
 ]

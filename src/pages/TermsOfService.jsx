@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FileText, ArrowLeft } from 'lucide-react'
-import { SITE_EMAIL, mailtoHref } from '../lib/site-email'
+// Contact is handled via the in-app chat
 
 function Section({ title, children }) {
   return (
@@ -36,7 +36,7 @@ export default function TermsOfService() {
             <li>An AI-assisted intake questionnaire to gather your puppy's health and lifestyle information</li>
             <li>A personalised vaccination programme reviewed and authorised by a NZ-registered veterinarian</li>
             <li>Cold-chain delivery of veterinary-grade vaccines to your home</li>
-            <li>Step-by-step administration guides and 24/7 WhatsApp support</li>
+            <li>Step-by-step administration guides and 24/7 chat support</li>
             <li>Optional in-home vaccinator service (VetPac Assist) and health programme warranty (VetPac Warranty)</li>
           </ul>
         </Section>
@@ -123,13 +123,13 @@ export default function TermsOfService() {
 
         <Section title="Governing law and disputes">
           <p>These terms are governed by the laws of New Zealand. Any dispute that cannot be resolved informally should be referred to the <a href="https://www.disputes.co.nz" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Disputes Tribunal</a> or the New Zealand courts, which have exclusive jurisdiction.</p>
-          <p>Before taking formal action, please contact us at <a href={mailtoHref('Dispute')} className="text-primary hover:underline">{SITE_EMAIL}</a> — we are committed to resolving issues fairly and promptly.</p>
+          <p>Before taking formal action, please contact us via the chat on vetpac.nz — we are committed to resolving issues fairly and promptly.</p>
         </Section>
 
         <Section title="Contact">
           <p>
             <strong>VetPac (Forman Pacific LLC)</strong><br />
-            Email: <a href={mailtoHref('Terms enquiry')} className="text-primary hover:underline">{SITE_EMAIL}</a>
+            For any enquiries, use the chat button at vetpac.nz.
           </p>
         </Section>
 

@@ -4,7 +4,7 @@ import { CheckCircle, Package, Clock, FileText, Calendar, ArrowRight, ChevronDow
 import Button from '../components/ui/Button'
 import SupportChat from '../components/SupportChat'
 import { useIntakeStore } from '../store/intakeStore'
-import { SITE_EMAIL, mailtoHref } from '../lib/site-email'
+// Contact via chat only
 
 // ── Calendar helpers — Google + Outlook URL links (no file download) ─────────
 
@@ -86,19 +86,19 @@ function DoseSchedule({ dogName }) {
       label: `Dose 1 — C5`,
       sub: 'Ships now',
       date: new Date(),
-      description: `Administer Dose 1 of ${dogName}'s C5 vaccine. Guide included in your kit. Email woof@vetpac.nz for support.`,
+      description: `Administer Dose 1 of ${dogName}'s C5 vaccine. Guide included in your kit. Chat with us at vetpac.nz for support.`,
     },
     {
       label: `Dose 2 — C5`,
       sub: 'Ships at 12 weeks',
       date: addWeeks(4),
-      description: `Administer Dose 2 of ${dogName}'s C5 vaccine. Guide included in your kit. Email woof@vetpac.nz for support.`,
+      description: `Administer Dose 2 of ${dogName}'s C5 vaccine. Guide included in your kit. Chat with us at vetpac.nz for support.`,
     },
     {
       label: `Dose 3 — C5`,
       sub: 'Ships at 16 weeks',
       date: addWeeks(8),
-      description: `Administer Dose 3 of ${dogName}'s C5 vaccine. Guide included in your kit. Email woof@vetpac.nz for support.`,
+      description: `Administer Dose 3 of ${dogName}'s C5 vaccine. Guide included in your kit. Chat with us at vetpac.nz for support.`,
     },
     {
       label: `Annual Booster`,
