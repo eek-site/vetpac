@@ -110,19 +110,19 @@ export const SCALES = {
 }
 
 export const INSURANCE = {
-  id: 'insurance',
-  name: 'VetPac 2-Year Puppy Cover',
-  description: 'Accident and illness cover for your puppy\'s first two years — the most critical period of their life.',
-  policyTerm: '2 years',
+  id: 'warranty',
+  name: 'VetPac 2-Year Puppy Warranty',
+  description: 'A service warranty on your puppy\'s health programme — VetPac covers unexpected vet costs during the first two years.',
+  warrantyTerm: '2 years',
   weeklyRetailPrice: 16.99,
   weeklyIntroPrice: 4.99,
-  monthlyPrice: 24.99,     // monthly billing — standard excess
-  annualPrice: 259,        // annual billing — standard excess
-  twoYearPrice: 489,       // upfront 2yr — same per-year cost as annual, but excess halved
-  coverLimit: 15000,
-  excess: 1500,            // monthly / annual billing
-  twoYearExcess: 750,      // 2-year upfront — excess drops to $750
-  reimbursement: 80,
+  monthlyPrice: 24.99,     // monthly billing — standard service fee
+  annualPrice: 259,        // annual billing — standard service fee
+  twoYearPrice: 489,       // upfront 2yr — service fee halved
+  claimLimit: 15000,
+  serviceFee: 1500,        // monthly / annual billing
+  twoYearServiceFee: 750,  // 2-year upfront — service fee drops to $750
+  coverageRate: 100,       // VetPac covers 100% of eligible costs above the service fee
 }
 
 export const PRICING_EXAMPLES = [

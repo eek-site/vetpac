@@ -182,7 +182,7 @@ export default function Checkout() {
                   {insuranceTotal > 0 && (
                     <div className="flex justify-between items-start gap-4 text-sm">
                       <div>
-                        <span className="text-textSecondary font-medium">{`VetPac Cover (${insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})`}</span>
+                        <span className="text-textSecondary font-medium">{`VetPac Warranty (${insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})`}</span>
                         <p className="text-xs text-textMuted mt-0.5">Billed separately after plan confirmation</p>
                       </div>
                       <span className="font-mono font-semibold text-textMuted flex-shrink-0 text-xs italic">Separate</span>

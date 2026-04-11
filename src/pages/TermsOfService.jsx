@@ -37,7 +37,7 @@ export default function TermsOfService() {
             <li>A personalised vaccination programme reviewed and authorised by a NZ-registered veterinarian</li>
             <li>Cold-chain delivery of veterinary-grade vaccines to your home</li>
             <li>Step-by-step administration guides and 24/7 WhatsApp support</li>
-            <li>Optional in-home vaccinator service (VetPac Assist) and insurance (VetPac Cover)</li>
+            <li>Optional in-home vaccinator service (VetPac Assist) and health programme warranty (VetPac Warranty)</li>
           </ul>
         </Section>
 
@@ -72,7 +72,7 @@ export default function TermsOfService() {
           <p><strong>Consultation fee:</strong> Non-refundable once the AI assessment has been completed and submitted to a vet for review.</p>
           <p><strong>Vaccine orders:</strong> You may request a refund within 24 hours of placing an order, provided the order has not yet been dispatched. Once cold-chain goods have been shipped, we are unable to accept returns for safety and regulatory reasons.</p>
           <p><strong>Declined orders:</strong> If a veterinarian declines to issue a VOI for your puppy, you will receive a full refund of your vaccine order within 5 business days.</p>
-          <p><strong>VetPac Cover (insurance):</strong> Governed by the separate insurance product disclosure statement. Refer to <Link to="/insurance-terms" className="text-primary hover:underline">Insurance Terms</Link>.</p>
+          <p><strong>VetPac Warranty:</strong> Governed by the separate service warranty agreement. Refer to <Link to="/insurance-terms" className="text-primary hover:underline">Warranty Terms</Link>.</p>
         </Section>
 
         <Section title="Delivery and cold chain">
@@ -136,7 +136,7 @@ export default function TermsOfService() {
         <div className="mt-10 pt-8 border-t border-border flex flex-wrap gap-4 text-sm text-primary">
           <Link to="/privacy" className="hover:underline">Privacy Policy →</Link>
           <Link to="/legal" className="hover:underline">Legal & Compliance →</Link>
-          <Link to="/insurance-terms" className="hover:underline">Insurance Terms →</Link>
+          <Link to="/insurance-terms" className="hover:underline">Warranty Terms →</Link>
         </div>
       </div>
     </div>
