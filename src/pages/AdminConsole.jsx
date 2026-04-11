@@ -824,7 +824,7 @@ export default function AdminConsole() {
     } catch (e) {
       setStatsError(
         e.message ||
-          'Could not load stats. Ensure Supabase migrations are applied and SUPABASE_SERVICE_ROLE_KEY is set on Vercel.'
+          'Could not load stats. Check that the DATABASE_URL is set on Vercel.'
       )
     } finally {
       setStatsLoading(false)
@@ -1814,3 +1814,4 @@ export default function AdminConsole() {
     </div>
   )
 }
+

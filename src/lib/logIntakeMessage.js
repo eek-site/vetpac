@@ -7,7 +7,7 @@ function stripIntakeMarker(text) {
 }
 
 /**
- * Persists each intake chat turn to Supabase via API (requires SUPABASE_SERVICE_ROLE_KEY on Vercel).
+ * Persists each intake chat turn to the database via API.
  */
 export function logIntakeTurn({ role, content, turnIndex }) {
   const session_id = getAnalyticsSessionId()
@@ -26,3 +26,4 @@ export function logIntakeTurn({ role, content, turnIndex }) {
     body: JSON.stringify(body),
   }).catch(() => {})
 }
+
