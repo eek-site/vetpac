@@ -111,6 +111,12 @@ export default async function handler(req, res) {
   const vaccinations = []
   const warrantyOrders = []
 
+  // Dog names from intake sessions — used to cross-reference Stripe orders
+  // that were paid with a different billing email than the dashboard login
+  const knownDogNames = new Set(
+    consultations.map((c) => c.dog.name?.toLowerCase()).filter(Boolean)
+  )
+
   const secret = process.env.STRIPE_SECRET_KEY
   if (secret) {
     try {
@@ -177,64 +183,65 @@ export default async function handler(req, res) {
     }
   }
 
-  // ── 3. Also search Stripe for any extra (checkout) emails the user linked ──
-  const extraEmails = Array.isArray(req.body?.extraEmails) ? req.body.extraEmails : []
-  for (const extra of extraEmails) {
-    const e = extra?.trim().toLowerCase()
-    if (!e || e === email) continue
+  // ── 3. Cross-reference recent Stripe sessions by dog name ─────────────────
+  // Catches orders paid with a different billing email but for a known dog.
+  // Only runs if there are known dog names and Stripe is configured.
+  if (secret && knownDogNames.size > 0) {
     try {
       const url = new URL('https://api.stripe.com/v1/checkout/sessions')
-      url.searchParams.set('limit', '50')
+      url.searchParams.set('limit', '100')
       url.searchParams.set('status', 'complete')
-      url.searchParams.set('customer_email', e)
       url.searchParams.append('expand[]', 'data.line_items')
       url.searchParams.append('expand[]', 'data.payment_intent')
 
       const r = await fetch(url.toString(), { headers: { Authorization: `Bearer ${secret}` } })
       const data = await r.json()
-      if (!r.ok) continue
 
-      for (const s of (data.data || []).filter((s) => s.payment_status === 'paid')) {
-        if (vaccinations.some((v) => v.sessionId === s.id)) continue // already included
-        const meta = s.metadata || {}
-        const pi = typeof s.payment_intent === 'object' ? s.payment_intent : null
-        const receiptUrl = pi?.charges?.data?.[0]?.receipt_url || null
-        const lineItems = s.line_items?.data || []
-        const dogName = meta.dog_name || ''
+      if (r.ok) {
+        for (const s of (data.data || []).filter((s) => s.payment_status === 'paid')) {
+          if (vaccinations.some((v) => v.sessionId === s.id)) continue
+          const meta = s.metadata || {}
+          const dogName = meta.dog_name || meta.customer_name || ''
+          // Only include if this session's dog name matches one of this user's known dogs
+          if (!dogName || !knownDogNames.has(dogName.toLowerCase())) continue
 
-        const vaccines = []
-        let hasAssist = false, hasFreight = false, hasWarranty = false
-        let assistTotal = 0, warrantyTotal = 0, freightTotal = 0
+          const pi = typeof s.payment_intent === 'object' ? s.payment_intent : null
+          const receiptUrl = pi?.charges?.data?.[0]?.receipt_url || null
+          const lineItems = s.line_items?.data || []
 
-        for (const li of lineItems) {
-          const type = classifyLineItem(li.description)
-          const amount = (li.amount_total || 0) / 100
-          if (type === 'vaccine') vaccines.push({ name: li.description, price: amount })
-          else if (type === 'assist') { hasAssist = true; assistTotal = amount }
-          else if (type === 'freight') { hasFreight = true; freightTotal = amount }
-          else if (type === 'warranty') { hasWarranty = true; warrantyTotal = amount }
+          const vaccines = []
+          let hasAssist = false, hasFreight = false, hasWarranty = false
+          let assistTotal = 0, warrantyTotal = 0, freightTotal = 0
+
+          for (const li of lineItems) {
+            const type = classifyLineItem(li.description)
+            const amount = (li.amount_total || 0) / 100
+            if (type === 'vaccine') vaccines.push({ name: li.description, price: amount })
+            else if (type === 'assist') { hasAssist = true; assistTotal = amount }
+            else if (type === 'freight') { hasFreight = true; freightTotal = amount }
+            else if (type === 'warranty') { hasWarranty = true; warrantyTotal = amount }
+          }
+
+          const order = {
+            id: s.id.slice(-8).toUpperCase(),
+            sessionId: s.id,
+            dogName,
+            date: new Date(s.created * 1000).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' }),
+            total: (s.amount_total / 100).toFixed(2),
+            receiptUrl,
+            vaccines,
+            deliveryMethod: hasAssist ? 'vetpac_assist' : 'self_administer',
+            hasFreight, freightTotal,
+            hasAssist, assistTotal,
+            hasWarranty, warrantyTotal,
+          }
+
+          vaccinations.push(order)
+          if (hasWarranty) warrantyOrders.push(order)
         }
-
-        const order = {
-          id: s.id.slice(-8).toUpperCase(),
-          sessionId: s.id,
-          dogName,
-          date: new Date(s.created * 1000).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' }),
-          total: (s.amount_total / 100).toFixed(2),
-          receiptUrl,
-          vaccines,
-          deliveryMethod: hasAssist ? 'vetpac_assist' : 'self_administer',
-          hasFreight, freightTotal,
-          hasAssist, assistTotal,
-          hasWarranty, warrantyTotal,
-          billingEmail: e,
-        }
-
-        vaccinations.push(order)
-        if (hasWarranty) warrantyOrders.push(order)
       }
-    } catch (e2) {
-      console.error('[dashboard-data] extra email Stripe error:', e2.message)
+    } catch (e) {
+      console.error('[dashboard-data] dog-name cross-ref error:', e.message)
     }
   }
 
