@@ -147,16 +147,24 @@ function StepDelivery({ assistSelected, setAssistSelected, onNext, onBack }) {
                 <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">Most popular</span>
               </div>
               <p className="text-sm text-textSecondary mt-1">Vaccines cold-chain couriered to your door. Step-by-step guide included. 24/7 WhatsApp support throughout.</p>
-              <p className="text-sm text-textSecondary mt-1">For your first dose, a trained VetPac technician visits with the vaccine and teaches you how to administer it — so you're confident every time after.</p>
               <p className="text-xs text-textMuted mt-1.5">${FREIGHT.pricePerShipment} per shipment · 2–8°C certified pharmaceutical courier</p>
             </div>
           </div>
           {!assistSelected && (
-            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-card flex items-start gap-2">
-              <Star className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-amber-900">Free VetPac Digital Scales included</p>
-                <p className="text-xs text-amber-700 mt-0.5">Precision puppy scales (normally ${SCALES.retailPrice}) — free with your first order. Monitor weight at every dose for correct dosing.</p>
+            <div className="mt-3 space-y-2">
+              <div className="p-3 bg-primary/8 border border-primary/20 rounded-card flex items-start gap-2">
+                <Home className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-primary">Free first-dose technician visit included</p>
+                  <p className="text-xs text-primary/80 mt-0.5">A trained VetPac technician visits your home with your first vaccine and teaches you how to administer it in person — so you're confident every time after.</p>
+                </div>
+              </div>
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-card flex items-start gap-2">
+                <Star className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-900">Free VetPac Digital Scales included</p>
+                  <p className="text-xs text-amber-700 mt-0.5">Precision puppy scales (normally ${SCALES.retailPrice}) — free with your first order. Monitor weight at every dose for correct dosing.</p>
+                </div>
               </div>
             </div>
           )}
