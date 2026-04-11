@@ -1,0 +1,22 @@
+---
+description: Always commit, push, and confirm Vercel deployment after every code change
+alwaysApply: true
+---
+
+# Auto Deploy After Every Change
+
+After making ANY code change, always do the following without being asked:
+
+1. `git add -A`
+2. `git commit -m "<concise message>"` — single line, present tense, no heredoc (PowerShell)
+3. `git push origin master`
+4. Run `vercel ls` and poll until the top deployment shows `● Ready`
+5. Tell the user: **"Deployed ✓"** with the age/duration from `vercel ls`
+
+## PowerShell rules
+- Never use `&&` — use `;` to chain commands
+- Never use heredoc (`<<'EOF'`) — use a plain `-m "..."` string
+
+## When to do this
+- After every single task or fix, even tiny ones
+- No exceptions — do not wait to be asked
