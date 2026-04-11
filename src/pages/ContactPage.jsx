@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Send, Loader2, CheckCircle, MessageCircle, AlertTriangle,
@@ -93,11 +93,12 @@ export default function ContactPage() {
   const [error, setError] = useState(null)
   const [started, setStarted] = useState(false)
 
-  const bottomRef = useRef(null)
+  const messagesRef = useRef(null)
   const inputRef = useRef(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = messagesRef.current
+    if (el) el.scrollTop = el.scrollHeight
   }, [messages, loading, sent])
 
   useEffect(() => {
@@ -160,13 +161,13 @@ export default function ContactPage() {
         path="/contact"
       />
 
-      <div className="bg-slate-50 px-4 pb-5" style={{ paddingTop: '80px', minHeight: '100vh' }}>
+      <div className="bg-slate-50" style={{ height: '100vh', paddingTop: '64px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
         {/* ── Body: sidebar + chat ─────────────────────────────── */}
-        <div className="max-w-5xl mx-auto flex gap-6 items-start" style={{ height: 'calc(100vh - 100px)' }}>
+        <div className="max-w-5xl mx-auto w-full flex gap-6 px-4 py-4" style={{ flex: 1, overflow: 'hidden' }}>
 
           {/* Sidebar — desktop only */}
-          <aside className="hidden lg:flex flex-col gap-4 w-64 flex-shrink-0 overflow-y-auto h-full">
+          <aside className="hidden lg:flex flex-col gap-4 w-64 flex-shrink-0 overflow-y-auto" style={{ height: '100%' }}>
 
             {/* Emergency */}
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
@@ -208,7 +209,7 @@ export default function ContactPage() {
           </aside>
 
           {/* Chat panel */}
-          <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full">
+          <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" style={{ height: '100%' }}>
 
             {/* Chat panel header */}
             <div className="flex items-center justify-between px-4 py-3 bg-[#1a3c2e] flex-shrink-0">
@@ -234,7 +235,7 @@ export default function ContactPage() {
             </div>
 
             {/* Messages area */}
-            <div className="flex-1 overflow-y-auto px-4 py-5">
+            <div ref={messagesRef} className="flex-1 overflow-y-auto px-4 py-5">
               {messages.map((msg, i) => (
                 <ChatBubble key={i} message={msg} />
               ))}
@@ -265,7 +266,6 @@ export default function ContactPage() {
                 </div>
               )}
 
-              <div ref={bottomRef} />
             </div>
 
             {/* Input */}
