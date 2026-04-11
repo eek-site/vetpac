@@ -158,6 +158,7 @@ export const useIntakeStore = create(
       assistSelected: true,   // default: vaccinator included (full price)
       insuranceSelected: false,
       insuranceBilling: 'annual', // 'monthly' | 'annual' | 'twoYear'
+      planStep: 1,
 
       dogId: null,
       intakeId: null,
@@ -226,6 +227,7 @@ export const useIntakeStore = create(
       setAssistSelected: (val) => set({ assistSelected: val }),
       setInsuranceSelected: (val) => set({ insuranceSelected: val }),
       setInsuranceBilling: (val) => set({ insuranceBilling: val }),
+      setPlanStep: (val) => set({ planStep: val }),
       setDogId: (id) => set({ dogId: id }),
       setIntakeId: (id) => set({ intakeId: id }),
 
@@ -284,6 +286,7 @@ export const useIntakeStore = create(
           assistSelected: true,
           insuranceSelected: false,
           insuranceBilling: 'annual',
+          planStep: 1,
           dogId: null,
           intakeId: null,
         }),
@@ -305,6 +308,7 @@ export const useIntakeStore = create(
         assistSelected: s.assistSelected,
         insuranceSelected: s.insuranceSelected,
         insuranceBilling: s.insuranceBilling,
+        planStep: s.planStep,
         dogId: s.dogId,
         intakeId: s.intakeId,
       }),

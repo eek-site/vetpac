@@ -516,11 +516,13 @@ export default function PlanPage() {
     vaccinePlan, toggleVaccineItem, toggleAdditionalPuppyVaccineItem,
     assistSelected, setAssistSelected,
     insuranceSelected, setInsuranceSelected,
+    planStep, setPlanStep,
     setConsultPaid,
     getOrderTotals,
   } = useIntakeStore()
 
-  const [step, setStep] = useState(1)
+  const step = planStep ?? 1
+  const setStep = setPlanStep
   const [aiLoading, setAiLoading] = useState(!aiAssessment)
   const [aiError, setAiError] = useState(null)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
