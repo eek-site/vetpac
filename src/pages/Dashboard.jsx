@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { PawPrint, Package, FileText, Settings, ChevronRight, Plus, Download, Calendar, AlertCircle, CheckCircle, Clock, Loader2, Mail, ArrowRight } from 'lucide-react'
+import {
+  PawPrint, Package, FileText, Settings, ChevronRight, Plus,
+  CheckCircle, Loader2, Mail, ArrowRight, AlertCircle, ExternalLink,
+} from 'lucide-react'
 import Nav from '../components/layout/Nav'
 import Footer from '../components/layout/Footer'
 import StatusBadge from '../components/ui/StatusBadge'
@@ -8,46 +11,18 @@ import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import { supabase } from '../lib/supabase'
 
-const mockPuppies = [
-  {
-    id: '1',
-    name: 'Bella',
-    breed: 'Labrador Retriever',
-    age: '14 weeks',
-    sex: 'Female',
-    nextDose: { label: 'Dose 2 — C5', date: '15 May 2026', daysUntil: 12 },
-    vaccStatus: 'in_progress',
-    photo: '🐕',
-  },
-]
-
-const mockOrders = [
-  {
-    id: 'VP-A1B2C3D4',
-    dog: 'Bella',
-    product: 'Puppy Starter Course',
-    total: 229,
-    status: 'shipped',
-    date: '3 Apr 2026',
-    tracking: 'NZP123456789',
-    doses: [
-      { label: 'Dose 1 — C5', status: 'delivered', date: '5 Apr 2026' },
-      { label: 'Dose 2 — C5', status: 'scheduled', date: '15 May 2026' },
-      { label: 'Dose 3 — C5', status: 'scheduled', date: '12 Jun 2026' },
-    ],
-  },
-]
-
 const tabs = [
-  { id: 'puppies', label: 'My puppies', icon: PawPrint },
   { id: 'orders', label: 'Orders & doses', icon: Package },
+  { id: 'puppies', label: 'My puppies', icon: PawPrint },
   { id: 'records', label: 'Health records', icon: FileText },
   { id: 'account', label: 'Account', icon: Settings },
 ]
 
+// ─── Login gate ───────────────────────────────────────────────────────────────
+
 function LoginGate() {
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState('idle') // idle | sending | sent | not_registered | error
+  const [status, setStatus] = useState('idle')
 
   const submit = async (e) => {
     e.preventDefault()
@@ -138,45 +113,7 @@ function LoginGate() {
   )
 }
 
-function PuppyCard({ dog }) {
-  const urgency = dog.nextDose?.daysUntil <= 7
-  return (
-    <Card hover className="flex flex-col gap-4">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-3xl">{dog.photo}</div>
-          <div>
-            <h3 className="font-display font-bold text-xl text-textPrimary">{dog.name}</h3>
-            <p className="text-textMuted text-sm">{dog.breed} • {dog.age} • {dog.sex}</p>
-          </div>
-        </div>
-        <ChevronRight className="w-5 h-5 text-textMuted" />
-      </div>
-
-      {dog.nextDose && (
-        <div className={`flex items-center gap-3 p-3 rounded-card ${urgency ? 'bg-warning/10 border border-warning/20' : 'bg-bg'}`}>
-          {urgency ? <AlertCircle className="w-4 h-4 text-warning flex-shrink-0" /> : <Clock className="w-4 h-4 text-primary flex-shrink-0" />}
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm text-textPrimary">{dog.nextDose.label}</p>
-            <p className="text-xs text-textMuted">Due {dog.nextDose.date} ({dog.nextDose.daysUntil} days)</p>
-          </div>
-          <Button size="sm" variant={urgency ? 'accent' : 'secondary'}>
-            Track
-          </Button>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-2">
-        <Button variant="ghost" size="sm" className="text-xs">
-          <Download className="w-3.5 h-3.5" /> Certificate
-        </Button>
-        <Button variant="ghost" size="sm" className="text-xs">
-          <Calendar className="w-3.5 h-3.5" /> Schedule
-        </Button>
-      </div>
-    </Card>
-  )
-}
+// ─── Order row ────────────────────────────────────────────────────────────────
 
 function OrderRow({ order }) {
   const [expanded, setExpanded] = useState(false)
@@ -192,102 +129,88 @@ function OrderRow({ order }) {
             <span className="font-mono font-semibold text-textPrimary text-sm">{order.id}</span>
             <StatusBadge status={order.status} />
           </div>
-          <p className="text-textMuted text-sm">{order.product} • {order.dog} • NZD ${order.total}</p>
+          <p className="text-textMuted text-sm">{order.product}{order.dog ? ` · ${order.dog}` : ''} · NZD ${order.total}</p>
           <p className="text-textMuted text-xs mt-0.5">{order.date}</p>
         </div>
         <ChevronRight className={`w-5 h-5 text-textMuted transition-transform ${expanded ? 'rotate-90' : ''}`} />
       </button>
 
       {expanded && (
-        <div className="border-t border-border p-5 bg-bg space-y-4">
-          {order.tracking && (
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div>
-                <p className="text-sm font-semibold text-textPrimary">Tracking number</p>
-                <p className="font-mono text-sm text-textMuted">{order.tracking}</p>
-              </div>
-              <Button size="sm" variant="secondary">Track shipment</Button>
-            </div>
-          )}
-          <div>
-            <p className="text-sm font-semibold text-textPrimary mb-3">Doses</p>
-            <div className="space-y-2">
-              {order.doses.map((dose, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-white rounded-lg border border-border">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className={`w-4 h-4 ${dose.status === 'delivered' ? 'text-success' : 'text-border'}`} />
-                    <span className="text-sm text-textPrimary">{dose.label}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-textMuted">{dose.date}</span>
-                    <StatusBadge status={dose.status} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <Button variant="secondary" size="sm" fullWidth>Reorder / book booster</Button>
+        <div className="border-t border-border p-5 bg-bg space-y-3">
+          <p className="text-sm text-textMuted">Order confirmed and being processed. You will receive tracking details once your vaccines are dispatched.</p>
+          <Button size="sm" variant="secondary" className="flex items-center gap-1.5">
+            <ExternalLink className="w-3.5 h-3.5" /> View receipt
+          </Button>
         </div>
       )}
     </div>
   )
 }
 
-function HealthRecordsTab() {
+// ─── Empty states ─────────────────────────────────────────────────────────────
+
+function EmptyState({ icon: Icon, title, body, cta }) {
   return (
-    <div className="space-y-6">
-      <Card>
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
-          <h3 className="font-display font-semibold text-xl text-textPrimary">Bella's health passport</h3>
-          <Button size="sm" variant="secondary">
-            <Download className="w-4 h-4" /> Download PDF
-          </Button>
-        </div>
-        <div className="space-y-4">
-          <div className="flex justify-between py-3 border-b border-border text-sm">
-            <span className="text-textSecondary">C5 Vaccine (Dose 1)</span>
-            <span className="font-mono text-textPrimary">5 Apr 2026</span>
-          </div>
-          <div className="flex justify-between py-3 border-b border-border text-sm">
-            <span className="text-textSecondary">Vet review</span>
-            <span className="font-mono text-textPrimary">4 Apr 2026</span>
-          </div>
-          <div className="flex justify-between py-3 text-sm">
-            <span className="text-textSecondary">VOI issued</span>
-            <span className="font-mono text-textPrimary">4 Apr 2026</span>
-          </div>
-        </div>
-        <div className="mt-6">
-          <Button variant="secondary" size="sm">
-            <FileText className="w-4 h-4" /> Share with vet / boarding facility
-          </Button>
-        </div>
-      </Card>
+    <div className="text-center py-14 px-6">
+      <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+        <Icon className="w-7 h-7 text-primary" />
+      </div>
+      <h3 className="font-display font-semibold text-lg text-textPrimary mb-2">{title}</h3>
+      <p className="text-textMuted text-sm max-w-xs mx-auto mb-5">{body}</p>
+      {cta}
     </div>
   )
 }
 
+// ─── Main dashboard ───────────────────────────────────────────────────────────
+
 export default function Dashboard() {
   const [session, setSession] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('puppies')
+  const [activeTab, setActiveTab] = useState('orders')
+  const [orders, setOrders] = useState([])
+  const [ordersLoading, setOrdersLoading] = useState(false)
+  const [ordersError, setOrdersError] = useState(null)
 
   useEffect(() => {
     let mounted = true
     supabase.auth.getSession().then(({ data: { session: s } }) => {
-      if (mounted) {
-        setSession(s)
-        setAuthLoading(false)
-      }
+      if (mounted) { setSession(s); setAuthLoading(false) }
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s)
+      if (mounted) setSession(s)
     })
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
+    return () => { mounted = false; subscription.unsubscribe() }
   }, [])
+
+  useEffect(() => {
+    if (!session?.access_token) return
+    let cancelled = false
+    async function load() {
+      setOrdersLoading(true)
+      setOrdersError(null)
+      try {
+        const r = await fetch('/api/dashboard-orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        })
+        const d = await r.json()
+        if (!cancelled) {
+          if (d.orders) setOrders(d.orders)
+          else setOrdersError('Could not load orders.')
+        }
+      } catch {
+        if (!cancelled) setOrdersError('Could not load orders.')
+      } finally {
+        if (!cancelled) setOrdersLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [session])
 
   if (authLoading) {
     return (
@@ -301,9 +224,7 @@ export default function Dashboard() {
     )
   }
 
-  if (!session) {
-    return <LoginGate />
-  }
+  if (!session) return <LoginGate />
 
   const userEmail = session.user?.email || ''
 
@@ -321,6 +242,7 @@ export default function Dashboard() {
           </Button>
         </div>
 
+        {/* Tab bar */}
         <div className="flex items-center gap-2 border-b border-border mb-8 overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon
@@ -339,39 +261,101 @@ export default function Dashboard() {
           })}
         </div>
 
-        {activeTab === 'puppies' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {mockPuppies.map((dog) => <PuppyCard key={dog.id} dog={dog} />)}
-              <Link to="/intake">
-                <Card hover className="flex flex-col items-center justify-center gap-3 text-center min-h-[200px] border-2 border-dashed border-border bg-transparent shadow-none hover:border-primary-light hover:bg-primary/5">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Plus className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-textPrimary">Add another puppy</p>
-                    <p className="text-textMuted text-sm">Start a new health intake</p>
-                  </div>
-                </Card>
-              </Link>
-            </div>
-          </div>
-        )}
-
+        {/* Orders tab */}
         {activeTab === 'orders' && (
-          <div className="space-y-4">
-            {mockOrders.map((order) => <OrderRow key={order.id} order={order} />)}
+          <div>
+            {ordersLoading && (
+              <div className="flex items-center justify-center gap-3 py-12">
+                <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                <span className="text-sm text-textMuted">Loading your orders…</span>
+              </div>
+            )}
+            {!ordersLoading && ordersError && (
+              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-card-lg text-sm text-red-700">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                {ordersError}
+              </div>
+            )}
+            {!ordersLoading && !ordersError && orders.length === 0 && (
+              <EmptyState
+                icon={Package}
+                title="No orders yet"
+                body="Your confirmed orders and dose schedules will appear here after you complete a vaccine order."
+                cta={
+                  <Link to="/intake">
+                    <Button>Start a health plan <ArrowRight className="w-4 h-4" /></Button>
+                  </Link>
+                }
+              />
+            )}
+            {!ordersLoading && orders.length > 0 && (
+              <div className="space-y-4">
+                {orders.map((order) => <OrderRow key={order.sessionId} order={order} />)}
+              </div>
+            )}
           </div>
         )}
 
-        {activeTab === 'records' && <HealthRecordsTab />}
+        {/* Puppies tab */}
+        {activeTab === 'puppies' && (
+          <div>
+            <EmptyState
+              icon={PawPrint}
+              title="Add your first puppy"
+              body="Start a health intake to build a personalised vaccination plan. Your puppy's profile will appear here."
+              cta={
+                <Link to="/intake">
+                  <Card hover className="inline-flex flex-col items-center gap-3 p-6 text-center border-2 border-dashed border-border bg-transparent shadow-none hover:border-primary hover:bg-primary/5 transition-all">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Plus className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-textPrimary">Start a health intake</p>
+                      <p className="text-textMuted text-sm">Takes about 5 minutes</p>
+                    </div>
+                  </Card>
+                </Link>
+              }
+            />
+          </div>
+        )}
 
+        {/* Health records tab */}
+        {activeTab === 'records' && (
+          <EmptyState
+            icon={FileText}
+            title="Health records"
+            body="Your vaccination certificates and health records will appear here once your vet has reviewed and authorised your plan."
+            cta={
+              orders.length === 0 ? (
+                <Link to="/intake">
+                  <Button>Start a health plan <ArrowRight className="w-4 h-4" /></Button>
+                </Link>
+              ) : (
+                <p className="text-xs text-textMuted">Your vet review is in progress. Records typically appear within 4 hours.</p>
+              )
+            }
+          />
+        )}
+
+        {/* Account tab */}
         {activeTab === 'account' && (
           <Card>
             <h3 className="font-display font-semibold text-xl text-textPrimary mb-6">Account</h3>
-            <div className="space-y-4 text-sm text-textSecondary">
-              <p>Email: <span className="text-textPrimary font-medium font-mono">{userEmail}</span></p>
-              <p className="text-textMuted">Profile details will sync from your orders as we roll out account features.</p>
+            <div className="space-y-4 text-sm">
+              <div className="flex items-center justify-between py-3 border-b border-border">
+                <span className="text-textSecondary">Email</span>
+                <span className="text-textPrimary font-medium font-mono">{userEmail}</span>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-border">
+                <span className="text-textSecondary">Orders</span>
+                <span className="text-textPrimary font-medium">{orders.length}</span>
+              </div>
+              <div className="pt-2">
+                <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
+                  Sign out
+                </Button>
+              </div>
             </div>
           </Card>
         )}

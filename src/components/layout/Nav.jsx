@@ -37,7 +37,7 @@ export default function Nav() {
     return () => window.removeEventListener('scroll', handler)
   }, [])
 
-  useEffect(() => setMobileOpen(false), [location])
+  useEffect(() => { setMobileOpen(false) }, [location])
 
   return (
     <>

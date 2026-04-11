@@ -153,7 +153,8 @@ export const useIntakeStore = create(
       consultPaid: false,     // true after consultation fee payment confirmed
       numberOfPuppies: 1,
       additionalPuppies: [],  // [{ name, breed, dob, sex, weight_kg }] for puppies 2+
-      vaccinePlan: [], // array of vaccine items with `selected` flag
+      vaccinePlan: [], // primary puppy vaccine items with `selected` flag
+      additionalPuppyVaccinePlans: [], // per-additional-puppy plans, indexed to match additionalPuppies
       assistSelected: true,   // default: vaccinator included (full price)
       insuranceSelected: false,
       insuranceBilling: 'annual', // 'monthly' | 'annual' | 'twoYear'
@@ -178,8 +179,12 @@ export const useIntakeStore = create(
       setVideoFile: (file) => set({ videoFile: file }),
 
       setAiAssessment: (assessment) => {
-        const plan = buildVaccinePlan(assessment, get().dogProfile)
-        set({ aiAssessment: assessment, vaccinePlan: plan })
+        const s = get()
+        const plan = buildVaccinePlan(assessment, s.dogProfile)
+        const additionalPuppyVaccinePlans = s.additionalPuppies.map((puppy) =>
+          buildVaccinePlan(assessment, puppy)
+        )
+        set({ aiAssessment: assessment, vaccinePlan: plan, additionalPuppyVaccinePlans })
       },
 
       toggleVaccineItem: (itemId) =>
@@ -189,16 +194,28 @@ export const useIntakeStore = create(
           ),
         })),
 
+      toggleAdditionalPuppyVaccineItem: (puppyIndex, itemId) =>
+        set((s) => ({
+          additionalPuppyVaccinePlans: s.additionalPuppyVaccinePlans.map((plan, i) =>
+            i === puppyIndex
+              ? plan.map((item) => (item.id === itemId ? { ...item, selected: !item.selected } : item))
+              : plan
+          ),
+        })),
+
       setConsultPaid: (val) => set({ consultPaid: val }),
       setNumberOfPuppies: (n) => {
         const count = Math.max(1, parseInt(n) || 1)
-        set((s) => ({
-          numberOfPuppies: count,
-          // Grow or shrink additionalPuppies to match count-1
-          additionalPuppies: Array.from({ length: count - 1 }, (_, i) =>
+        set((s) => {
+          const additionalPuppies = Array.from({ length: count - 1 }, (_, i) =>
             s.additionalPuppies[i] || { name: '', breed: '', dob: '', sex: '', weight_kg: '' }
-          ),
-        }))
+          )
+          const additionalPuppyVaccinePlans = Array.from({ length: count - 1 }, (_, i) =>
+            s.additionalPuppyVaccinePlans[i] ||
+            (s.aiAssessment ? buildVaccinePlan(s.aiAssessment, additionalPuppies[i]) : [])
+          )
+          return { numberOfPuppies: count, additionalPuppies, additionalPuppyVaccinePlans }
+        })
       },
       updateAdditionalPuppy: (index, data) =>
         set((s) => ({
@@ -217,7 +234,12 @@ export const useIntakeStore = create(
         const s = get()
         const region = s.ownerDetails.region || s.lifestyle.region || ''
         const consultTotal = calculateConsultFee(region, s.numberOfPuppies)
-        const selectedDoses = s.vaccinePlan.filter((v) => v.selected)
+
+        const primarySelected = s.vaccinePlan.filter((v) => v.selected)
+        const additionalSelected = s.additionalPuppyVaccinePlans.flatMap((plan) =>
+          plan.filter((v) => v.selected)
+        )
+        const selectedDoses = [...primarySelected, ...additionalSelected]
         const vaccineTotal = selectedDoses.reduce((sum, v) => sum + v.price, 0)
 
         // Count unique scheduled dates for shipment calculation
@@ -264,6 +286,7 @@ export const useIntakeStore = create(
           numberOfPuppies: 1,
           additionalPuppies: [],
           vaccinePlan: [],
+          additionalPuppyVaccinePlans: [],
           assistSelected: true,
           insuranceSelected: false,
           insuranceBilling: 'annual',
@@ -284,6 +307,7 @@ export const useIntakeStore = create(
         numberOfPuppies: s.numberOfPuppies,
         additionalPuppies: s.additionalPuppies,
         vaccinePlan: s.vaccinePlan,
+        additionalPuppyVaccinePlans: s.additionalPuppyVaccinePlans,
         assistSelected: s.assistSelected,
         insuranceSelected: s.insuranceSelected,
         insuranceBilling: s.insuranceBilling,

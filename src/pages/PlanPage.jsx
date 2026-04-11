@@ -8,7 +8,7 @@ import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
 import Modal from '../components/ui/Modal'
 import FloatingChat from '../components/FloatingChat'
-import { useIntakeStore, buildVaccinePlan } from '../store/intakeStore'
+import { useIntakeStore } from '../store/intakeStore'
 import { FREIGHT, ADDONS, SCALES, INSURANCE } from '../lib/constants'
 import { generateTreatmentPlan } from '../lib/claude'
 import { logSiteEvent } from '../lib/logSiteEvent'
@@ -340,7 +340,7 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, insuranceBilli
 
 // ─── STEP 4: Summary + Pay ───────────────────────────────────────────────────
 
-function StepSummary({ totals, puppyName, puppyCount, insuranceSelected, insuranceBilling, onBack, onPay, checkoutLoading }) {
+function StepSummary({ totals, puppyCount, insuranceSelected, insuranceBilling, onBack, onPay, checkoutLoading }) {
   const [discountInput, setDiscountInput] = useState('')
   const [discountCode, setDiscountCode] = useState('')
   const [discountApplied, setDiscountApplied] = useState(false)
@@ -427,9 +427,9 @@ function StepSummary({ totals, puppyName, puppyCount, insuranceSelected, insuran
           { icon: Shield, label: 'Vet-authorised' },
           { icon: Truck, label: 'Cold-chain certified' },
           { icon: MessageCircle, label: '24/7 WhatsApp' },
-        ].map(({ icon: Icon, label }) => (
+        ].map(({ icon: TrustIcon, label }) => (
           <div key={label} className="flex flex-col items-center gap-1.5 p-2.5 bg-bg border border-border rounded-card text-center">
-            <Icon className="w-4 h-4 text-primary" />
+            <TrustIcon className="w-4 h-4 text-primary" />
             <span className="text-xs text-textSecondary font-medium">{label}</span>
           </div>
         ))}
@@ -455,7 +455,7 @@ function StepSummary({ totals, puppyName, puppyCount, insuranceSelected, insuran
 
 // ─── STEP 1: Vaccines ─────────────────────────────────────────────────────────
 
-function StepVaccines({ puppyName, additionalPuppies, vaccinePlan, toggleVaccineItem, aiAssessment, aiLoading, aiError, onNext }) {
+function StepVaccines({ puppyName, additionalPuppies, additionalPuppyVaccinePlans, vaccinePlan, toggleVaccineItem, toggleAdditionalPuppyVaccineItem, aiLoading, aiError, onNext }) {
   const selected = vaccinePlan.filter((v) => v.selected)
   return (
     <div className="space-y-5">
@@ -481,8 +481,8 @@ function StepVaccines({ puppyName, additionalPuppies, vaccinePlan, toggleVaccine
         <PuppyPlanSection
           key={i}
           puppyName={puppy.name || `Puppy ${i + 2}`}
-          vaccinePlan={buildVaccinePlan(aiAssessment, puppy)}
-          toggleVaccineItem={() => {}}
+          vaccinePlan={additionalPuppyVaccinePlans[i] || []}
+          toggleVaccineItem={(itemId) => toggleAdditionalPuppyVaccineItem(i, itemId)}
           isLoading={aiLoading}
         />
       ))}
@@ -504,8 +504,9 @@ export default function PlanPage() {
   const {
     dogProfile, healthHistory, lifestyle,
     additionalPuppies, numberOfPuppies,
+    additionalPuppyVaccinePlans,
     aiAssessment, setAiAssessment,
-    vaccinePlan, toggleVaccineItem,
+    vaccinePlan, toggleVaccineItem, toggleAdditionalPuppyVaccineItem,
     assistSelected, setAssistSelected,
     insuranceSelected, setInsuranceSelected,
     insuranceBilling, setInsuranceBilling,
@@ -599,9 +600,10 @@ export default function PlanPage() {
           <StepVaccines
             puppyName={puppyName}
             additionalPuppies={additionalPuppies}
+            additionalPuppyVaccinePlans={additionalPuppyVaccinePlans}
             vaccinePlan={vaccinePlan}
             toggleVaccineItem={toggleVaccineItem}
-            aiAssessment={aiAssessment}
+            toggleAdditionalPuppyVaccineItem={toggleAdditionalPuppyVaccineItem}
             aiLoading={aiLoading}
             aiError={aiError}
             onNext={() => setStep(2)}
@@ -628,7 +630,6 @@ export default function PlanPage() {
         {step === 4 && (
           <StepSummary
             totals={totals}
-            puppyName={puppyName}
             puppyCount={numberOfPuppies}
             insuranceSelected={insuranceSelected}
             insuranceBilling={insuranceBilling}

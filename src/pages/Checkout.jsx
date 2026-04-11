@@ -39,7 +39,7 @@ export default function Checkout() {
   const insuranceBilling = params.get('insuranceBilling') || 'annual'
 
   let vaccineItems = []
-  try { vaccineItems = JSON.parse(decodeURIComponent(params.get('items') || '[]')) } catch {}
+  try { vaccineItems = JSON.parse(decodeURIComponent(params.get('items') || '[]')) } catch { /* invalid JSON — use empty */ }
 
   // State
   const [orderOpen, setOrderOpen] = useState(true)
@@ -75,6 +75,7 @@ export default function Checkout() {
         : `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&puppy=${encodeURIComponent(dogName)}`
       const cancelUrl = params.get('cancelUrl') || `${origin}/checkout?${params.toString()}`
 
+      // Insurance is billed separately after order confirmation — intentionally excluded from Stripe charge.
       const items = isConsult
         ? [{ name: `Consultation & vet review${puppyCount > 1 ? ` (${puppyCount} puppies)` : ''}`, description: 'AI health assessment, NZ-registered vet sign-off, personalised vaccination plan', price: consultFee }]
         : [
@@ -82,7 +83,6 @@ export default function Checkout() {
             ...(vaccineItems.length === 0 && vaccinesTotal > 0 ? [{ name: 'Vaccines', price: vaccinesTotal }] : []),
             ...(freightTotal > 0 ? [{ name: 'Cold-chain freight', price: freightTotal }] : []),
             ...(assistTotal > 0 ? [{ name: 'VetPac Assist — in-home vaccinator', price: assistTotal }] : []),
-            ...(insuranceTotal > 0 ? [{ name: `VetPac Cover (${insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})`, price: insuranceTotal }] : []),
           ].filter((i) => i.price > 0)
 
       const res = await fetch('/api/create-checkout-session', {
@@ -165,7 +165,15 @@ export default function Checkout() {
                   {vaccineItems.length === 0 && vaccinesTotal > 0 && <LineItemRow label="Vaccines" price={vaccinesTotal} />}
                   {freightTotal > 0 && <LineItemRow label="Cold-chain freight" description="2–8°C certified · temperature strip" price={freightTotal} />}
                   {assistTotal > 0 && <LineItemRow label="VetPac Assist — in-home vaccinator" price={assistTotal} />}
-                  {insuranceTotal > 0 && <LineItemRow label={`VetPac Cover (${insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})`} price={insuranceTotal} />}
+                  {insuranceTotal > 0 && (
+                    <div className="flex justify-between items-start gap-4 text-sm">
+                      <div>
+                        <span className="text-textSecondary font-medium">{`VetPac Cover (${insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})`}</span>
+                        <p className="text-xs text-textMuted mt-0.5">Billed separately after plan confirmation</p>
+                      </div>
+                      <span className="font-mono font-semibold text-textMuted flex-shrink-0 text-xs italic">Separate</span>
+                    </div>
+                  )}
                 </>
               )}
               <div className="border-t border-border pt-3 flex justify-between items-center font-semibold text-sm">

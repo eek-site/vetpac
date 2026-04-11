@@ -27,7 +27,7 @@ export function isConfigured() {
 // WhatsApp needs E.164 without leading +
 
 function formatPhone(phone) {
-  let n = phone.replace(/[\s\-\(\)\.\+]/g, '')
+  let n = phone.replace(/[\s\-().+]/g, '')
 
   // International prefix 00xx → strip 00
   if (n.startsWith('00') && n.length >= 11) n = n.substring(2)

@@ -4,11 +4,10 @@
 import { sendTemplate, isConfigured as isWaConfigured } from './lib/whatsapp.js'
 import { registerDashboardEmail } from './lib/dashboard-access.js'
 
+import { handleCors } from './lib/cors.js'
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-  if (req.method === 'OPTIONS') return res.status(200).end()
+  if (handleCors(req, res)) return
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const {
@@ -287,7 +286,7 @@ function buildEmail({ headline, subline, orderRef, itemRows, total, stepsHtml, d
 </html>`
 }
 
-function buildInternalEmail({ orderRef, puppyName, puppyCount, customerEmail, customerName, mode, total, items, summaryRows }) {
+function buildInternalEmail({ orderRef, puppyName, puppyCount, customerEmail, customerName, mode, total, items }) {
   const itemList = (items || []).map(i => `<li style="font-size:13px;color:#4a5568;margin-bottom:4px;">${i.name} — NZD $${Number(i.price).toFixed(2)}</li>`).join('')
   return `<div style="font-family:sans-serif;max-width:560px;color:#2d3748;">
     <div style="background:#2d5a3d;padding:16px 24px;border-radius:8px 8px 0 0;">

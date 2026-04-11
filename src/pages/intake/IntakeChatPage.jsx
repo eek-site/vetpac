@@ -152,7 +152,7 @@ export default function IntakeChatPage() {
         setPuppyName(intakeData.dogProfile?.name || 'your puppy')
         setComplete(true)
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong — please try again.')
     } finally {
       setLoading(false)

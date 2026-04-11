@@ -237,11 +237,7 @@ export const NZ_BREEDS = [
 ]
 
 export const INTAKE_STEPS = [
-  { path: '/intake', label: "Your puppy's Profile" },
-  { path: '/intake/health', label: 'Health History' },
-  { path: '/intake/lifestyle', label: 'Lifestyle & Environment' },
-  { path: '/intake/owner', label: 'Your Details' },
-  { path: '/intake/video', label: 'puppy Video' },
+  { path: '/intake', label: 'Tell us about your puppy' },
   { path: '/intake/review', label: 'Review & Confirm' },
 ]
 

@@ -19,8 +19,6 @@ function SectionHeading({ label, sublabel }) {
   )
 }
 
-const defaultPuppyProfile = { name: '', breed: '', dob: '', sex: '', weight_kg: '' }
-
 function AdditionalPuppyCard({ index, profile, onChange }) {
   return (
     <div className="bg-bg border border-border rounded-card p-4 space-y-3">
@@ -183,7 +181,7 @@ function ConsultFeeBlock() {
 export default function Step6Review() {
   const navigate = useNavigate()
   const {
-    dogProfile, ownerDetails, lifestyle,
+    dogProfile,
     numberOfPuppies,
     getOrderTotals,
   } = useIntakeStore()

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { CheckCircle, Package, Clock, FileText, Calendar, ArrowRight, Bell } from 'lucide-react'
 import Button from '../components/ui/Button'
@@ -143,10 +143,11 @@ export default function OrderConfirmation() {
   const insuranceBilling = params.get('insuranceBilling') || 'annual'
   const puppyCount = parseInt(params.get('puppyCount') || '1')
   let vaccineItems = []
-  try { vaccineItems = JSON.parse(decodeURIComponent(params.get('items') || '[]')) } catch {}
+  try { vaccineItems = JSON.parse(decodeURIComponent(params.get('items') || '[]')) } catch { /* invalid JSON — use empty */ }
 
-  const { ownerDetails, dogProfile } = useIntakeStore()
-  const [orderRef] = useState('VP-' + Math.random().toString(36).substr(2, 8).toUpperCase())
+  const { ownerDetails } = useIntakeStore()
+  const orderRefRef = useRef('VP-' + Math.random().toString(36).substr(2, 8).toUpperCase())
+  const orderRef = orderRefRef.current
   const emailSentRef = useRef(false)
 
   useEffect(() => {

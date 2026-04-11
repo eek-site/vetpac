@@ -29,7 +29,7 @@ export default function Step5Video() {
   const handleFile = useCallback(async (file) => {
     if (!file) return
     const validTypes = ['video/mp4', 'video/quicktime', 'video/hevc']
-    const isValid = validTypes.some(t => file.type.startsWith('video/'))
+    const isValid = validTypes.some(() => file.type.startsWith('video/'))
     if (!isValid) { setError('Please upload an MP4, MOV, or HEVC video file.'); return }
     if (file.size > 100 * 1024 * 1024) { setError('Video must be under 100MB.'); return }
 
@@ -40,7 +40,7 @@ export default function Step5Video() {
     setVideoFile(file)
 
     const fileName = `dog-videos/${Date.now()}-${file.name.replace(/[^a-z0-9.]/gi, '-')}`
-    const { data, error: uploadError } = await supabase.storage.from('dog-videos').upload(fileName, file, {
+    const { error: uploadError } = await supabase.storage.from('dog-videos').upload(fileName, file, {
       cacheControl: '3600',
       upsert: false,
     })
