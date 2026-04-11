@@ -17,7 +17,7 @@ export function normalizeEmail(email) {
 /**
  * Register an email for dashboard access.
  * Tries dashboard_access table first; if it doesn't exist, silently succeeds
- * (intake_sessions is used as the fallback source of truth in emailHasDashboardAccess).
+ * (intake_sessions / Stripe are used as fallback sources of truth).
  */
 export async function registerDashboardEmail(email) {
   const e = normalizeEmail(email)
@@ -28,7 +28,6 @@ export async function registerDashboardEmail(email) {
   }
   const { error } = await sb.from('dashboard_access').upsert({ email: e }, { onConflict: 'email' })
   if (error) {
-    // Table may not exist yet — non-fatal, intake_sessions serves as fallback
     console.warn('[dashboard_access] upsert skipped:', error.message)
   }
   return { ok: true }
@@ -38,39 +37,67 @@ export async function registerDashboardEmail(email) {
  * Check whether an email should be granted dashboard access.
  *
  * Priority:
- *  1. dashboard_access table (explicit whitelist — used after orders)
- *  2. intake_sessions table  (email completed intake — covers test/first users)
+ *  1. dashboard_access table  (explicit whitelist — populated after orders)
+ *  2. intake_sessions table   (email completed intake — covers intake users)
+ *  3. Stripe completed orders (email paid — covers customers who skipped intake)
  *
- * If both tables are unavailable, denies access.
+ * If all three fail, denies access.
  */
 export async function emailHasDashboardAccess(email) {
   const e = normalizeEmail(email)
   const sb = admin()
   if (!e || !sb) return false
 
-  // 1. Try dashboard_access whitelist
+  // 1. dashboard_access whitelist
   try {
     const { data, error } = await sb.from('dashboard_access').select('email').eq('email', e).maybeSingle()
     if (!error && data?.email) return true
-    // If error here it's likely the table doesn't exist — fall through
-    if (error && !error.message?.includes('does not exist') && !error.code?.includes('42P01')) {
-      console.error('[dashboard_access] select error:', error.message)
-    }
   } catch {
-    // table access failed — fall through to intake_sessions
+    // table missing — fall through
   }
 
-  // 2. Fall back to intake_sessions — anyone who completed intake can sign in
+  // 2. intake_sessions — check both the direct email column AND owner_details->>'email'
   try {
-    const { data, error } = await sb
+    const { data: byCol } = await sb
       .from('intake_sessions')
-      .select('email')
+      .select('id')
       .eq('email', e)
       .limit(1)
       .maybeSingle()
-    if (!error && data?.email) return true
+    if (byCol?.id) return true
+
+    const { data: byJson } = await sb
+      .from('intake_sessions')
+      .select('id')
+      .filter('owner_details->>email', 'eq', e)
+      .limit(1)
+      .maybeSingle()
+    if (byJson?.id) return true
   } catch (err) {
-    console.error('[emailHasDashboardAccess] intake_sessions fallback error:', err.message)
+    console.error('[emailHasDashboardAccess] intake_sessions error:', err.message)
+  }
+
+  // 3. Stripe — any completed paid session for this email
+  try {
+    const secret = process.env.STRIPE_SECRET_KEY
+    if (secret) {
+      const url = new URL('https://api.stripe.com/v1/checkout/sessions')
+      url.searchParams.set('customer_email', e)
+      url.searchParams.set('status', 'complete')
+      url.searchParams.set('limit', '1')
+      const r = await fetch(url.toString(), { headers: { Authorization: `Bearer ${secret}` } })
+      if (r.ok) {
+        const d = await r.json()
+        const paid = (d.data || []).some((s) => s.payment_status === 'paid')
+        if (paid) {
+          // Auto-register for faster future lookups
+          await registerDashboardEmail(e).catch(() => {})
+          return true
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[emailHasDashboardAccess] Stripe error:', err.message)
   }
 
   return false
