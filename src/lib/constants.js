@@ -123,7 +123,7 @@ export const INSURANCE = {
   // — Total expected claims per 1,000 dogs: $22,494
   // — Per dog: $22.49  →  10× = $224.90  →  price: $225
   oneTimePrice: 225,
-  claimLimit: 15000,
+  claimLimit: 5000,
   serviceFee: 0,       // zero service fee — full eligible costs covered
   coverageRate: 100,
 }

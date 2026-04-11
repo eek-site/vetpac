@@ -213,7 +213,7 @@ const WARRANTY_TERMS_CONTENT = (
     <p className="text-textMuted">Provided by VetPac. A service warranty on your puppy's vaccination programme outcomes — not an insurance product. Full terms at <Link to="/insurance-terms" className="text-primary underline">vetpac.nz/insurance-terms</Link>.</p>
     {[
       { t: 'What is covered', b: 'Vaccine-preventable disease (parvo, distemper, hepatitis, kennel cough) despite completing the VetPac programme, and adverse reactions to VetPac-administered vaccines.' },
-      { t: 'Warranty claim limit', b: 'NZD $15,000 per warranty period.' },
+      { t: 'Warranty claim limit', b: 'NZD $5,000 per warranty period.' },
       { t: 'Service fee per claim', b: '$200 (monthly/annual). $0 — zero service fee (2-year upfront).' },
       { t: 'Activation period', b: '14 days from warranty start for illness claims. Adverse reactions covered from day one.' },
       { t: 'What is not covered', b: 'Illness or injury unrelated to the VetPac programme, pre-existing conditions, elective procedures, dental disease, and breeding costs.' },
@@ -233,9 +233,9 @@ const WARRANTY_TERMS_CONTENT = (
 )
 
 const WARRANTY_FAQ = [
-  { q: 'What does the warranty cover?', a: 'Vet costs resulting from vaccine-programme failures — specifically: (1) vaccine-preventable disease (parvovirus, distemper, hepatitis, kennel cough) contracted despite completing your VetPac programme; and (2) adverse reactions to vaccines administered as part of your programme, including anaphylaxis, severe lethargy, facial swelling, or injection-site complications requiring vet care. VetPac covers 100% of eligible costs above the service fee, up to $15,000.' },
+  { q: 'What does the warranty cover?', a: 'Vet costs resulting from vaccine-programme failures — specifically: (1) vaccine-preventable disease (parvovirus, distemper, hepatitis, kennel cough) contracted despite completing your VetPac programme; and (2) adverse reactions to vaccines administered as part of your programme, including anaphylaxis, severe lethargy, facial swelling, or injection-site complications requiring vet care. VetPac covers 100% of eligible costs above the service fee, up to $5,000.' },
   { q: 'Why $225?', a: 'Because a single parvovirus treatment in NZ costs $1,500–$5,000, and some puppies don\'t make it through their programme without a hitch. $225 is a small price to know that if something goes wrong, it\'s covered — fully, no questions.' },
-  { q: 'How long does the warranty last?', a: "It covers your puppy's VetPac vaccination programme — from the first dose until full immunity is established (typically 4 weeks after the final dose, so around 14 weeks total). It's a one-time add-on, not a subscription. Zero service fee — if something goes wrong, VetPac covers 100% of eligible costs up to $15,000." },
+  { q: 'How long does the warranty last?', a: "It covers your puppy's VetPac vaccination programme — from the first dose until full immunity is established (typically 4 weeks after the final dose, so around 14 weeks total). It's a one-time add-on, not a subscription. Zero service fee — if something goes wrong, VetPac covers 100% of eligible costs up to $5,000." },
   { q: 'How do I make a claim?', a: `Email your vet invoice to ${SITE_EMAIL} with your warranty reference number. We process claims within 5 business days and pay directly to your nominated bank account.` },
   { q: 'What is not covered?', a: 'Illness or injury unrelated to your VetPac vaccination programme, pre-existing conditions, routine preventive care, elective procedures, dental disease, and breeding-related costs. This is a warranty on the vaccination programme outcomes — not a general health plan.' },
   { q: 'Can I get a refund?', a: 'The warranty is a one-time fee. If no claim has been made, you can request a full refund within 14 days of purchase. After 14 days or once a claim has been paid, the fee is non-refundable.' },
@@ -302,7 +302,7 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack
                   <span className="font-semibold text-sm text-textPrimary">Add programme warranty</span>
                   <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Recommended</span>
                 </div>
-                <p className="text-xs text-textMuted mt-0.5">Covers vaccine failure + adverse reactions for the full programme · zero service fee · up to $15,000</p>
+                <p className="text-xs text-textMuted mt-0.5">Covers vaccine failure + adverse reactions for the full programme · zero service fee · up to $5,000</p>
               </div>
               <span className="font-mono font-bold text-textPrimary flex-shrink-0">NZD ${WARRANTY.oneTimePrice}</span>
             </div>

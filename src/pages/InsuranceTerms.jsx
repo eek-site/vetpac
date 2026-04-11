@@ -50,7 +50,7 @@ export default function WarrantyTerms() {
 
         <Section title="1. Warranty at a glance">
           <div className="bg-white rounded-card border border-border p-4">
-            <Row label="Warranty claim limit" value="NZD $15,000 per warranty period" />
+            <Row label="Warranty claim limit" value="NZD $5,000 per warranty period" />
             <Row label="Costs covered" value="100% of eligible vet costs above the service fee" />
             <Row label="Service fee per claim" value="NZD $1,500 (monthly/annual) · NZD $750 (2-year upfront)" />
             <Row label="Monthly plan fee" value="NZD $24.99/month" />
