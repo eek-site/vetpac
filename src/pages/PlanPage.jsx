@@ -358,8 +358,8 @@ function StepSummary({ totals, puppyCount, insuranceSelected, onBack, onPay, che
   const [discountApplied, setDiscountApplied] = useState(false)
   const [discountError, setDiscountError] = useState(null)
 
-  const vaccineAndDelivery = totals.vaccines + totals.assist + totals.freight
-  const displayTotal = discountApplied ? 1.00 : vaccineAndDelivery
+  const subtotal = totals.vaccines + totals.assist + totals.freight + (insuranceSelected ? totals.insurance : 0)
+  const displayTotal = discountApplied ? 1.00 : subtotal
 
   const applyDiscount = () => {
     if (discountInput.trim().toLowerCase() === 'bossmode') {
@@ -378,7 +378,6 @@ function StepSummary({ totals, puppyCount, insuranceSelected, onBack, onPay, che
     insuranceSelected && totals.insurance > 0 && {
       label: 'VetPac Programme Warranty',
       value: `NZD $${WARRANTY.oneTimePrice}`,
-      note: 'One-time · billed separately',
     },
   ].filter(Boolean)
 
@@ -402,7 +401,7 @@ function StepSummary({ totals, puppyCount, insuranceSelected, onBack, onPay, che
         ))}
 
         <div className="flex items-center justify-between px-4 py-3 bg-bg">
-          <span className="font-bold text-textPrimary text-sm">Vaccines due today</span>
+          <span className="font-bold text-textPrimary text-sm">Total due today</span>
           <span className="font-mono font-bold text-accent text-base">NZD ${displayTotal.toFixed(2)}</span>
         </div>
       </div>
@@ -458,9 +457,6 @@ function StepSummary({ totals, puppyCount, insuranceSelected, onBack, onPay, che
       <p className="text-xs text-center text-textMuted flex items-center justify-center gap-1">
         <Lock className="w-3 h-3" /> Secured by Stripe · NZD · no currency conversion
       </p>
-      {insuranceSelected && (
-        <p className="text-xs text-center text-textMuted">Warranty plan fee billed separately after your plan is confirmed.</p>
-      )}
     </div>
   )
 }

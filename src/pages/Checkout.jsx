@@ -89,7 +89,6 @@ export default function Checkout() {
         : `${origin}/order-confirmation?${vaccineSuccessParams.toString()}`
       const cancelUrl = params.get('cancelUrl') || `${origin}/checkout?${params.toString()}`
 
-      // Insurance is billed separately after order confirmation — intentionally excluded from Stripe charge.
       const items = isConsult
         ? [{ name: `Consultation & vet review${puppyCount > 1 ? ` (${puppyCount} puppies)` : ''}`, description: 'AI health assessment, NZ-registered vet sign-off, personalised vaccination plan', price: consultFee }]
         : [
@@ -97,6 +96,7 @@ export default function Checkout() {
             ...(vaccineItems.length === 0 && vaccinesTotal > 0 ? [{ name: 'Vaccines', price: vaccinesTotal }] : []),
             ...(freightTotal > 0 ? [{ name: 'Cold-chain freight', price: freightTotal }] : []),
             ...(assistTotal > 0 ? [{ name: 'VetPac Assist — in-home vaccinator', price: assistTotal }] : []),
+            ...(insuranceTotal > 0 ? [{ name: 'VetPac Programme Warranty', description: 'Covers vaccine failure and adverse reactions for your puppy\'s vaccination programme', price: insuranceTotal }] : []),
           ].filter((i) => i.price > 0)
 
       const res = await fetch('/api/create-checkout-session', {
@@ -180,13 +180,7 @@ export default function Checkout() {
                   {freightTotal > 0 && <LineItemRow label="Cold-chain freight" description="2–8°C certified · temperature strip" price={freightTotal} />}
                   {assistTotal > 0 && <LineItemRow label="VetPac Assist — in-home vaccinator" price={assistTotal} />}
                   {insuranceTotal > 0 && (
-                    <div className="flex justify-between items-start gap-4 text-sm">
-                      <div>
-                        <span className="text-textSecondary font-medium">{`VetPac Warranty (${insuranceBilling === 'twoYear' ? '2-year upfront' : insuranceBilling})`}</span>
-                        <p className="text-xs text-textMuted mt-0.5">Billed separately after plan confirmation</p>
-                      </div>
-                      <span className="font-mono font-semibold text-textMuted flex-shrink-0 text-xs italic">Separate</span>
-                    </div>
+                    <LineItemRow label="VetPac Programme Warranty" description="Covers vaccine failure & adverse reactions" price={insuranceTotal} />
                   )}
                 </>
               )}
