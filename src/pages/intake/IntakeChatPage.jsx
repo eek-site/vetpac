@@ -141,7 +141,16 @@ export default function IntakeChatPage() {
   const [searchParams] = useSearchParams()
   const {
     updateDogProfile, updateHealthHistory, updateLifestyle, updateOwnerDetails,
+    consultPaid,
   } = useIntakeStore()
+
+  // If the consult fee is already paid, don't allow returning to intake
+  useEffect(() => {
+    if (consultPaid && searchParams.get('fresh') !== '1') {
+      navigate('/plan', { replace: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const [messages, setMessages] = useState([OPENING_MESSAGE])
   const [input, setInput] = useState('')

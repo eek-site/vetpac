@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
+import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { Lock, Shield, CheckCircle, ChevronDown, ChevronUp, Tag, AlertCircle, Loader2 } from 'lucide-react'
 import { loadStripe } from '@stripe/stripe-js'
 import Button from '../components/ui/Button'
+import { useIntakeStore } from '../store/intakeStore'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
@@ -22,12 +23,20 @@ function LineItemRow({ label, description, price }) {
 
 export default function Checkout() {
   const [params] = useSearchParams()
+  const navigate = useNavigate()
+  const { consultPaid } = useIntakeStore()
   const checkoutRef = useRef(null)
   const checkoutInstanceRef = useRef(null)
 
   // URL params
   const mode = params.get('mode') || 'consult'
   const isConsult = mode === 'consult'
+
+  // If consult already paid, don't allow reaching this page again via back button
+  useEffect(() => {
+    if (isConsult && consultPaid) navigate('/plan', { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const dogName = params.get('puppy') || 'your puppy'
   const puppyCount = parseInt(params.get('puppyCount') || '1')
   const total = parseFloat(params.get('total') || '0')

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
 import {
   CheckCircle, Lock, Loader2, ChevronDown, ChevronUp,
   Shield, Heart, Star, AlertCircle, Tag, Syringe, Home, Truck, MessageCircle, ArrowLeft, Mail, RefreshCw,
 } from 'lucide-react'
+import { loadStripe } from '@stripe/stripe-js'
 import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
 import Modal from '../components/ui/Modal'
@@ -350,16 +351,29 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack
   )
 }
 
-// ─── STEP 4: Summary + Pay ───────────────────────────────────────────────────
+// ─── STEP 4: Summary + inline Stripe checkout ────────────────────────────────
 
-function StepSummary({ totals, puppyCount, insuranceSelected, onBack, onPay, checkoutLoading }) {
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+
+function StepSummary({ totals, puppyCount, insuranceSelected, vaccinePlan, additionalPuppyVaccinePlans, additionalPuppies, numberOfPuppies, puppyName, onBack }) {
   const [discountInput, setDiscountInput] = useState('')
   const [discountCode, setDiscountCode] = useState('')
   const [discountApplied, setDiscountApplied] = useState(false)
   const [discountError, setDiscountError] = useState(null)
+  const [stripeLoading, setStripeLoading] = useState(false)
+  const [stripeReady, setStripeReady] = useState(false)
+  const [stripeError, setStripeError] = useState(null)
+  const checkoutRef = useRef(null)
+  const checkoutInstanceRef = useRef(null)
 
   const subtotal = totals.vaccines + totals.assist + totals.freight + (insuranceSelected ? totals.insurance : 0)
   const displayTotal = discountApplied ? 1.00 : subtotal
+  const isBossMode = discountApplied && discountCode.toLowerCase() === 'bossmode'
+
+  // Cleanup Stripe on unmount
+  useEffect(() => {
+    return () => { checkoutInstanceRef.current?.destroy() }
+  }, [])
 
   const applyDiscount = () => {
     if (discountInput.trim().toLowerCase() === 'bossmode') {
@@ -371,92 +385,176 @@ function StepSummary({ totals, puppyCount, insuranceSelected, onBack, onPay, che
     }
   }
 
+  const handlePay = async () => {
+    setStripeLoading(true)
+    setStripeError(null)
+    try {
+      const origin = window.location.origin
+      const primarySelected = vaccinePlan.filter((v) => v.selected)
+      const additionalItems = (additionalPuppyVaccinePlans || []).flatMap((plan, i) => {
+        const label = additionalPuppies?.[i]?.name || `Puppy ${i + 2}`
+        return plan.filter((v) => v.selected).map((v) => ({
+          name: numberOfPuppies > 1 ? `${v.name} (${label})` : v.name,
+          price: v.price,
+        }))
+      })
+      const vaccineItems = isBossMode
+        ? [{ name: 'Vaccines (bossmode)', price: 1 }]
+        : [
+            ...primarySelected.map((v) => ({
+              name: numberOfPuppies > 1 ? `${v.name} (${puppyName})` : v.name,
+              price: v.price,
+            })),
+            ...additionalItems,
+          ]
+
+      const items = isBossMode
+        ? vaccineItems
+        : [
+            ...vaccineItems,
+            ...(totals.freight > 0 ? [{ name: 'Cold-chain freight', description: '2–8°C certified · temperature strip', price: totals.freight }] : []),
+            ...(totals.assist > 0 ? [{ name: 'VetPac Assist — in-home vaccinator', price: totals.assist }] : []),
+            ...(insuranceSelected && totals.insurance > 0 ? [{ name: 'VetPac Programme Warranty', description: 'Covers vaccine failure & adverse reactions', price: totals.insurance }] : []),
+          ]
+
+      const successParams = new URLSearchParams({
+        session_id: '{CHECKOUT_SESSION_ID}',
+        puppy: puppyName,
+        puppyCount: numberOfPuppies.toString(),
+        mode: 'vaccines',
+        total: displayTotal.toString(),
+        consult: '0',
+        vaccines: isBossMode ? '1' : totals.vaccines.toString(),
+        freight: isBossMode ? '0' : totals.freight.toString(),
+        assist: isBossMode ? '0' : totals.assist.toString(),
+        insurance: isBossMode ? '0' : totals.insurance.toFixed(2),
+        insuranceBilling: totals.insuranceBilling,
+        items: encodeURIComponent(JSON.stringify(vaccineItems)),
+      })
+      const successUrl = `${origin}/order-confirmation?${successParams.toString()}`
+      const cancelUrl = `${origin}/plan?step=4`
+
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items, dogName: puppyName, successUrl, cancelUrl, discountCode: discountApplied ? discountCode : '' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Could not create payment session')
+
+      const stripe = await stripePromise
+      if (!stripe) throw new Error('Stripe failed to load')
+
+      checkoutInstanceRef.current?.destroy()
+      const checkout = await stripe.createEmbeddedCheckoutPage({ clientSecret: data.clientSecret })
+      checkoutInstanceRef.current = checkout
+      checkout.mount(checkoutRef.current)
+      setStripeReady(true)
+    } catch (err) {
+      setStripeError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setStripeLoading(false)
+    }
+  }
+
   const rows = [
     totals.vaccines > 0 && { label: `Vaccines${puppyCount > 1 ? ` (${puppyCount} puppies)` : ''}`, value: `NZD $${totals.vaccines}` },
     totals.assist > 0 && { label: `VetPac Assist (${totals.doseCount} visit${totals.doseCount !== 1 ? 's' : ''})`, value: `NZD $${totals.assist}` },
     totals.freight > 0 && { label: 'Cold-chain freight', value: `NZD $${totals.freight}` },
-    insuranceSelected && totals.insurance > 0 && {
-      label: 'VetPac Programme Warranty',
-      value: `NZD $${WARRANTY.oneTimePrice}`,
-    },
+    insuranceSelected && totals.insurance > 0 && { label: 'VetPac Programme Warranty', value: `NZD $${WARRANTY.oneTimePrice}` },
   ].filter(Boolean)
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="font-display font-bold text-2xl text-textPrimary">Confirm your order</h1>
-        <p className="text-sm text-textSecondary mt-1">Review everything before you pay.</p>
-      </div>
-
-      {/* Order rows */}
-      <div className="bg-white border border-border rounded-card-lg divide-y divide-border overflow-hidden">
-        {rows.map((row) => (
-          <div key={row.label} className="flex items-center justify-between px-4 py-3">
-            <div>
-              <p className="text-sm font-medium text-textPrimary">{row.label}</p>
-              {row.note && <p className="text-xs text-textMuted">{row.note}</p>}
-            </div>
-            <span className="font-mono font-semibold text-sm text-textPrimary">{row.value}</span>
+      {!stripeReady && (
+        <>
+          <div>
+            <h1 className="font-display font-bold text-2xl text-textPrimary">Confirm your order</h1>
+            <p className="text-sm text-textSecondary mt-1">Review everything before you pay.</p>
           </div>
-        ))}
 
-        <div className="flex items-center justify-between px-4 py-3 bg-bg">
-          <span className="font-bold text-textPrimary text-sm">Total due today</span>
-          <span className="font-mono font-bold text-accent text-base">NZD ${displayTotal.toFixed(2)}</span>
-        </div>
-      </div>
-
-      {discountApplied
-        ? (
-          <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-card text-sm text-green-800">
-            <CheckCircle className="w-4 h-4" /> Code <strong className="mx-1">{discountCode.toUpperCase()}</strong> applied — NZD $1.00
-          </div>
-        ) : (
-          <div className="space-y-1">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
-                <input
-                  type="text"
-                  value={discountInput}
-                  onChange={(e) => setDiscountInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && applyDiscount()}
-                  placeholder="Discount code"
-                  className="w-full pl-9 pr-3 py-2.5 border border-border rounded-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
-                />
+          {/* Order rows */}
+          <div className="bg-white border border-border rounded-card-lg divide-y divide-border overflow-hidden">
+            {rows.map((row) => (
+              <div key={row.label} className="flex items-center justify-between px-4 py-3">
+                <p className="text-sm font-medium text-textPrimary">{row.label}</p>
+                <span className="font-mono font-semibold text-sm text-textPrimary">{row.value}</span>
               </div>
-              <button onClick={applyDiscount} className="px-4 py-2.5 border border-border rounded-card text-sm font-medium text-textSecondary hover:bg-bg transition-colors flex-shrink-0">Apply</button>
+            ))}
+            <div className="flex items-center justify-between px-4 py-3 bg-bg">
+              <span className="font-bold text-textPrimary text-sm">Total due today</span>
+              <span className="font-mono font-bold text-accent text-base">NZD ${displayTotal.toFixed(2)}</span>
             </div>
-            {discountError && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {discountError}</p>}
           </div>
-        )
-      }
 
-      {/* Trust row */}
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          { icon: Shield, label: 'Vet-authorised' },
-          { icon: Truck, label: 'Cold-chain certified' },
-          { icon: MessageCircle, label: '24/7 WhatsApp' },
-        ].map(({ icon: TrustIcon, label }) => (
-          <div key={label} className="flex flex-col items-center gap-1.5 p-2.5 bg-bg border border-border rounded-card text-center">
-            <TrustIcon className="w-4 h-4 text-primary" />
-            <span className="text-xs text-textSecondary font-medium">{label}</span>
+          {/* Discount */}
+          {discountApplied ? (
+            <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-card text-sm text-green-800">
+              <CheckCircle className="w-4 h-4" /> Code <strong className="mx-1">{discountCode.toUpperCase()}</strong> applied — NZD $1.00
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
+                  <input
+                    type="text"
+                    value={discountInput}
+                    onChange={(e) => setDiscountInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && applyDiscount()}
+                    placeholder="Discount code"
+                    className="w-full pl-9 pr-3 py-2.5 border border-border rounded-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
+                  />
+                </div>
+                <button onClick={applyDiscount} className="px-4 py-2.5 border border-border rounded-card text-sm font-medium text-textSecondary hover:bg-bg transition-colors flex-shrink-0">Apply</button>
+              </div>
+              {discountError && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> {discountError}</p>}
+            </div>
+          )}
+
+          {/* Trust badges */}
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { icon: Shield, label: 'Vet-authorised' },
+              { icon: Truck, label: 'Cold-chain certified' },
+              { icon: MessageCircle, label: '24/7 WhatsApp' },
+            ].map(({ icon: TrustIcon, label }) => (
+              <div key={label} className="flex flex-col items-center gap-1.5 p-2.5 bg-bg border border-border rounded-card text-center">
+                <TrustIcon className="w-4 h-4 text-primary" />
+                <span className="text-xs text-textSecondary font-medium">{label}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <div className="flex gap-3 pt-2">
-        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-textMuted hover:text-textPrimary transition-colors px-3 py-2.5">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-        <Button fullWidth size="lg" onClick={() => onPay(displayTotal, discountApplied, discountCode)} loading={checkoutLoading}>
-          Pay NZD ${displayTotal.toFixed(2)} →
-        </Button>
-      </div>
-      <p className="text-xs text-center text-textMuted flex items-center justify-center gap-1">
-        <Lock className="w-3 h-3" /> Secured by Stripe · NZD · no currency conversion
-      </p>
+          {stripeError && (
+            <div className="flex items-start gap-2 p-4 bg-red-50 border border-red-200 rounded-card text-sm text-red-700">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <p>{stripeError}</p>
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-2">
+            <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-textMuted hover:text-textPrimary transition-colors px-3 py-2.5">
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+            <Button fullWidth size="lg" onClick={handlePay} loading={stripeLoading} disabled={stripeLoading}>
+              {stripeLoading ? 'Setting up secure payment…' : `Pay NZD $${displayTotal.toFixed(2)} →`}
+            </Button>
+          </div>
+          <p className="text-xs text-center text-textMuted flex items-center justify-center gap-1">
+            <Lock className="w-3 h-3" /> Secured by Stripe · NZD · no currency conversion
+          </p>
+        </>
+      )}
+
+      {stripeLoading && !stripeReady && (
+        <div className="flex items-center justify-center gap-2 text-sm text-textMuted py-4">
+          <Loader2 className="w-4 h-4 animate-spin" /> Loading secure payment form…
+        </div>
+      )}
+
+      {/* Stripe mounts here */}
+      <div ref={checkoutRef} className={stripeReady ? 'mt-2' : 'hidden'} />
     </div>
   )
 }
@@ -510,7 +608,7 @@ function StepVaccines({ puppyName, additionalPuppies, additionalPuppyVaccinePlan
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function PlanPage() {
-  const navigate = useNavigate()
+
   const [searchParams, setSearchParams] = useSearchParams()
   const {
     dogProfile, healthHistory, lifestyle,
@@ -543,7 +641,6 @@ export default function PlanPage() {
 
   const [aiLoading, setAiLoading] = useState(!aiAssessment)
   const [aiError, setAiError] = useState(null)
-  const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [tokenRestoring, setTokenRestoring] = useState(false)
   const [tokenError, setTokenError] = useState(null)
   // Resume UI state (shown when no session in localStorage)
@@ -653,42 +750,6 @@ export default function PlanPage() {
 
   const totals = getOrderTotals()
   const puppyName = dogProfile.name || 'your puppy'
-
-  const handlePay = (displayTotal, discountApplied, discountCode) => {
-    setCheckoutLoading(true)
-    const primarySelected = vaccinePlan.filter((v) => v.selected)
-    const additionalItems = additionalPuppyVaccinePlans.flatMap((plan, i) => {
-      const label = additionalPuppies[i]?.name || `Puppy ${i + 2}`
-      return plan.filter((v) => v.selected).map((v) => ({
-        name: numberOfPuppies > 1 ? `${v.name} (${label})` : v.name,
-        price: v.price,
-      }))
-    })
-    const items = [
-      ...primarySelected.map((v) => ({
-        name: numberOfPuppies > 1 ? `${v.name} (${puppyName})` : v.name,
-        price: v.price,
-      })),
-      ...additionalItems,
-    ]
-
-    const params = new URLSearchParams({
-      mode: 'vaccines',
-      puppy: puppyName,
-      puppyCount: numberOfPuppies.toString(),
-      total: displayTotal.toFixed(2),
-      consult: '0',
-      vaccines: discountApplied ? '1' : totals.vaccines.toString(),
-      freight: discountApplied ? '0' : totals.freight.toString(),
-      assist: discountApplied ? '0' : totals.assist.toString(),
-      insurance: totals.insurance.toFixed(2),
-      insuranceBilling: totals.insuranceBilling,
-      items: encodeURIComponent(JSON.stringify(discountApplied ? [{ name: 'Vaccines (bossmode)', price: 1 }] : items)),
-      ...(discountApplied ? { discountCode } : {}),
-    })
-    navigate(`/checkout?${params.toString()}`)
-    setCheckoutLoading(false)
-  }
 
   // Token restore in progress
   if (tokenRestoring) {
@@ -807,9 +868,12 @@ export default function PlanPage() {
             totals={totals}
             puppyCount={numberOfPuppies}
             insuranceSelected={insuranceSelected}
+            vaccinePlan={vaccinePlan}
+            additionalPuppyVaccinePlans={additionalPuppyVaccinePlans}
+            additionalPuppies={additionalPuppies}
+            numberOfPuppies={numberOfPuppies}
+            puppyName={puppyName}
             onBack={() => setStep(3)}
-            onPay={handlePay}
-            checkoutLoading={checkoutLoading}
           />
         )}
       </div>

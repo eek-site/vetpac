@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import {
   Lock, CheckCircle, ChevronDown, ChevronUp, Shield, Stethoscope, FileText, Clock,
@@ -184,7 +184,14 @@ export default function Step6Review() {
     dogProfile,
     numberOfPuppies,
     getOrderTotals,
+    consultPaid,
   } = useIntakeStore()
+
+  // Already paid — send directly to plan (prevent back-navigation into intake)
+  useEffect(() => {
+    if (consultPaid) navigate('/plan', { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const totals = getOrderTotals()
   const puppyName = dogProfile.name || 'your puppy'
