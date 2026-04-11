@@ -209,19 +209,19 @@ function StepDelivery({ assistSelected, setAssistSelected, onNext, onBack }) {
 
 const WARRANTY_TERMS_CONTENT = (
   <div className="space-y-4 text-sm leading-relaxed">
-    <p className="font-semibold text-textPrimary">VetPac 2-Year Puppy Warranty — Summary</p>
-    <p className="text-textMuted">Provided by VetPac. This is a service warranty on your puppy's VetPac health programme, not an insurance product. Full warranty terms available at <Link to="/warranty-terms" className="text-primary underline">/warranty-terms</Link>.</p>
+    <p className="font-semibold text-textPrimary">VetPac Programme Warranty — Summary</p>
+    <p className="text-textMuted">Provided by VetPac. A service warranty on your puppy's vaccination programme outcomes — not an insurance product. Full terms at <Link to="/insurance-terms" className="text-primary underline">vetpac.nz/insurance-terms</Link>.</p>
     {[
+      { t: 'What is covered', b: 'Vaccine-preventable disease (parvo, distemper, hepatitis, kennel cough) despite completing the VetPac programme, and adverse reactions to VetPac-administered vaccines.' },
       { t: 'Warranty claim limit', b: 'NZD $15,000 per warranty period.' },
-      { t: 'What VetPac covers', b: '100% of eligible vet costs above the service fee — unexpected illness, injury, surgery, hospitalisation, diagnostics, and emergency treatment during your puppy\'s programme period.' },
-      { t: 'Service fee per claim', b: '$1,500 (monthly/annual plan). $750 (2-year upfront plan).' },
-      { t: 'Activation period', b: '14 days from warranty start for illness. Injuries covered from day one.' },
-      { t: 'What is not covered', b: 'Conditions present before warranty start, routine preventive care, elective procedures, dental disease, breeding costs, and behavioural treatment.' },
-      { t: 'Claims', b: `Email your vet invoice to ${SITE_EMAIL} with your warranty reference. VetPac processes 80% of claims within 5 business days.` },
-      { t: 'Plan fees', b: 'Monthly ($24.99/mo), Annual ($259/yr), or 2-Year upfront ($489). 2-year rate is locked for the full term.' },
-      { t: 'Cancellation', b: 'Monthly: cancel any time. Annual/2-year: full refund within 14 days of purchase; no refund after 14 days.' },
-      { t: 'Renewal', b: '2-year plans do not auto-renew. Monthly and annual plans auto-renew unless cancelled.' },
-      { t: 'Governing law', b: 'New Zealand. Disputes resolved under the Consumer Guarantees Act 1993 and Fair Trading Act 1986.' },
+      { t: 'Service fee per claim', b: '$200 (monthly/annual). $0 — zero service fee (2-year upfront).' },
+      { t: 'Activation period', b: '14 days from warranty start for illness claims. Adverse reactions covered from day one.' },
+      { t: 'What is not covered', b: 'Illness or injury unrelated to the VetPac programme, pre-existing conditions, elective procedures, dental disease, and breeding costs.' },
+      { t: 'Actuarial basis', b: 'Priced at 10× expected cost per programme (~$29), based on peer-reviewed vaccine failure and adverse reaction data.' },
+      { t: 'Claims', b: `Email vet invoice to ${SITE_EMAIL} with your warranty reference. Processed within 5 business days.` },
+      { t: 'Warranty fee', b: `NZD $${WARRANTY.oneTimePrice} — one-time payment, covers the full vaccination programme period.` },
+      { t: 'Cancellation', b: 'Monthly: cancel any time. Annual/2-year: full refund within 14 days; no refund after 14 days.' },
+      { t: 'Governing law', b: 'New Zealand. Consumer Guarantees Act 1993 and Fair Trading Act 1986.' },
       { t: 'Contact', b: `${SITE_EMAIL} · WhatsApp (24/7)` },
     ].map(({ t, b }) => (
       <div key={t}>
@@ -233,105 +233,93 @@ const WARRANTY_TERMS_CONTENT = (
 )
 
 const WARRANTY_FAQ = [
-  { q: 'What does the VetPac Warranty cover?', a: 'Unexpected illness and injury during your puppy\'s programme period — including surgery, hospitalisation, specialist consultations, diagnostics (X-rays, ultrasounds, blood tests), emergency treatment, and prescription medications. VetPac covers 100% of eligible costs above the service fee, up to $15,000.' },
-  { q: 'What is not covered?', a: 'Conditions present before the warranty start date, routine preventive care (including the vaccinations you are purchasing now), elective procedures, dental disease, and breeding-related costs. Full exclusions are in the warranty terms.' },
-  { q: 'Why choose the 2-year plan?', a: "The first two years of a puppy's life carry the highest health risk. Locking in 2 years upfront halves your service fee from $1,500 to $750, locks your plan fee for the full term, and means you never have to think about renewal during the most vulnerable window." },
-  { q: 'How do I make a claim?', a: `Email your vet invoice to ${SITE_EMAIL} with your warranty reference number. VetPac processes 80% of claims within 5 business days and pays directly to your nominated bank account.` },
-  { q: 'Is there an activation period?', a: 'Yes — 14 days from your warranty start date for illness claims. Injuries are covered from day one.' },
-  { q: 'Can I cancel?', a: 'Monthly plans can be cancelled any time with no penalty. Annual and 2-year plans can be cancelled within 14 days of purchase for a full refund. After 14 days, the plan fee is non-refundable but warranty cover remains active for the paid period.' },
+  { q: 'What does the warranty cover?', a: 'Vet costs resulting from vaccine-programme failures — specifically: (1) vaccine-preventable disease (parvovirus, distemper, hepatitis, kennel cough) contracted despite completing your VetPac programme; and (2) adverse reactions to vaccines administered as part of your programme, including anaphylaxis, severe lethargy, facial swelling, or injection-site complications requiring vet care. VetPac covers 100% of eligible costs above the service fee, up to $15,000.' },
+  { q: 'How is the price worked out?', a: 'We modelled the actual risk data. About 5% of vaccinated puppies experience primary immunisation failure (Decaro et al., Vet Microbiology 2020). Around 1.14% experience an adverse reaction requiring vet care across a 3-dose programme (Moore et al., JAVMA 2005 — 1.2M dogs). Weighted against NZ treatment costs ($1,500–$5,000 for parvo), our expected cost per programme is ~$29. We charge 10× that — enough to cover every claim with a sustainable margin.' },
+  { q: 'How long does the warranty last?', a: "It covers your puppy's VetPac vaccination programme — from the first dose until full immunity is established (typically 4 weeks after the final dose, so around 14 weeks total). It's a one-time add-on, not a subscription. Zero service fee — if something goes wrong, VetPac covers 100% of eligible costs up to $15,000." },
+  { q: 'How do I make a claim?', a: `Email your vet invoice to ${SITE_EMAIL} with your warranty reference number. We process claims within 5 business days and pay directly to your nominated bank account.` },
+  { q: 'What is not covered?', a: 'Illness or injury unrelated to your VetPac vaccination programme, pre-existing conditions, routine preventive care, elective procedures, dental disease, and breeding-related costs. This is a warranty on the vaccination programme outcomes — not a general health plan.' },
+  { q: 'Can I cancel?', a: 'Monthly plans can be cancelled any time with no penalty. Annual and 2-year plans can be cancelled within 14 days of purchase for a full refund. After 14 days, the plan fee is non-refundable but the warranty remains active for the paid period.' },
 ]
 
 // ─── STEP 3: Warranty ────────────────────────────────────────────────────────
 
-function StepInsurance({ insuranceSelected, setInsuranceSelected, insuranceBilling, setInsuranceBilling, onNext, onBack }) {
+function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack }) {
   const [termsOpen, setTermsOpen] = useState(false)
-  const plans = [
-    {
-      id: 'monthly',
-      label: 'Monthly',
-      price: `$${WARRANTY.monthlyPrice}/mo`,
-      perDay: '83¢ a day',
-      sub: 'No lock-in · cancel any time',
-      serviceFee: WARRANTY.serviceFee,
-      badge: null,
-    },
-    {
-      id: 'annual',
-      label: 'Annual',
-      price: `$${WARRANTY.annualPrice}/yr`,
-      perDay: '71¢ a day',
-      sub: `Save $${((WARRANTY.monthlyPrice * 12) - WARRANTY.annualPrice).toFixed(0)} vs monthly`,
-      serviceFee: WARRANTY.serviceFee,
-      badge: 'Popular',
-    },
-    {
-      id: 'twoYear',
-      label: '2-Year upfront',
-      price: `$${WARRANTY.twoYearPrice}`,
-      perDay: '67¢ a day',
-      sub: `Save $${((WARRANTY.monthlyPrice * 24) - WARRANTY.twoYearPrice).toFixed(0)} vs monthly · service fee halved`,
-      serviceFee: WARRANTY.twoYearServiceFee,
-      badge: 'Best value',
-    },
-  ]
 
   return (
     <>
       <div className="space-y-5">
         <div>
-          <h1 className="font-display font-bold text-2xl text-textPrimary">Protect the next two years</h1>
-          <p className="text-sm text-textSecondary mt-1">The most expensive vet bills happen in the first two years. The warranty pays for itself after a single claim.</p>
+          <h1 className="font-display font-bold text-2xl text-textPrimary">Back your programme</h1>
+          <p className="text-sm text-textSecondary mt-1">A one-time warranty on your puppy's vaccination programme — priced from the actual data.</p>
         </div>
 
-        {/* Risk vs cost callout */}
-        <div className="rounded-card-lg border border-rose-100 bg-rose-50 overflow-hidden">
-          <div className="flex items-start gap-3 p-4">
-            <Heart className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-textPrimary text-sm">What you're protected against</p>
-              <div className="mt-2 space-y-1 text-xs text-textSecondary">
-                <div className="flex justify-between"><span>Emergency vet visit</span><span className="font-semibold text-rose-700">$800 – $2,500</span></div>
-                <div className="flex justify-between"><span>Surgery</span><span className="font-semibold text-rose-700">$3,000 – $8,000</span></div>
-                <div className="flex justify-between"><span>Hospitalisation (3 nights)</span><span className="font-semibold text-rose-700">$1,500 – $4,000</span></div>
-                <div className="flex justify-between border-t border-rose-200 pt-1.5 mt-1.5"><span className="font-semibold text-textPrimary">VetPac Warranty covers up to</span><span className="font-bold text-primary">$15,000</span></div>
+        {/* Actuarial model */}
+        <div className="rounded-card-lg border border-border bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-bg">
+            <p className="font-semibold text-sm text-textPrimary">How we priced this — per 1,000 VetPac puppies</p>
+          </div>
+          <div className="divide-y divide-border">
+            {[
+              {
+                label: 'Vaccine non-response → disease',
+                detail: '5% don\'t build immunity (Decaro et al., Vet Microbiol 2020) · 15% of those get disease · 7.5 dogs × $2,500 avg NZ treatment',
+                cost: '$18,750',
+              },
+              {
+                label: 'Moderate adverse reaction',
+                detail: '0.78%/dose × 3 doses → 7.8 dogs (Moore et al., JAVMA 2005 — 1.2M dogs) × $280 avg',
+                cost: '$2,184',
+              },
+              {
+                label: 'Severe reaction / anaphylaxis',
+                detail: '0.065%/dose × 3 doses → ~2 dogs × $800 avg',
+                cost: '$1,560',
+              },
+            ].map(({ label, detail, cost }) => (
+              <div key={label} className="flex items-start justify-between gap-4 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-textPrimary">{label}</p>
+                  <p className="text-xs text-textMuted mt-0.5">{detail}</p>
+                </div>
+                <span className="text-sm font-semibold text-rose-600 flex-shrink-0">{cost}</span>
               </div>
+            ))}
+            <div className="flex items-center justify-between px-4 py-3 bg-bg">
+              <div>
+                <p className="text-sm font-semibold text-textPrimary">Total per 1,000 puppies</p>
+                <p className="text-xs text-textMuted">÷ 1,000 = $22.49 per puppy · × 10 = <strong className="text-textPrimary">$225</strong></p>
+              </div>
+              <span className="font-mono font-bold text-primary">$22,494</span>
             </div>
           </div>
-          <div className="bg-rose-100/60 px-4 py-2 text-xs text-rose-700">
-            1 in 3 puppies needs unexpected vet care in their first two years.
-          </div>
         </div>
 
-        {/* Plan options */}
+        {/* Yes / No */}
         <div className="space-y-2">
-          {plans.map((plan) => (
-            <div key={plan.id} onClick={() => { setInsuranceSelected(true); setInsuranceBilling(plan.id) }}
-              className={`rounded-card border-2 p-3 cursor-pointer transition-all ${insuranceSelected && insuranceBilling === plan.id ? 'border-primary bg-primary/5' : 'border-border bg-white hover:border-primary/40'}`}>
-              <div className="flex items-center gap-3">
-                <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${insuranceSelected && insuranceBilling === plan.id ? 'border-primary' : 'border-border'}`}>
-                  {insuranceSelected && insuranceBilling === plan.id && <div className="w-2 h-2 rounded-full bg-primary" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-sm text-textPrimary">{plan.label}</span>
-                    {plan.badge && <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${plan.id === 'twoYear' ? 'bg-primary/10 text-primary' : 'bg-amber-100 text-amber-800'}`}>{plan.badge}</span>}
-                  </div>
-                  <p className="text-xs text-textMuted mt-0.5">{plan.sub} · ${plan.serviceFee} service fee per claim</p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="font-mono font-bold text-sm text-textPrimary">{plan.price}</p>
-                  <p className="text-xs text-textMuted">{plan.perDay}</p>
-                </div>
+          <div onClick={() => setInsuranceSelected(true)}
+            className={`rounded-card border-2 p-4 cursor-pointer transition-all ${insuranceSelected ? 'border-primary bg-primary/5' : 'border-border bg-white hover:border-primary/40'}`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${insuranceSelected ? 'border-primary' : 'border-border'}`}>
+                {insuranceSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
               </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm text-textPrimary">Add programme warranty</span>
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Recommended</span>
+                </div>
+                <p className="text-xs text-textMuted mt-0.5">Covers vaccine failure + adverse reactions for the full programme · zero service fee · up to $15,000</p>
+              </div>
+              <span className="font-mono font-bold text-textPrimary flex-shrink-0">NZD ${WARRANTY.oneTimePrice}</span>
             </div>
-          ))}
+          </div>
           <button onClick={() => setInsuranceSelected(false)}
-            className={`w-full text-left rounded-card border-2 p-3 transition-all ${!insuranceSelected ? 'border-border bg-white' : 'border-border bg-white hover:border-border'}`}>
+            className={`w-full text-left rounded-card border-2 p-4 transition-all ${!insuranceSelected ? 'border-border bg-white' : 'border-border bg-white hover:border-border'}`}>
             <div className="flex items-center gap-3">
               <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${!insuranceSelected ? 'border-primary' : 'border-border'}`}>
                 {!insuranceSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
               </div>
-              <span className="text-sm text-textSecondary">I'll cover vet costs myself</span>
+              <span className="text-sm text-textSecondary">No warranty — I'll cover any vet costs myself</span>
             </div>
           </button>
         </div>
@@ -340,7 +328,7 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, insuranceBilli
           <p className="text-xs text-textMuted">
             By adding the warranty you agree to the{' '}
             <button onClick={() => setTermsOpen(true)} className="text-primary underline font-medium">VetPac Warranty terms</button>.
-            ${insuranceBilling === 'twoYear' ? WARRANTY.twoYearServiceFee : WARRANTY.serviceFee} service fee per claim · costs covered by VetPac. Service warranty, not insurance.
+            One-time fee · zero service fee · service warranty, not insurance.
           </p>
         )}
 
@@ -371,7 +359,7 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, insuranceBilli
 
 // ─── STEP 4: Summary + Pay ───────────────────────────────────────────────────
 
-function StepSummary({ totals, puppyCount, insuranceSelected, insuranceBilling, onBack, onPay, checkoutLoading }) {
+function StepSummary({ totals, puppyCount, insuranceSelected, onBack, onPay, checkoutLoading }) {
   const [discountInput, setDiscountInput] = useState('')
   const [discountCode, setDiscountCode] = useState('')
   const [discountApplied, setDiscountApplied] = useState(false)
@@ -395,9 +383,9 @@ function StepSummary({ totals, puppyCount, insuranceSelected, insuranceBilling, 
     totals.assist > 0 && { label: `VetPac Assist (${totals.doseCount} visit${totals.doseCount !== 1 ? 's' : ''})`, value: `NZD $${totals.assist}` },
     totals.freight > 0 && { label: 'Cold-chain freight', value: `NZD $${totals.freight}` },
     insuranceSelected && totals.insurance > 0 && {
-      label: `VetPac Warranty (${insuranceBilling === 'twoYear' ? '2-year' : insuranceBilling})`,
-      value: `NZD $${insuranceBilling === 'twoYear' ? WARRANTY.twoYearPrice : insuranceBilling === 'annual' ? WARRANTY.annualPrice : `${WARRANTY.monthlyPrice}/mo`}`,
-      note: 'Billed separately',
+      label: 'VetPac Programme Warranty',
+      value: `NZD $${WARRANTY.oneTimePrice}`,
+      note: 'One-time · billed separately',
     },
   ].filter(Boolean)
 
@@ -543,7 +531,6 @@ export default function PlanPage() {
     vaccinePlan, toggleVaccineItem, toggleAdditionalPuppyVaccineItem,
     assistSelected, setAssistSelected,
     insuranceSelected, setInsuranceSelected,
-    insuranceBilling, setInsuranceBilling,
     setConsultPaid,
     getOrderTotals,
   } = useIntakeStore()
@@ -669,8 +656,6 @@ export default function PlanPage() {
           <StepInsurance
             insuranceSelected={insuranceSelected}
             setInsuranceSelected={setInsuranceSelected}
-            insuranceBilling={insuranceBilling}
-            setInsuranceBilling={setInsuranceBilling}
             onNext={() => setStep(4)}
             onBack={() => setStep(2)}
           />
@@ -680,7 +665,6 @@ export default function PlanPage() {
             totals={totals}
             puppyCount={numberOfPuppies}
             insuranceSelected={insuranceSelected}
-            insuranceBilling={insuranceBilling}
             onBack={() => setStep(3)}
             onPay={handlePay}
             checkoutLoading={checkoutLoading}

@@ -111,18 +111,21 @@ export const SCALES = {
 
 export const INSURANCE = {
   id: 'warranty',
-  name: 'VetPac 2-Year Puppy Warranty',
-  description: 'A service warranty on your puppy\'s health programme — VetPac covers unexpected vet costs during the first two years.',
-  warrantyTerm: '2 years',
-  weeklyRetailPrice: 16.99,
-  weeklyIntroPrice: 4.99,
-  monthlyPrice: 24.99,     // monthly billing — standard service fee
-  annualPrice: 259,        // annual billing — standard service fee
-  twoYearPrice: 489,       // upfront 2yr — service fee halved
+  name: 'VetPac Programme Warranty',
+  description: 'One-time warranty on your puppy\'s VetPac vaccination programme — covers vaccine failure and adverse reactions.',
+  warrantyTerm: 'programme period',
+
+  // Actuarial model — 1,000 dogs through programme:
+  // — Non-responders: 5% × 1,000 = 50 dogs don't build immunity (Decaro et al., Vet Microbiol 2020)
+  // — Of those, ~15% get disease (exposure risk, household puppy) = 7.5 dogs × $2,500 NZ avg = $18,750
+  // — Moderate adverse reactions: 0.78%/dose × 3 doses × 1,000 = 7.8 dogs × $280 avg = $2,184
+  // — Severe reactions (anaphylaxis): 0.065%/dose × 3 × 1,000 = 1.95 dogs × $800 avg = $1,560
+  // — Total expected claims per 1,000 dogs: $22,494
+  // — Per dog: $22.49  →  10× = $224.90  →  price: $225
+  oneTimePrice: 225,
   claimLimit: 15000,
-  serviceFee: 1500,        // monthly / annual billing
-  twoYearServiceFee: 750,  // 2-year upfront — service fee drops to $750
-  coverageRate: 100,       // VetPac covers 100% of eligible costs above the service fee
+  serviceFee: 0,       // zero service fee — full eligible costs covered
+  coverageRate: 100,
 }
 
 export const PRICING_EXAMPLES = [

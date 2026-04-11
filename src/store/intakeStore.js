@@ -252,13 +252,7 @@ export const useIntakeStore = create(
         // Delivery method: assist = vaccinator comes to you (no freight), self = shipped to you
         const freightTotal = s.assistSelected ? 0 : shipmentCount * FREIGHT.pricePerShipment
         const assistTotal = s.assistSelected ? doseCount * ADDONS.ASSIST.price : 0
-        const insuranceCost = s.insuranceSelected
-          ? (s.insuranceBilling === 'twoYear'
-              ? INSURANCE.twoYearPrice
-              : s.insuranceBilling === 'annual'
-                ? INSURANCE.annualPrice
-                : INSURANCE.monthlyPrice)
-          : 0
+        const insuranceCost = s.insuranceSelected ? INSURANCE.oneTimePrice : 0
 
         return {
           consultation: consultTotal,
@@ -268,7 +262,7 @@ export const useIntakeStore = create(
           doseCount,
           assist: assistTotal,
           insurance: insuranceCost,
-          insuranceBilling: s.insuranceBilling,
+          insuranceBilling: 'oneTime',
           total: consultTotal + vaccineTotal + freightTotal + assistTotal + insuranceCost,
         }
       },
