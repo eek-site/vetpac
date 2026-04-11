@@ -292,7 +292,7 @@ function DogCard({ dog }) {
                 <p className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />Valid for the duration of your puppy's programme</p>
               </div>
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-                To make a claim email <strong>woof@vetpac.nz</strong> with your order reference and a summary of the issue.
+                To make a claim, use the chat button with your order reference and a summary of the issue.
               </div>
             </div>
           ) : (
@@ -313,9 +313,10 @@ function DogCard({ dog }) {
 
 // ─── Account tab ──────────────────────────────────────────────────────────────
 
-function AccountTab({ session, dogs }) {
+function AccountTab({ session, dogs, onSwitchToDogs }) {
   const email = session?.user?.email
   const orderedDogs = dogs.filter((d) => d.order?.status === 'paid')
+  const warrantiedDogs = dogs.filter((d) => d.order?.warrantySelected)
 
   return (
     <div className="space-y-6">
@@ -326,24 +327,33 @@ function AccountTab({ session, dogs }) {
           <span>{email}</span>
         </div>
         <div className="grid grid-cols-3 gap-3 pt-2">
-          <div className="text-center p-3 bg-slate-50 rounded-xl">
+          <button
+            onClick={onSwitchToDogs}
+            className="text-center p-3 bg-slate-50 hover:bg-teal-50 hover:border-teal-200 border border-transparent rounded-xl transition-colors"
+          >
             <p className="text-2xl font-bold text-slate-800">{dogs.length}</p>
             <p className="text-xs text-slate-500 mt-0.5">Dog{dogs.length !== 1 ? 's' : ''} registered</p>
-          </div>
-          <div className="text-center p-3 bg-slate-50 rounded-xl">
+          </button>
+          <button
+            onClick={onSwitchToDogs}
+            className="text-center p-3 bg-slate-50 hover:bg-teal-50 hover:border-teal-200 border border-transparent rounded-xl transition-colors"
+          >
             <p className="text-2xl font-bold text-slate-800">{orderedDogs.length}</p>
             <p className="text-xs text-slate-500 mt-0.5">Order{orderedDogs.length !== 1 ? 's' : ''} placed</p>
-          </div>
-          <div className="text-center p-3 bg-slate-50 rounded-xl">
-            <p className="text-2xl font-bold text-slate-800">{dogs.filter((d) => d.order?.warrantySelected).length}</p>
-            <p className="text-xs text-slate-500 mt-0.5">Warrant{dogs.filter((d) => d.order?.warrantySelected).length !== 1 ? 'ies' : 'y'} active</p>
-          </div>
+          </button>
+          <button
+            onClick={onSwitchToDogs}
+            className="text-center p-3 bg-slate-50 hover:bg-teal-50 hover:border-teal-200 border border-transparent rounded-xl transition-colors"
+          >
+            <p className="text-2xl font-bold text-slate-800">{warrantiedDogs.length}</p>
+            <p className="text-xs text-slate-500 mt-0.5">Warrant{warrantiedDogs.length !== 1 ? 'ies' : 'y'} active</p>
+          </button>
         </div>
       </div>
 
       <div className="bg-slate-50 rounded-2xl p-4 text-sm text-slate-600 space-y-2">
         <p className="font-semibold text-slate-700">Need help?</p>
-        <p>Email us at <a href="mailto:woof@vetpac.nz" className="text-teal-700 font-medium">woof@vetpac.nz</a> — we respond as quickly as possible.</p>
+        <p>Use the chat button to get in touch — we respond as quickly as possible.</p>
         <p className="text-xs text-slate-400">For veterinary emergencies, contact your local vet immediately.</p>
       </div>
 
@@ -492,7 +502,7 @@ export default function Dashboard() {
         )}
 
         {activeTab === 'account' && (
-          <AccountTab session={session} dogs={dogs} />
+          <AccountTab session={session} dogs={dogs} onSwitchToDogs={() => setActiveTab('dogs')} />
         )}
 
       </main>
