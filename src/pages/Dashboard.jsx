@@ -477,6 +477,81 @@ function WarrantyTab({ data, loading }) {
   )
 }
 
+// ─── Account tab ─────────────────────────────────────────────────────────────
+
+function AccountTab({ userEmail, data, onEmailsChange }) {
+  const [extraEmails, setExtraEmails] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('vp_extra_emails') || '[]') } catch { return [] }
+  })
+  const [input, setInput] = useState('')
+  const [inputError, setInputError] = useState(null)
+
+  const addEmail = () => {
+    const e = input.trim().toLowerCase()
+    if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { setInputError('Enter a valid email address.'); return }
+    if (e === userEmail.toLowerCase() || extraEmails.includes(e)) { setInputError('That email is already linked.'); return }
+    const next = [...extraEmails, e]
+    setExtraEmails(next)
+    localStorage.setItem('vp_extra_emails', JSON.stringify(next))
+    setInput('')
+    setInputError(null)
+    onEmailsChange(next)
+  }
+
+  const removeEmail = (e) => {
+    const next = extraEmails.filter((x) => x !== e)
+    setExtraEmails(next)
+    localStorage.setItem('vp_extra_emails', JSON.stringify(next))
+    onEmailsChange(next)
+  }
+
+  return (
+    <div className="space-y-6 max-w-lg">
+      <Card>
+        <h3 className="font-display font-semibold text-xl text-textPrimary mb-5">Account</h3>
+        <div className="space-y-0 text-sm mb-5">
+          <DataRow label="Sign-in email" value={userEmail} />
+          <DataRow label="Consultations" value={String(data?.consultations?.length ?? '—')} />
+          <DataRow label="Vaccine orders" value={String(data?.vaccinations?.length ?? '—')} />
+          <DataRow label="Warranty" value={data?.warrantyOrders?.length ? 'Active' : 'Not purchased'} />
+        </div>
+        <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>Sign out</Button>
+      </Card>
+
+      <Card>
+        <h3 className="font-display font-semibold text-base text-textPrimary mb-1">Linked order emails</h3>
+        <p className="text-sm text-textSecondary mb-4">
+          If you paid using a different email at checkout, add it here so your orders appear in the dashboard.
+        </p>
+
+        {extraEmails.length > 0 && (
+          <div className="space-y-2 mb-4">
+            {extraEmails.map((e) => (
+              <div key={e} className="flex items-center justify-between gap-3 px-3 py-2 bg-bg rounded-card border border-border text-sm">
+                <span className="font-mono text-textSecondary">{e}</span>
+                <button type="button" onClick={() => removeEmail(e)} className="text-textMuted hover:text-red-500 transition-colors text-xs">Remove</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <input
+            type="email"
+            value={input}
+            onChange={(e) => { setInput(e.target.value); setInputError(null) }}
+            onKeyDown={(e) => e.key === 'Enter' && addEmail()}
+            placeholder="checkout@example.com"
+            className="flex-1 px-3 py-2 border border-border rounded-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+          />
+          <Button size="sm" onClick={addEmail}>Add</Button>
+        </div>
+        {inputError && <p className="text-xs text-red-600 mt-2">{inputError}</p>}
+      </Card>
+    </div>
+  )
+}
+
 // ─── Spinner ──────────────────────────────────────────────────────────────────
 
 function Spinner({ label }) {
@@ -512,9 +587,11 @@ export default function Dashboard() {
     if (!session?.access_token) return
     let cancelled = false
     setDataLoading(true)
+    const extraEmails = (() => { try { return JSON.parse(localStorage.getItem('vp_extra_emails') || '[]') } catch { return [] } })()
     fetch('/api/dashboard-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ extraEmails }),
     })
       .then((r) => {
         if (r.status === 401) { supabase.auth.signOut(); return null }
@@ -573,18 +650,20 @@ export default function Dashboard() {
         {activeTab === 'vaccination' && <VaccinationTab data={data?.vaccinations} loading={dataLoading} />}
         {activeTab === 'warranty' && <WarrantyTab data={data?.warrantyOrders} loading={dataLoading} />}
         {activeTab === 'account' && (
-          <Card>
-            <h3 className="font-display font-semibold text-xl text-textPrimary mb-6">Account</h3>
-            <div className="space-y-0 text-sm">
-              <DataRow label="Email" value={userEmail} />
-              <DataRow label="Consultations" value={String(data?.consultations?.length ?? '—')} />
-              <DataRow label="Vaccine orders" value={String(data?.vaccinations?.length ?? '—')} />
-              <DataRow label="Warranty" value={data?.warrantyOrders?.length ? 'Active' : 'Not purchased'} />
-            </div>
-            <div className="mt-6">
-              <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>Sign out</Button>
-            </div>
-          </Card>
+          <AccountTab userEmail={userEmail} onEmailsChange={(emails) => {
+            // Re-fetch data with updated emails
+            setData(null)
+            setDataLoading(true)
+            fetch('/api/dashboard-data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+              body: JSON.stringify({ extraEmails: emails }),
+            })
+              .then((r) => r.json())
+              .then((d) => setData(d))
+              .catch(() => {})
+              .finally(() => setDataLoading(false))
+          }} data={data} />
         )}
       </div>
       <Footer />
