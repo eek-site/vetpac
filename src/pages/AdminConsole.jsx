@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard, ChevronDown, ChevronRight, User, PawPrint, MessageSquare, Globe, Monitor, Smartphone, RefreshCw, Mail, Send, X } from 'lucide-react'
+import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard, ChevronDown, ChevronRight, User, PawPrint, MessageSquare, Globe, Monitor, Smartphone, RefreshCw, Mail, Send, X, Plus, Megaphone, Trash2 as TrashIcon, Pencil, AlertTriangle as AlertIcon } from 'lucide-react'
 import Button from '../components/ui/Button'
 import StatusBadge from '../components/ui/StatusBadge'
 
@@ -708,6 +708,12 @@ export default function AdminConsole() {
   const [visitorsError, setVisitorsError] = useState(null)
   const [visitorMsgs, setVisitorMsgs] = useState(null)
   const [visitorMsgsLoading, setVisitorMsgsLoading] = useState(false)
+  const [adminTab, setAdminTab] = useState('dashboard')
+  const [announcements, setAnnouncements] = useState(null)
+  const [annLoading, setAnnLoading] = useState(false)
+  const [annForm, setAnnForm] = useState(null)  // null = closed, {} = new, {id,...} = edit
+  const [annSaving, setAnnSaving] = useState(false)
+  const [annError, setAnnError] = useState(null)
   const [expandedVisitor, setExpandedVisitor] = useState(null)
   const [replySession, setReplySession] = useState(null)
   const [msTokenCache, setMsTokenCache] = useState(null)
@@ -892,6 +898,63 @@ export default function AdminConsole() {
     finally { setVisitorMsgsLoading(false) }
   }, [getAccessToken])
 
+  const fetchAnnouncements = useCallback(async () => {
+    const token = await getAccessToken()
+    if (!token) return
+    setMsTokenCache(token)
+    setAnnLoading(true)
+    try {
+      const r = await fetch('/api/announcements?all=1', { headers: { Authorization: `Bearer ${token}` } })
+      const d = await r.json()
+      if (r.ok) setAnnouncements(d.announcements || [])
+    } catch { /* silent */ }
+    finally { setAnnLoading(false) }
+  }, [getAccessToken])
+
+  const saveAnnouncement = useCallback(async (form) => {
+    const token = await getAccessToken()
+    if (!token) return
+    setAnnSaving(true); setAnnError(null)
+    try {
+      const isEdit = !!form.id
+      const url = isEdit ? `/api/announcements?id=${form.id}` : '/api/announcements'
+      const method = isEdit ? 'PATCH' : 'POST'
+      // Convert local datetime strings to ISO (treat input as NZ time UTC+12)
+      const toUTC = (localStr) => {
+        if (!localStr) return null
+        const d = new Date(localStr)
+        return new Date(d.getTime() - 12 * 60 * 60 * 1000).toISOString()
+      }
+      const body = {
+        title:    form.title,
+        body:     form.body,
+        start_at: toUTC(form.start_at),
+        end_at:   toUTC(form.end_at),
+      }
+      const r = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error || 'Save failed')
+      setAnnForm(null)
+      await fetchAnnouncements()
+    } catch (e) { setAnnError(e.message) }
+    finally { setAnnSaving(false) }
+  }, [getAccessToken, fetchAnnouncements])
+
+  const deleteAnnouncement = useCallback(async (id) => {
+    if (!window.confirm('Delete this announcement?')) return
+    const token = await getAccessToken()
+    if (!token) return
+    await fetch(`/api/announcements?id=${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    await fetchAnnouncements()
+  }, [getAccessToken, fetchAnnouncements])
+
   const fetchVisitors = useCallback(async () => {
     setVisitorsLoading(true)
     setVisitorsError(null)
@@ -913,7 +976,8 @@ export default function AdminConsole() {
     void fetchSessions()
     void fetchVisitors()
     void fetchVisitorMessages()
-  }, [phase, account, fetchStats, fetchSessions, fetchVisitors, fetchVisitorMessages])
+    void fetchAnnouncements()
+  }, [phase, account, fetchStats, fetchSessions, fetchVisitors, fetchVisitorMessages, fetchAnnouncements])
 
   const signIn = async () => {
     const pca = window.__vetpacMsal
@@ -1085,6 +1149,143 @@ export default function AdminConsole() {
             </div>
           </Link>
         </div>
+
+        {/* ── Tab bar ──────────────────────────────────────────────── */}
+        <div className="flex gap-1 border-b border-border">
+          {[
+            { id: 'dashboard',      label: 'Dashboard',      icon: LayoutDashboard },
+            { id: 'announcements',  label: 'Announcements',  icon: Megaphone },
+          ].map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => setAdminTab(id)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                adminTab === id
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-textMuted hover:text-textPrimary'
+              }`}>
+              <Icon className="w-4 h-4" /> {label}
+              {id === 'announcements' && announcements && announcements.some(a => {
+                const now = Date.now()
+                return new Date(a.start_at) <= now && new Date(a.end_at) >= now
+              }) && <span className="w-2 h-2 rounded-full bg-red-500" />}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Announcements tab ────────────────────────────────────── */}
+        {adminTab === 'announcements' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-textPrimary">Announcements</h3>
+                <p className="text-xs text-textMuted mt-0.5">Splash modal shown to all site visitors when active (controlled by start/end date in NZ time).</p>
+              </div>
+              <button onClick={() => setAnnForm({ title: '', body: '', start_at: '', end_at: '' })}
+                className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors">
+                <Plus className="w-4 h-4" /> New announcement
+              </button>
+            </div>
+
+            {/* Create / Edit form */}
+            {annForm && (
+              <div className="bg-white rounded-xl border-2 border-primary/30 p-5 space-y-4">
+                <h4 className="font-semibold text-textPrimary text-sm">{annForm.id ? 'Edit announcement' : 'New announcement'}</h4>
+                <div>
+                  <label className="text-xs font-medium text-textMuted mb-1 block">Title</label>
+                  <input value={annForm.title} onChange={e => setAnnForm(f => ({ ...f, title: e.target.value }))}
+                    className="w-full text-sm border border-border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    placeholder="e.g. ⚠️ All Home Visits Suspended — Cyclone Vaianu" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-textMuted mb-1 block">Body</label>
+                  <textarea value={annForm.body} onChange={e => setAnnForm(f => ({ ...f, body: e.target.value }))}
+                    rows={6} className="w-full text-sm border border-border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-y"
+                    placeholder="Announcement text shown to visitors. Use blank lines to separate paragraphs." />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-textMuted mb-1 block">Start (NZ time)</label>
+                    <input type="datetime-local" value={annForm.start_at} onChange={e => setAnnForm(f => ({ ...f, start_at: e.target.value }))}
+                      className="w-full text-sm border border-border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-textMuted mb-1 block">End (NZ time)</label>
+                    <input type="datetime-local" value={annForm.end_at} onChange={e => setAnnForm(f => ({ ...f, end_at: e.target.value }))}
+                      className="w-full text-sm border border-border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                  </div>
+                </div>
+                {annError && <p className="text-xs text-red-500">{annError}</p>}
+                <div className="flex gap-2">
+                  <button onClick={() => saveAnnouncement(annForm)} disabled={annSaving || !annForm.title || !annForm.body || !annForm.start_at || !annForm.end_at}
+                    className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 disabled:opacity-40 transition-colors">
+                    {annSaving ? 'Saving…' : annForm.id ? 'Save changes' : 'Create'}
+                  </button>
+                  <button onClick={() => { setAnnForm(null); setAnnError(null) }}
+                    className="px-4 py-2 border border-border rounded-xl text-sm text-textMuted hover:bg-bg transition-colors">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {annLoading && <div className="flex items-center gap-2 text-sm text-textMuted py-4"><Loader2 className="w-4 h-4 animate-spin text-primary" /> Loading…</div>}
+
+            {!annLoading && announcements && announcements.length === 0 && (
+              <p className="text-sm text-textMuted text-center py-8">No announcements yet. Click + to create one.</p>
+            )}
+
+            {!annLoading && (announcements || []).map(a => {
+              const now = Date.now()
+              const isActive = new Date(a.start_at) <= now && new Date(a.end_at) >= now
+              const isPast   = new Date(a.end_at) < now
+              const isFuture = new Date(a.start_at) > now
+              const fmtDt = (iso) => new Date(iso).toLocaleString('en-NZ', {
+                day: 'numeric', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', timeZone: 'Pacific/Auckland',
+              })
+              return (
+                <div key={a.id} className={`bg-white rounded-xl border p-4 space-y-2 ${isActive ? 'border-red-300' : 'border-border'}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isActive ? 'bg-red-100 text-red-700' :
+                        isFuture ? 'bg-blue-100 text-blue-700' :
+                        'bg-slate-100 text-slate-500'
+                      }`}>
+                        {isActive ? '● LIVE NOW' : isFuture ? '◷ SCHEDULED' : '✓ EXPIRED'}
+                      </span>
+                      <h4 className="font-semibold text-textPrimary text-sm">{a.title}</h4>
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button onClick={() => {
+                        const toLocal = (iso) => {
+                          const d = new Date(new Date(iso).getTime() + 12 * 60 * 60 * 1000)
+                          return d.toISOString().slice(0,16)
+                        }
+                        setAnnForm({ id: a.id, title: a.title, body: a.body, start_at: toLocal(a.start_at), end_at: toLocal(a.end_at) })
+                        setAnnError(null)
+                      }} className="p-1.5 rounded-lg hover:bg-bg border border-border transition-colors" title="Edit">
+                        <Pencil className="w-3.5 h-3.5 text-textMuted" />
+                      </button>
+                      <button onClick={() => deleteAnnouncement(a.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-50 border border-border hover:border-red-200 transition-colors" title="Delete">
+                        <TrashIcon className="w-3.5 h-3.5 text-red-500" />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-textMuted line-clamp-2">{a.body}</p>
+                  <div className="flex items-center gap-3 text-[11px] text-textMuted">
+                    <span>Start: <strong>{fmtDt(a.start_at)} NZT</strong></span>
+                    <span>·</span>
+                    <span>End: <strong>{fmtDt(a.end_at)} NZT</strong></span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* ── Dashboard tab content ─────────────────────────────────── */}
+        {adminTab === 'dashboard' && <>
 
         {/* ── All visitor messages (SSOT) ────────────────────────────── */}
         <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
@@ -1598,6 +1799,9 @@ export default function AdminConsole() {
             </div>
           )}
         </div>
+
+        </> /* end dashboard tab */}
+
       </main>
 
       {replySession && (
