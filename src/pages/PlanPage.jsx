@@ -262,7 +262,9 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack
               <p className="font-semibold text-sm text-textPrimary">of puppies don't build full immunity<sup className="text-primary font-sans text-xs">1</sup></p>
             </div>
             <p className="text-sm text-textSecondary">Maternal antibodies, genetics, or timing can all block the vaccine. If your puppy contracts parvovirus, distemper, or hepatitis during the programme, VetPac covers the vet bill in full.</p>
-            <p className="text-xs text-textMuted mt-2">Parvovirus treatment in NZ: $1,500–$5,000<sup className="text-primary">2</sup></p>
+            <div className="mt-2 flex items-baseline gap-3">
+              <p className="text-xs text-textMuted">Avg. parvovirus bill: <span className="font-semibold text-textPrimary">$2,500</span> <span className="text-textMuted">(range $1,500–$5,000<sup className="text-primary">2</sup>)</span></p>
+            </div>
           </div>
           <div className="p-4 bg-white border border-border rounded-card-lg">
             <div className="flex items-baseline gap-2 mb-1">
@@ -270,14 +272,20 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack
               <p className="font-semibold text-sm text-textPrimary">puppies have an adverse reaction<sup className="text-primary font-sans text-xs">3</sup></p>
             </div>
             <p className="text-sm text-textSecondary">Facial swelling, anaphylaxis, severe lethargy — it's rare, but when it happens it needs immediate vet care. VetPac covers any costs resulting from a vaccine we administered.</p>
-            <p className="text-xs text-textMuted mt-2">Reaction treatment: $150–$800</p>
+            <p className="text-xs text-textMuted mt-2">Avg. treatment: <span className="font-semibold text-textPrimary">$350</span> <span className="text-textMuted">(range $150–$800)</span></p>
           </div>
+        </div>
+
+        {/* Pet insurance gap callout */}
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-card-lg">
+          <p className="text-sm font-semibold text-amber-900 mb-1">Standard pet insurance doesn't cover this.</p>
+          <p className="text-sm text-amber-800">NZ pet insurers (PD Insurance, Pet-n-Sur, etc.) impose a <strong>21-day waiting period</strong> before any illness is covered. Parvovirus contracted during your puppy's vaccination programme falls inside that window — claim denied. And no NZ insurer covers vaccine failure as a specific category. This warranty does.</p>
         </div>
 
         {/* Footnotes */}
         <div className="text-xs text-textMuted space-y-0.5 px-1">
           <p><sup>1</sup> Decaro et al., <em>Veterinary Microbiology</em> 2020 — multi-national survey of CPV immunisation failure rates.</p>
-          <p><sup>2</sup> PetNSur NZ vet cost data, 2025 — hospitalisation, IV fluids, antibiotics.</p>
+          <p><sup>2</sup> Pet-n-Sur NZ vet cost data, 2025 — hospitalisation, IV fluids, antibiotics; avg. calculated from published range.</p>
           <p><sup>3</sup> Moore et al., <em>JAVMA</em> 2005 — adverse event study across 1.2 million vaccinated dogs (0.38%/dose).</p>
         </div>
 
