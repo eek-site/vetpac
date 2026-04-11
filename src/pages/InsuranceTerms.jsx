@@ -121,16 +121,15 @@ export default function WarrantyTerms() {
         </Section>
 
         <Section title="7. Cancellation and refunds">
-          <p><strong className="text-textPrimary">14-day cooling-off period:</strong> You may cancel within 14 days of purchase for a full refund, provided no claims have been made.</p>
-          <p><strong className="text-textPrimary">After 14 days:</strong> You may cancel at any time by providing 30 days written notice to <a href={mailtoHref()} className="text-primary hover:underline">{SITE_EMAIL}</a>.</p>
-          <p><strong className="text-textPrimary">Annual plan refund:</strong> If you cancel an annual plan after the cooling-off period, a pro-rata refund of the unused portion will be issued, less a NZD $25 administration fee, provided no claims have been paid in the current year. No refund is available if a claim has been paid.</p>
-          <p><strong className="text-textPrimary">Monthly plan:</strong> No refund for a partial month. Cancellation takes effect at the end of the current billing cycle.</p>
-          <p><strong className="text-textPrimary">Cancellation by VetPac:</strong> VetPac reserves the right to cancel this warranty with 30 days written notice if plan fees are overdue by more than 14 days, if materially false information has been provided, or if continuing the warranty would be unlawful.</p>
+          <p>The VetPac Programme Warranty is a one-time fee. There is no ongoing subscription and nothing to cancel.</p>
+          <p><strong className="text-textPrimary">14-day refund period:</strong> You may request a full refund within 14 days of purchase, provided no claim has been made or is pending.</p>
+          <p><strong className="text-textPrimary">After 14 days:</strong> The warranty fee is non-refundable once the 14-day period has passed or a claim has been paid.</p>
+          <p><strong className="text-textPrimary">Cancellation by VetPac:</strong> VetPac reserves the right to void this warranty if materially false information has been provided or if continuing the warranty would be unlawful. In such cases a pro-rata refund will be issued.</p>
         </Section>
 
-        <Section title="8. Renewal">
-          <p>This warranty renews automatically at the end of each warranty year unless cancelled by either party. You will receive a renewal notice at least 30 days before your renewal date.</p>
-          <p>2-year upfront plans do not auto-renew. VetPac may update warranty terms, exclusions, or claim limits on renewal. Material changes will be communicated in writing at least 30 days before they take effect.</p>
+        <Section title="8. Duration">
+          <p>The VetPac Programme Warranty is a one-time purchase. It covers your puppy's VetPac vaccination programme from the date of first dose administration until full immunity is established — typically 4 weeks after the final dose (approximately 14 weeks total).</p>
+          <p>There is no automatic renewal. If you purchase a future VetPac programme for your puppy (such as an annual booster), a new warranty may be purchased at that time.</p>
         </Section>
 
         <Section title="9. Your obligations">

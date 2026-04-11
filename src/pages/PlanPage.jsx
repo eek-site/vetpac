@@ -238,7 +238,7 @@ const WARRANTY_FAQ = [
   { q: 'How long does the warranty last?', a: "It covers your puppy's VetPac vaccination programme — from the first dose until full immunity is established (typically 4 weeks after the final dose, so around 14 weeks total). It's a one-time add-on, not a subscription. Zero service fee — if something goes wrong, VetPac covers 100% of eligible costs up to $15,000." },
   { q: 'How do I make a claim?', a: `Email your vet invoice to ${SITE_EMAIL} with your warranty reference number. We process claims within 5 business days and pay directly to your nominated bank account.` },
   { q: 'What is not covered?', a: 'Illness or injury unrelated to your VetPac vaccination programme, pre-existing conditions, routine preventive care, elective procedures, dental disease, and breeding-related costs. This is a warranty on the vaccination programme outcomes — not a general health plan.' },
-  { q: 'Can I cancel?', a: 'Monthly plans can be cancelled any time with no penalty. Annual and 2-year plans can be cancelled within 14 days of purchase for a full refund. After 14 days, the plan fee is non-refundable but the warranty remains active for the paid period.' },
+  { q: 'Can I get a refund?', a: 'The warranty is a one-time fee. If no claim has been made, you can request a full refund within 14 days of purchase. After 14 days or once a claim has been paid, the fee is non-refundable.' },
 ]
 
 // ─── STEP 3: Warranty ────────────────────────────────────────────────────────
