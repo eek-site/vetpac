@@ -160,13 +160,13 @@ export default function ContactPage() {
         path="/contact"
       />
 
-      <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
+      <div className="bg-slate-50 px-4 py-5" style={{ minHeight: 'calc(100vh - 64px)' }}>
 
         {/* ── Body: sidebar + chat ─────────────────────────────── */}
-        <div className="flex-1 max-w-5xl mx-auto w-full px-4 py-6 flex gap-6 items-start overflow-hidden" style={{ height: '100%' }}>
+        <div className="max-w-5xl mx-auto flex gap-6 items-start" style={{ height: 'calc(100vh - 64px - 40px)' }}>
 
           {/* Sidebar — desktop only */}
-          <aside className="hidden lg:flex flex-col gap-4 w-64 flex-shrink-0 overflow-y-auto" style={{ maxHeight: '100%' }}>
+          <aside className="hidden lg:flex flex-col gap-4 w-64 flex-shrink-0 overflow-y-auto h-full">
 
             {/* Emergency */}
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
@@ -208,7 +208,7 @@ export default function ContactPage() {
           </aside>
 
           {/* Chat panel */}
-          <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" style={{ height: '100%' }}>
+          <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full">
 
             {/* Chat panel header */}
             <div className="flex items-center justify-between px-4 py-3 bg-[#1a3c2e] flex-shrink-0">
