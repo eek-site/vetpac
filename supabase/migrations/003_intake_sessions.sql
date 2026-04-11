@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS public.intake_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_token UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+  legacy_session_id TEXT UNIQUE,
   email TEXT,
   dog_name TEXT,
   status TEXT NOT NULL DEFAULT 'in_progress' CHECK (status IN ('in_progress', 'complete', 'paid')),

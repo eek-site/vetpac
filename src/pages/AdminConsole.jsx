@@ -55,6 +55,8 @@ export default function AdminConsole() {
   const [sessionsError, setSessionsError] = useState(null)
   const [expandedSession, setExpandedSession] = useState(null)
   const [sessionDetail, setSessionDetail] = useState({})
+  const [intakeBackfillLoading, setIntakeBackfillLoading] = useState(false)
+  const [intakeBackfillResult, setIntakeBackfillResult] = useState(null)
 
   useEffect(() => {
     document.title = 'Admin — VetPac'
@@ -199,6 +201,27 @@ export default function AdminConsole() {
       }
     } catch { /* silent */ }
   }, [getAccessToken, sessionDetail])
+
+  const runIntakeBackfill = useCallback(async () => {
+    const token = await getAccessToken()
+    if (!token) return
+    setIntakeBackfillLoading(true)
+    setIntakeBackfillResult(null)
+    try {
+      const r = await fetch('/api/backfill-intake-sessions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error || 'Backfill failed')
+      setIntakeBackfillResult(d)
+      void fetchSessions()
+    } catch (e) {
+      setSessionsError(e.message || 'Backfill failed')
+    } finally {
+      setIntakeBackfillLoading(false)
+    }
+  }, [getAccessToken, fetchSessions])
 
   useEffect(() => {
     if (phase !== 'authed' || !account) return
@@ -473,10 +496,20 @@ export default function AdminConsole() {
               <h3 className="font-semibold text-textPrimary">Intake sessions</h3>
               <p className="text-xs text-textMuted mt-0.5">Every chat session — structured data, owner details, and full conversation.</p>
             </div>
-            <Button type="button" size="sm" onClick={() => void fetchSessions()} loading={sessionsLoading} disabled={sessionsLoading}>
-              Refresh
-            </Button>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => void runIntakeBackfill()} loading={intakeBackfillLoading} disabled={intakeBackfillLoading || sessionsLoading} title="Reconstruct historical sessions from the intake_chat_messages log">
+                Backfill from logs
+              </Button>
+              <Button type="button" size="sm" onClick={() => void fetchSessions()} loading={sessionsLoading} disabled={sessionsLoading}>
+                Refresh
+              </Button>
+            </div>
           </div>
+          {intakeBackfillResult && (
+            <p className="text-sm text-textSecondary">
+              Backfill: inserted {intakeBackfillResult.inserted} sessions from {intakeBackfillResult.total_sessions_in_log} in log, {intakeBackfillResult.skipped} already imported.
+            </p>
+          )}
 
           {sessionsLoading && (
             <div className="flex items-center gap-2 text-sm text-textSecondary py-2">
@@ -602,7 +635,10 @@ export default function AdminConsole() {
                                 </p>
                                 <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                                   {detail.messages.map((m, i) => {
-                                    const text = m.content.replace(/INTAKE_COMPLETE:\{[\s\S]*\}/, '').trim()
+                                    const text = m.content
+                                      .replace(/INTAKE_COMPLETE:\{[\s\S]*\}/, '')
+                                      .replace('[INTAKE_COMPLETE_REDACTED]', '')
+                                      .trim()
                                     if (!text) return null
                                     return (
                                       <div key={i} className={`text-xs px-3 py-2 rounded-xl max-w-[85%] ${
