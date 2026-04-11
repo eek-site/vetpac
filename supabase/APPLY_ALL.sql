@@ -177,7 +177,10 @@ CREATE INDEX IF NOT EXISTS idx_intake_sessions_token ON public.intake_sessions (
 
 ALTER TABLE public.intake_sessions ENABLE ROW LEVEL SECURITY;
 -- All reads/writes go through service-role API routes — no direct client access needed.
-CREATE POLICY IF NOT EXISTS "service_only" ON public.intake_sessions FOR ALL TO service_role USING (true);
+DO $$ BEGIN
+  CREATE POLICY "service_only" ON public.intake_sessions FOR ALL TO service_role USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- --- 004: RLS on EEK migrations table (Supabase linter 0013) ---
 ALTER TABLE IF EXISTS public._eek_migrations ENABLE ROW LEVEL SECURITY;

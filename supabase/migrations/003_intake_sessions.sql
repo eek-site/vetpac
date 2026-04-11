@@ -24,4 +24,7 @@ CREATE INDEX IF NOT EXISTS idx_intake_sessions_created ON public.intake_sessions
 CREATE INDEX IF NOT EXISTS idx_intake_sessions_token ON public.intake_sessions (session_token);
 
 ALTER TABLE public.intake_sessions ENABLE ROW LEVEL SECURITY;
-CREATE POLICY IF NOT EXISTS "service_only" ON public.intake_sessions FOR ALL TO service_role USING (true);
+DO $$ BEGIN
+  CREATE POLICY "service_only" ON public.intake_sessions FOR ALL TO service_role USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

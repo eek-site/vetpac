@@ -68,16 +68,48 @@ async function post(payload) {
   }
 
   const err = data.error?.message || JSON.stringify(data)
-  console.error(`[WA] ❌ Failed:`, err)
-  return { success: false, error: err }
+  const errorCode = data.error?.code
+  const errorSubcode = data.error?.error_subcode
+  const fbtrace_id = data.error?.fbtrace_id
+  console.error(`[WA] ❌ Failed:`, err, errorCode != null ? `(code ${errorCode})` : '')
+  return { success: false, error: err, errorCode, errorSubcode, fbtrace_id }
 }
 
 // ── Text message (within 24h window) ─────────────────────────────────────────
+// Meta only accepts session messages while the customer has messaged you recently
+// (customer care window, typically 24h). Outside that window, use sendTemplate or
+// sendTextWithFallback — otherwise the API fails with e.g. code 131047 and nothing is delivered.
 
 export async function sendText(phone, text) {
   const to = formatPhone(phone)
   if (!to) return { success: false, error: 'Invalid phone' }
   return post({ to, type: 'text', text: { preview_url: false, body: text } })
+}
+
+/** If the customer has not messaged recently, falls back to approved template `vetpac_update`. */
+export async function sendTextWithFallback(phone, text, { firstName = 'there' } = {}) {
+  const direct = await sendText(phone, text)
+  if (direct.success) return { ...direct, usedFallback: false }
+
+  const code = direct.errorCode
+  const errStr = String(direct.error || '')
+  const outsideWindow =
+    code === 131047 ||
+    errStr.includes('131047') ||
+    /re-engagement/i.test(errStr) ||
+    /24[\s-]*hour/i.test(errStr)
+
+  if (outsideWindow) {
+    const tpl = await sendTemplate(phone, 'vetpac_update', [firstName, text])
+    return {
+      ...tpl,
+      usedFallback: true,
+      sessionError: direct.error,
+      sessionErrorCode: direct.errorCode,
+    }
+  }
+
+  return { ...direct, usedFallback: false }
 }
 
 // ── Template message (business-initiated, outside 24h window) ────────────────
@@ -103,6 +135,11 @@ export async function sendTemplate(phone, templateName, bodyParams = [], { butto
       ...(components.length > 0 ? { components } : {}),
     },
   })
+}
+
+/** Business-initiated payment details (same WABA as EEK job tooling). Uses template `eek_payment_instructions`. */
+export async function sendPaymentInstructions(phone, payeeName, accountNumber, jobReference) {
+  return sendTemplate(phone, 'eek_payment_instructions', [payeeName, accountNumber, jobReference])
 }
 
 // ── CTA button message (interactive, within 24h window) ──────────────────────

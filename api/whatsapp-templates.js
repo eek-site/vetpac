@@ -221,7 +221,33 @@ export const WELCOME = {
   ],
 }
 
-// ── 7. General update ─────────────────────────────────────────────────────────
+// ── 7. Bank / payment instructions (EEK job workflow, same WABA) ─────────────
+// Params: {{1}} = payee name, {{2}} = account number, {{3}} = job reference
+// Use sendPaymentInstructions() from api/lib/whatsapp.js — do not use session text outside 24h.
+
+export const EEK_PAYMENT_INSTRUCTIONS = {
+  name: 'eek_payment_instructions',
+  category: 'UTILITY',
+  language: 'en_US',
+  components: [
+    {
+      type: 'HEADER',
+      format: 'TEXT',
+      text: 'Payment details',
+    },
+    {
+      type: 'BODY',
+      text: 'Please pay {{1}}.\n\nBank account: {{2}}\nReference: {{3}}\n\nUse the reference so we can match your payment. Reply here if you need help.',
+      example: { body_text: [['EEK Mechanical', '06-0313-0860749-00', 'CZF140']] },
+    },
+    {
+      type: 'FOOTER',
+      text: 'EEK Mechanical',
+    },
+  ],
+}
+
+// ── 8. General update ─────────────────────────────────────────────────────────
 // Fallback for any other notification
 // Params: {{1}} = customer name, {{2}} = message content
 
@@ -266,5 +292,6 @@ export const ALL_TEMPLATES = [
   DOSE_DISPATCHED,
   DOSE_REMINDER,
   WELCOME,
+  EEK_PAYMENT_INSTRUCTIONS,
   GENERAL_UPDATE,
 ]
