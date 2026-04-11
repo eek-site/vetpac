@@ -515,7 +515,7 @@ function StepVaccines({ puppyName, additionalPuppies, additionalPuppyVaccinePlan
 
 export default function PlanPage() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const {
     dogProfile, healthHistory, lifestyle,
     additionalPuppies, numberOfPuppies,
@@ -529,11 +529,39 @@ export default function PlanPage() {
     getOrderTotals,
   } = useIntakeStore()
 
-  const step = planStep ?? 1
-  const setStep = setPlanStep
+  // Step is driven by URL param (?step=N) as primary source of truth —
+  // survives hard refresh regardless of localStorage state.
+  // Falls back to persisted store value, then 1.
+  const urlStep = parseInt(searchParams.get('step') || '0')
+  const step = urlStep >= 1 && urlStep <= 4 ? urlStep : (planStep ?? 1)
+
+  const setStep = (n) => {
+    setPlanStep(n)
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      next.set('step', String(n))
+      return next
+    }, { replace: true })
+  }
+
   const [aiLoading, setAiLoading] = useState(!aiAssessment)
   const [aiError, setAiError] = useState(null)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
+
+  // Sync URL step → store on first load (e.g. refresh at step 3)
+  useEffect(() => {
+    if (urlStep >= 1 && urlStep <= 4 && urlStep !== planStep) {
+      setPlanStep(urlStep)
+    } else if (!urlStep && planStep && planStep > 1) {
+      // Store has a step but URL doesn't — write it to the URL
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev)
+        next.set('step', String(planStep))
+        return next
+      }, { replace: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (searchParams.get('paid') !== '1') return
