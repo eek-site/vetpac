@@ -355,7 +355,7 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
-function StepSummary({ totals, puppyCount, insuranceSelected, vaccinePlan, additionalPuppyVaccinePlans, additionalPuppies, numberOfPuppies, puppyName, onBack }) {
+function StepSummary({ totals, puppyCount, insuranceSelected, vaccinePlan, additionalPuppyVaccinePlans, additionalPuppies, numberOfPuppies, puppyName, ownerEmail, onBack }) {
   const [discountInput, setDiscountInput] = useState('')
   const [discountCode, setDiscountCode] = useState('')
   const [discountApplied, setDiscountApplied] = useState(false)
@@ -437,7 +437,7 @@ function StepSummary({ totals, puppyCount, insuranceSelected, vaccinePlan, addit
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items, dogName: puppyName, successUrl, cancelUrl, discountCode: discountApplied ? discountCode : '' }),
+        body: JSON.stringify({ items, dogName: puppyName, customerEmail: ownerEmail, successUrl, cancelUrl, discountCode: discountApplied ? discountCode : '' }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Could not create payment session')
@@ -611,7 +611,7 @@ export default function PlanPage() {
 
   const [searchParams, setSearchParams] = useSearchParams()
   const {
-    dogProfile, healthHistory, lifestyle,
+    dogProfile, healthHistory, lifestyle, ownerDetails,
     additionalPuppies, numberOfPuppies,
     additionalPuppyVaccinePlans,
     aiAssessment, setAiAssessment,
@@ -873,6 +873,7 @@ export default function PlanPage() {
             additionalPuppies={additionalPuppies}
             numberOfPuppies={numberOfPuppies}
             puppyName={puppyName}
+            ownerEmail={ownerDetails?.email || ''}
             onBack={() => setStep(3)}
           />
         )}

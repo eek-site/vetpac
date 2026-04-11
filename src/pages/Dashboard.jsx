@@ -204,8 +204,14 @@ export default function Dashboard() {
         })
         const d = await r.json()
         if (!cancelled) {
-          if (d.orders) setOrders(d.orders)
-          else setOrdersError('Could not load orders.')
+          if (r.status === 401) {
+            // Session expired — sign out so they can log in again
+            await supabase.auth.signOut()
+          } else if (Array.isArray(d.orders)) {
+            setOrders(d.orders)
+          } else {
+            setOrdersError('Could not load orders. Please refresh the page.')
+          }
         }
       } catch {
         if (!cancelled) setOrdersError('Could not load orders.')

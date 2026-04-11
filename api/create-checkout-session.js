@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   if (!secretKey) return res.status(500).json({ error: 'Stripe not configured' })
 
   try {
-    const { items, dogName, successUrl, discountCode } = req.body
+    const { items, dogName, customerEmail, successUrl, discountCode } = req.body
 
     if (!items || !items.length) {
       return res.status(400).json({ error: 'No items provided' })
@@ -28,6 +28,11 @@ export default async function handler(req, res) {
     body.append('billing_address_collection', 'auto')
     body.append('payment_intent_data[metadata][dog_name]', dogName || '')
     body.append('payment_intent_data[metadata][platform]', 'vetpac')
+    if (customerEmail) {
+      body.append('payment_intent_data[metadata][customer_email]', customerEmail)
+      body.append('metadata[customer_email]', customerEmail)
+      body.append('customer_email', customerEmail)
+    }
     body.append('metadata[dog_name]', dogName || '')
 
     lineItems.forEach((item, i) => {
