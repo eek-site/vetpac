@@ -1,10 +1,8 @@
 /**
  * One-time / occasional: insert site_events from Stripe Checkout Sessions (paid).
- * SPA routes are not in Vercel access logs; this is the main historical signal for "got past intake" (paid consult or order).
  */
-
 import Stripe from 'stripe'
-import { getServiceSupabase } from './lib/site-events-db.js'
+import { prisma } from './lib/prisma.js'
 import { requireMicrosoftJwt } from './lib/verify-msal-token.js'
 
 export const maxDuration = 60
@@ -28,12 +26,9 @@ export default async function handler(req, res) {
   if (!auth.ok) return res.status(auth.status).json({ error: auth.error })
 
   const secretKey = process.env.STRIPE_SECRET_KEY
-  const sb = getServiceSupabase()
   if (!secretKey) return res.status(503).json({ error: 'Stripe not configured' })
-  if (!sb) return res.status(503).json({ error: 'Supabase not configured' })
 
   const stripe = new Stripe(secretKey)
-
   let inserted = 0
   let skipped = 0
   let pages = 0
@@ -49,47 +44,40 @@ export default async function handler(req, res) {
       })
 
       for (const session of batch.data) {
-        if (session.payment_status !== 'paid') {
-          skipped += 1
-          continue
-        }
+        if (session.payment_status !== 'paid') { skipped += 1; continue }
 
         let lineItems = session.line_items
         if (!lineItems?.data?.length) {
           try {
             const full = await stripe.checkout.sessions.retrieve(session.id, { expand: ['line_items'] })
             lineItems = full.line_items
-          } catch {
-            lineItems = { data: [] }
-          }
+          } catch { lineItems = { data: [] } }
         }
 
         const kind = classifyLineItems(lineItems)
         const dogName = session.metadata?.dog_name || ''
+        const createdAt = new Date(session.created * 1000)
 
-        const row = {
-          event_type: 'stripe_checkout_paid',
-          source: 'stripe_backfill',
-          backfilled: true,
-          created_at: new Date(session.created * 1000).toISOString(),
-          meta: {
-            stripe_session_id: session.id,
-            kind,
-            dog_name: dogName,
-            amount_total: session.amount_total,
-            currency: session.currency,
-          },
-        }
-
-        const { error } = await sb.from('site_events').insert(row)
-        if (error) {
-          if (error.code === '23505') {
-            skipped += 1
-          } else {
-            console.error('[backfill]', error.message)
-          }
-        } else {
+        try {
+          await prisma.siteEvent.create({
+            data: {
+              eventType: 'stripe_checkout_paid',
+              source: 'stripe_backfill',
+              backfilled: true,
+              createdAt,
+              meta: {
+                stripe_session_id: session.id,
+                kind,
+                dog_name: dogName,
+                amount_total: session.amount_total,
+                currency: session.currency,
+              },
+            },
+          })
           inserted += 1
+        } catch (e) {
+          if (e.code === 'P2002') { skipped += 1 }
+          else { console.error('[backfill]', e.message) }
         }
       }
 
