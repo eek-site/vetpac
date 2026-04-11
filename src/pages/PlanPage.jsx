@@ -106,7 +106,7 @@ function PuppyPlanSection({ puppyName, vaccinePlan, toggleVaccineItem, isLoading
 // ─── Delivery FAQs ───────────────────────────────────────────────────────────
 
 const SELF_ADMIN_FAQ = [
-  { q: 'How hard is it to administer at home?', a: 'Very straightforward. The needle is small (25 gauge), the injection is subcutaneous (just under the skin at the scruff of the neck), and the whole process takes under two minutes. Our step-by-step guide walks you through every single action, and our 24/7 WhatsApp support is there the whole time if you want someone with you as you do it.' },
+  { q: 'How hard is it to administer at home?', a: 'Very straightforward. For your first dose, a trained VetPac technician visits with the vaccine and walks you through the whole process in person — so you know exactly what to do. The needle is small (25 gauge), the injection is subcutaneous (just under the skin at the scruff of the neck), and the whole process takes under two minutes. From dose two onwards you do it yourself, with our step-by-step guide and 24/7 WhatsApp support throughout.' },
   { q: "What if I'm nervous about injecting?", a: "Completely normal — most first-timers feel exactly the same. The guide is written for people with zero medical experience. Puppies generally tolerate it very well at home, especially compared to the stress of a clinic visit. If you try it and genuinely can't do it, message us on WhatsApp and we'll arrange a VetPac Assist visit." },
   { q: 'What equipment do I need?', a: 'Nothing extra. Everything arrives in the kit — the vaccine vial, syringe, needle, swabs, and a step-by-step instruction card with photos. Free VetPac digital scales are included with your first order so you can monitor weight at every dose for correct dosing.' },
   { q: 'What do I do before administering?', a: 'Run through the pre-vaccination checklist included in your kit. Your puppy should be alert, eating normally, showing no signs of illness (runny nose, lethargy, discharge, unusual behaviour), and not have eaten in the last two hours. If anything flags, stop and message us on WhatsApp — never proceed with a vaccine if your puppy is unwell.' },
@@ -147,6 +147,7 @@ function StepDelivery({ assistSelected, setAssistSelected, onNext, onBack }) {
                 <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">Most popular</span>
               </div>
               <p className="text-sm text-textSecondary mt-1">Vaccines cold-chain couriered to your door. Step-by-step guide included. 24/7 WhatsApp support throughout.</p>
+              <p className="text-sm text-textSecondary mt-1">For your first dose, a trained VetPac technician visits with the vaccine and teaches you how to administer it — so you're confident every time after.</p>
               <p className="text-xs text-textMuted mt-1.5">${FREIGHT.pricePerShipment} per shipment · 2–8°C certified pharmaceutical courier</p>
             </div>
           </div>
