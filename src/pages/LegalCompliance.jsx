@@ -75,7 +75,8 @@ export default function LegalCompliance() {
             <li>Stored and transported within validated cold-chain conditions (2–8°C)</li>
             <li>Within their expiry date at the time of dispatch</li>
           </ul>
-          <p className="mt-2">If you have any concerns about a product you have received, contact us immediately via the chat on vetpac.nz. Do not use the product until we have confirmed it is safe to do so.</p>
+          <p className="mt-2">If you have any concerns about a product you have received, contact us immediately. Do not use the product until we have confirmed it is safe to do so.</p>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Contact us now</button>
         </Section>
 
         <Section title="Animal welfare">
@@ -107,19 +108,20 @@ export default function LegalCompliance() {
         <Section title="Dispute resolution">
           <p>If you have a complaint about VetPac:</p>
           <ol className="list-decimal list-inside space-y-1 ml-2">
-            <li>Contact us via the chat on vetpac.nz — we aim to resolve complaints within 5 business days</li>
+            <li>Contact us via the chat below — we aim to resolve complaints within 5 business days</li>
             <li>If we cannot resolve your complaint, you may refer it to the <a href="https://www.disputes.co.nz" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Disputes Tribunal</a></li>
             <li>For privacy-related complaints: the <a href="https://www.privacy.org.nz/about-us/contact/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Office of the Privacy Commissioner</a></li>
             <li>For concerns about veterinary care: the <a href="https://www.veterinarycouncil.org.nz" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Veterinary Council of New Zealand</a></li>
           </ol>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-4 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
         </Section>
 
         <Section title="Company information">
           <p>
             <strong>VetPac</strong> is a trading name of <strong>Forman Pacific LLC</strong>.<br />
-            New Zealand company.<br />
-            Contact: chat with us at vetpac.nz
+            New Zealand company.
           </p>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Chat with us</button>
         </Section>
 
         <div className="mt-10 pt-8 border-t border-border flex flex-wrap gap-4 text-sm text-primary">

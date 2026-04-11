@@ -69,6 +69,7 @@ export default function WarrantyTerms() {
                 </li>
               ))}
             </ol>
+            <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-2 w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-3 px-6 rounded-xl transition-colors">File a warranty claim</button>
           </section>
 
           <section className="space-y-3">
@@ -88,9 +89,9 @@ export default function WarrantyTerms() {
             </ul>
           </section>
 
-          <div className="bg-slate-50 rounded-xl p-4 text-sm text-slate-600">
-            <p className="font-medium text-slate-700 mb-1">Questions?</p>
-            <p>Use the chat button on your dashboard — we're happy to clarify anything.</p>
+          <div className="bg-slate-50 rounded-xl p-4 text-sm text-slate-600 space-y-3">
+            <p className="font-medium text-slate-700">Questions about your warranty?</p>
+            <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-3 px-6 rounded-xl transition-colors">Chat with us</button>
           </div>
 
         </div>

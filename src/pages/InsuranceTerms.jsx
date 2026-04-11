@@ -152,11 +152,13 @@ export default function WarrantyTerms() {
 
         <Section title="10. Privacy">
           <p>VetPac collects and holds personal and veterinary information for the purpose of administering your warranty and assessing claims. Your information will not be disclosed to third parties except where required by law, where necessary to assess a claim, or with your consent.</p>
-          <p>You have the right to access and correct personal information held about you under the Privacy Act 2020 (NZ). To make a request, use the chat button on vetpac.nz.</p>
+          <p>You have the right to access and correct personal information held about you under the Privacy Act 2020 (NZ). To make a request, use the chat button.</p>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Submit a privacy request</button>
         </Section>
 
         <Section title="11. Disputes">
-          <p>If you are not satisfied with a claim decision or any aspect of your warranty, you may lodge a complaint via the chat button on vetpac.nz. VetPac will acknowledge your complaint within 2 business days and provide a resolution within 20 business days.</p>
+          <p>If you are not satisfied with a claim decision or any aspect of your warranty, you may lodge a complaint via the chat. VetPac will acknowledge within 2 business days and resolve within 20 business days.</p>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="mt-3 inline-flex items-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Lodge a complaint</button>
           <p>If you remain unsatisfied, disputes may be referred to the New Zealand Disputes Tribunal for claims up to NZD $30,000, or resolved under the Consumer Guarantees Act 1993.</p>
         </Section>
 
@@ -167,7 +169,7 @@ export default function WarrantyTerms() {
         {/* Footer */}
         <div className="mt-12 pt-6 border-t border-border text-xs text-textMuted space-y-1">
           <p>VetPac Puppy Warranty is provided by <strong className="text-textPrimary">VetPac</strong>. This is a service warranty, not an insurance product.</p>
-          <p>For all warranty enquiries: use the chat button on <strong>vetpac.nz</strong> — available 24/7.</p>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))} className="w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-3 px-6 rounded-xl transition-colors">Warranty enquiries — chat with us 24/7</button>
           <p className="mt-3">These terms were last updated on 1 April 2026. VetPac reserves the right to amend these terms with 30 days written notice.</p>
         </div>
 
