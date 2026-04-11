@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Block internal/auth routes from indexing
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /vet-portal
+Disallow: /auth/
+Disallow: /checkout
+Disallow: /order-confirmation
+Disallow: /plan
+Disallow: /intake
+
+Sitemap: https://vetpac.nz/sitemap.xml

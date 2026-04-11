@@ -5,6 +5,7 @@ import {
   CheckCircle, Package, ClipboardList, Shield, Home as HomeIcon,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
+import SEO from '../components/SEO'
 import { FAQ_ITEMS } from '../lib/constants'
 
 function useIntersection(ref, threshold = 0.12) {
@@ -102,10 +103,65 @@ function useSeasonalStatus() {
   return { label: 'Winter · Quieter period', sub: 'Faster start times available now', dot: 'bg-green-500' }
 }
 
+const HOME_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'FAQPage',
+      mainEntity: FAQ_ITEMS.map(item => ({
+        '@type': 'Question',
+        name: item.q,
+        acceptedAnswer: { '@type': 'Answer', text: item.a },
+      })),
+    },
+    {
+      '@type': 'Service',
+      name: 'At-Home Puppy Vaccination — New Zealand',
+      provider: { '@type': 'Organization', name: 'VetPac', url: 'https://vetpac.nz' },
+      description: 'VetPac delivers vet-authorised puppy vaccinations at home across all regions of New Zealand. C3 and C5 core vaccines plus Kennel Cough and Leptospirosis where indicated. Cold-chain certified. Administered by trained technicians or self-administered with full vet support.',
+      areaServed: { '@type': 'Country', name: 'New Zealand' },
+      serviceType: 'Puppy Vaccination',
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'VetPac Puppy Vaccination Plans',
+        itemListElement: [
+          {
+            '@type': 'Offer',
+            name: 'Initial Consultation & Vaccine Plan',
+            priceCurrency: 'NZD',
+            price: '49',
+            description: 'Full health intake, video assessment, personalised vaccine programme designed by a NZ-registered vet.',
+          },
+          {
+            '@type': 'Offer',
+            name: 'C3 Vaccine — Distemper, Hepatitis, Parvovirus',
+            priceCurrency: 'NZD',
+            price: '89',
+            description: 'Core first dose for puppies 6–8 weeks. Covers Canine Distemper Virus, Infectious Canine Hepatitis, and Parvovirus.',
+          },
+          {
+            '@type': 'Offer',
+            name: 'C5 Vaccine — Full Core Protection',
+            priceCurrency: 'NZD',
+            price: '89',
+            description: 'Full core protection: Distemper, Hepatitis, Parvovirus, Parainfluenza, and Kennel Cough. Standard from 10 weeks and for annual boosters.',
+          },
+        ],
+      },
+    },
+  ],
+}
+
 export default function Home() {
   const season = useSeasonalStatus()
   return (
     <div className="overflow-x-hidden">
+      <SEO
+        title="NZ's At-Home Puppy Vaccination Service"
+        description="VetPac delivers vet-authorised puppy vaccinations at home across New Zealand. C3, C5, Kennel Cough and Leptospirosis — cold-chain delivered, stress-free, on your schedule. From NZD $49."
+        path="/"
+        schema={HOME_SCHEMA}
+      />
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="min-h-screen bg-bg pt-20 pb-0 flex flex-col relative overflow-hidden">

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Shield, ArrowLeft } from 'lucide-react'
 import { openChat } from '../lib/openChat'
+import SEO from '../components/SEO'
 // Contact via chat only
 
 function Section({ title, children }) {
@@ -15,6 +16,12 @@ function Section({ title, children }) {
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-bg">
+      <SEO
+        title="Privacy Policy"
+        description="How VetPac collects, uses, and protects your personal information under the New Zealand Privacy Act 2020."
+        path="/privacy"
+        noindex={false}
+      />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 pt-24">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-primary font-semibold hover:underline mb-8">
           <ArrowLeft className="w-4 h-4" /> Back to VetPac

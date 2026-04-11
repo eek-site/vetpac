@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-NZ">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/paw.svg" />
@@ -7,9 +7,100 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="VetPac — NZ's first at-home puppy vaccination service. Vet-authorised plan, cold-chain delivery, 24/7 WhatsApp support." />
     <meta name="theme-color" content="#2d5a3d" />
-    <title>VetPac — Your puppy's health, at home.</title>
+
+    <!-- Base SEO (overridden per-page by react-helmet-async) -->
+    <title>VetPac — NZ's At-Home Puppy Vaccination Service</title>
+    <meta name="description" content="VetPac delivers vet-authorised puppy vaccinations at home across New Zealand. C3, C5, Kennel Cough and Leptospirosis — cold-chain delivered, stress-free, on your schedule." />
+    <meta name="keywords" content="puppy vaccination NZ, at home puppy vaccination, puppy vaccine New Zealand, C3 vaccine puppy, C5 vaccine puppy, puppy vaccination schedule NZ, dog vaccination Auckland, dog vaccination Wellington, dog vaccination Christchurch, parvovirus puppy NZ, kennel cough vaccine NZ, home vet NZ, mobile vet puppy, puppy health NZ" />
+    <link rel="canonical" href="https://vetpac.nz/" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="VetPac" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="VetPac — NZ's At-Home Puppy Vaccination Service" />
+    <meta property="og:description" content="Vet-authorised puppy vaccinations delivered to your home across New Zealand. C3, C5, cold-chain certified. Calm, stress-free, on your schedule." />
+    <meta property="og:url" content="https://vetpac.nz/" />
+    <meta property="og:image" content="https://vetpac.nz/og-image.jpg" />
+    <meta property="og:locale" content="en_NZ" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="VetPac — NZ's At-Home Puppy Vaccination Service" />
+    <meta name="twitter:description" content="Vet-authorised puppy vaccinations delivered to your home across New Zealand. Calm, stress-free, on your schedule." />
+    <meta name="twitter:image" content="https://vetpac.nz/og-image.jpg" />
+
+    <!-- Geo -->
+    <meta name="geo.region" content="NZ" />
+    <meta name="geo.placename" content="New Zealand" />
+
+    <!-- Site-wide JSON-LD: Organisation + WebSite + Service -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://vetpac.nz/#organization",
+          "name": "VetPac",
+          "url": "https://vetpac.nz",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://vetpac.nz/paw.svg"
+          },
+          "description": "VetPac provides vet-authorised at-home puppy vaccination services across New Zealand. Cold-chain certified vaccines delivered and administered in the safety of your home.",
+          "areaServed": {
+            "@type": "Country",
+            "name": "New Zealand"
+          },
+          "serviceType": "Veterinary vaccination service",
+          "sameAs": [
+            "https://vetpac.nz"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://vetpac.nz/#website",
+          "url": "https://vetpac.nz",
+          "name": "VetPac",
+          "description": "New Zealand's at-home puppy vaccination service",
+          "publisher": {
+            "@id": "https://vetpac.nz/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://vetpac.nz/guide?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Service",
+          "@id": "https://vetpac.nz/#service",
+          "name": "At-Home Puppy Vaccination",
+          "provider": {
+            "@id": "https://vetpac.nz/#organization"
+          },
+          "areaServed": {
+            "@type": "Country",
+            "name": "New Zealand"
+          },
+          "description": "Vet-authorised C3, C5, Kennel Cough and Leptospirosis puppy vaccinations delivered and administered in your home. Cold-chain certified. Reviewed by NZ-registered veterinarians.",
+          "serviceType": "Puppy Vaccination",
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "NZD",
+            "price": "49",
+            "description": "Initial consultation and vaccine plan from NZD $49",
+            "url": "https://vetpac.nz/intake"
+          }
+        }
+      ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { FileText, ArrowLeft } from 'lucide-react'
 import { openChat } from '../lib/openChat'
+import SEO from '../components/SEO'
 // Contact is handled via the in-app chat
 
 function Section({ title, children }) {
@@ -15,6 +16,11 @@ function Section({ title, children }) {
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-bg">
+      <SEO
+        title="Terms of Service"
+        description="VetPac's terms of service — your agreement with Forman Pacific LLC for the at-home puppy vaccination platform operating in New Zealand."
+        path="/terms"
+      />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 pt-24">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-primary font-semibold hover:underline mb-8">
           <ArrowLeft className="w-4 h-4" /> Back to VetPac
