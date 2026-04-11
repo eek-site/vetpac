@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard, ChevronDown, ChevronRight, User, PawPrint, MessageSquare, Globe, Monitor, Smartphone, RefreshCw, TrendingUp } from 'lucide-react'
+import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard, ChevronDown, ChevronRight, User, PawPrint, MessageSquare, Globe, Monitor, Smartphone, RefreshCw, Mail, Send, X } from 'lucide-react'
 import Button from '../components/ui/Button'
 import StatusBadge from '../components/ui/StatusBadge'
 
@@ -114,6 +114,394 @@ function SiteEventStats({ stats }) {
   )
 }
 
+// ─── Conversation Inbox ───────────────────────────────────────────────────────
+
+const REPLIED_KEY = 'vetpac_admin_replied_v1'
+function getReplied() {
+  try { return new Set(JSON.parse(localStorage.getItem(REPLIED_KEY) || '[]')) } catch { return new Set() }
+}
+function markReplied(token) {
+  const s = getReplied(); s.add(token)
+  localStorage.setItem(REPLIED_KEY, JSON.stringify([...s]))
+}
+
+function ConversationInbox({ sessions, sessionDetail, loadDetail, msToken, getToken }) {
+  const [active, setActive]       = useState(null)
+  const [draft, setDraft]         = useState('')
+  const [rewriting, setRewriting] = useState(false)
+  const [rewritten, setRewritten] = useState(null)
+  const [sending, setSending]     = useState(false)
+  const [sentSet, setSentSet]     = useState(() => getReplied())
+  const [error, setError]         = useState(null)
+  const bottomRef = useRef(null)
+
+  const withEmail = (sessions || []).filter(s => {
+    const email = s.email || s.owner_details?.email
+    return !!email
+  })
+  const needsReply = withEmail.filter(s => !sentSet.has(s.session_token))
+  const replied    = withEmail.filter(s =>  sentSet.has(s.session_token))
+
+  const open = (s) => {
+    setActive(s.session_token)
+    setDraft(''); setRewritten(null); setError(null)
+    loadDetail(s.session_token)
+  }
+
+  useEffect(() => {
+    if (active) setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+  }, [active, sessionDetail])
+
+  const rewrite = async () => {
+    if (!draft.trim()) return
+    const session = withEmail.find(s => s.session_token === active)
+    const detail  = sessionDetail[active]
+    const owner   = session?.owner_details || {}
+    const dogName = session?.dog_name || detail?.dog_profile?.name || ''
+    const convo   = (detail?.messages || [])
+      .filter(m => m.role !== 'system')
+      .slice(-8)
+      .map(m => `${m.role === 'user' ? 'Customer' : 'VetPac AI'}: ${m.content.replace(/INTAKE_COMPLETE:[\s\S]*/,'').trim()}`)
+      .filter(Boolean)
+      .join('\n')
+
+    const token = msToken || await getToken()
+    setRewriting(true); setError(null)
+    try {
+      const r = await fetch('/api/admin-rewrite-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          draft,
+          customerName: owner.full_name || owner.name || '',
+          dogName,
+          conversationSummary: convo,
+        }),
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error)
+      setRewritten(d.text)
+    } catch (e) { setError(e.message) }
+    finally { setRewriting(false) }
+  }
+
+  const sendReply = async () => {
+    const session = withEmail.find(s => s.session_token === active)
+    const owner   = session?.owner_details || {}
+    const toEmail = session?.email || owner.email
+    const toName  = owner.full_name || owner.name || ''
+    const dogName = session?.dog_name || sessionDetail[active]?.dog_profile?.name || 'your puppy'
+    const body    = rewritten || draft
+    const token   = msToken || await getToken()
+    setSending(true); setError(null)
+    try {
+      const r = await fetch('/api/admin-send-customer-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          to: toEmail, toName,
+          subject: `Your VetPac programme — ${dogName}`,
+          message: body,
+        }),
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error)
+      markReplied(active)
+      setSentSet(getReplied())
+      setDraft(''); setRewritten(null); setActive(null)
+    } catch (e) { setError(e.message) }
+    finally { setSending(false) }
+  }
+
+  if (withEmail.length === 0) return (
+    <p className="text-sm text-textMuted text-center py-6">No sessions with customer email addresses yet.</p>
+  )
+
+  return (
+    <div className="flex gap-0 border border-border rounded-xl overflow-hidden" style={{ minHeight: 480 }}>
+
+      {/* Left — conversation list */}
+      <div className="w-64 flex-shrink-0 border-r border-border flex flex-col bg-bg">
+        {needsReply.length > 0 && (
+          <div className="px-3 pt-3 pb-1">
+            <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> Needs reply ({needsReply.length})
+            </p>
+          </div>
+        )}
+        {needsReply.map(s => <ConvoRow key={s.session_token} s={s} active={active} onClick={open} badge="reply" />)}
+
+        {replied.length > 0 && (
+          <div className="px-3 pt-3 pb-1 mt-1 border-t border-border">
+            <p className="text-[10px] font-bold text-textMuted uppercase tracking-wider">Replied ({replied.length})</p>
+          </div>
+        )}
+        {replied.map(s => <ConvoRow key={s.session_token} s={s} active={active} onClick={open} badge="done" />)}
+      </div>
+
+      {/* Right — conversation thread + compose */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        {!active ? (
+          <div className="flex-1 flex items-center justify-center text-textMuted text-sm">
+            ← Select a conversation
+          </div>
+        ) : (() => {
+          const session = withEmail.find(s => s.session_token === active)
+          const detail  = sessionDetail[active]
+          const owner   = session?.owner_details || {}
+          const dogName = session?.dog_name || detail?.dog_profile?.name || '—'
+          const toEmail = session?.email || owner.email
+          const toName  = owner.full_name || owner.name || ''
+          const messages = (detail?.messages || []).filter(m => m.role !== 'system')
+
+          return (
+            <>
+              {/* Thread header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-bg">
+                <div>
+                  <p className="font-semibold text-textPrimary text-sm flex items-center gap-1.5">
+                    <PawPrint className="w-3.5 h-3.5 text-primary" /> {dogName}
+                    {toName && <span className="text-textMuted font-normal">· {toName}</span>}
+                  </p>
+                  <a href={`mailto:${toEmail}`} className="text-xs text-primary hover:underline">{toEmail}</a>
+                </div>
+                <button onClick={() => setActive(null)} className="text-textMuted hover:text-textPrimary">
+                  <X size={15} />
+                </button>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+                {!detail && (
+                  <div className="flex items-center gap-2 text-xs text-textMuted py-4 justify-center">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading conversation…
+                  </div>
+                )}
+                {messages.map((m, i) => {
+                  const text = m.content
+                    .replace(/INTAKE_COMPLETE:[\s\S]*/, '')
+                    .replace('[INTAKE_COMPLETE_REDACTED]', '')
+                    .trim()
+                  if (!text) return null
+                  const isUser = m.role === 'user'
+                  return (
+                    <div key={i} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap ${
+                        isUser
+                          ? 'bg-[#1a3c2e] text-white rounded-br-sm'
+                          : 'bg-slate-100 text-slate-700 rounded-bl-sm'
+                      }`}>
+                        <span className={`block font-semibold mb-0.5 text-[10px] ${isUser ? 'text-white/60' : 'text-slate-400'}`}>
+                          {isUser ? (toName || 'Customer') : 'VetPac AI'}
+                        </span>
+                        {text}
+                      </div>
+                    </div>
+                  )
+                })}
+                <div ref={bottomRef} />
+              </div>
+
+              {/* Compose area */}
+              <div className="border-t border-border px-4 py-3 bg-bg space-y-2">
+                {sentSet.has(active) && (
+                  <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                    <span>✓</span> You replied to this conversation
+                  </p>
+                )}
+                <p className="text-[10px] font-semibold text-textMuted uppercase tracking-wider">Your reply to {toName || toEmail}</p>
+                <textarea
+                  value={draft}
+                  onChange={e => { setDraft(e.target.value); setRewritten(null) }}
+                  placeholder="Type a draft reply…"
+                  rows={3}
+                  className="w-full text-sm border border-border rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                />
+
+                {rewritten && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">AI rewrite — review and edit:</p>
+                    <textarea
+                      value={rewritten}
+                      onChange={e => setRewritten(e.target.value)}
+                      rows={5}
+                      className="w-full text-sm border-2 border-primary/30 rounded-xl px-3 py-2 bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                    />
+                  </div>
+                )}
+
+                {error && <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">{error}</p>}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={rewrite}
+                    disabled={!draft.trim() || rewriting}
+                    className="flex items-center gap-1.5 text-xs bg-white border border-border hover:border-primary text-textSecondary hover:text-primary font-semibold px-3 py-2 rounded-xl transition-colors disabled:opacity-40"
+                  >
+                    {rewriting ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>✨</span>}
+                    {rewriting ? 'Rewriting…' : 'Rewrite with AI'}
+                  </button>
+                  <Button
+                    size="sm"
+                    onClick={sendReply}
+                    loading={sending}
+                    disabled={sending || (!draft.trim() && !rewritten?.trim())}
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    {sentSet.has(active) ? 'Send again' : 'Send email'}
+                  </Button>
+                </div>
+              </div>
+            </>
+          )
+        })()}
+      </div>
+    </div>
+  )
+}
+
+function ConvoRow({ s, active, onClick, badge }) {
+  const owner   = s.owner_details || {}
+  const dogName = s.dog_name || '—'
+  const name    = owner.full_name || owner.name || '—'
+  const isActive = active === s.session_token
+  const timeAgo = (() => {
+    const ms = Date.now() - new Date(s.created_at).getTime()
+    if (ms < 3600000) return `${Math.round(ms / 60000)}m ago`
+    if (ms < 86400000) return `${Math.round(ms / 3600000)}h ago`
+    return `${Math.round(ms / 86400000)}d ago`
+  })()
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(s)}
+      className={`w-full text-left px-3 py-2.5 hover:bg-white transition-colors border-l-2 ${
+        isActive ? 'bg-white border-primary' : 'border-transparent'
+      }`}
+    >
+      <div className="flex items-center justify-between gap-1 mb-0.5">
+        <span className="font-semibold text-xs text-textPrimary truncate flex items-center gap-1">
+          <PawPrint className="w-3 h-3 text-primary flex-shrink-0" /> {dogName}
+        </span>
+        <span className="text-[10px] text-textMuted flex-shrink-0">{timeAgo}</span>
+      </div>
+      <p className="text-[11px] text-textMuted truncate">{name}</p>
+      {badge === 'reply' && (
+        <span className="inline-block mt-1 text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+          Needs reply
+        </span>
+      )}
+      {badge === 'done' && (
+        <span className="inline-block mt-1 text-[9px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+          ✓ Replied
+        </span>
+      )}
+    </button>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ReplyModal({ session, msToken, onClose }) {
+  const owner   = session.owner_details || {}
+  const dogName = session.dog_name || session.dog_profile?.name || 'your puppy'
+  const toEmail = session.email || owner.email || ''
+  const toName  = owner.full_name || owner.name || ''
+
+  const defaultSubject = `Your VetPac intake — ${dogName}`
+  const defaultMessage = `Hi ${toName.split(' ')[0] || 'there'},\n\nThank you for completing your VetPac intake for ${dogName}.\n\nWe've reviewed your submission and will be in touch shortly with your personalised vaccination plan.\n\nIn the meantime, feel free to reply to this email or use the chat at vetpac.nz if you have any questions.\n\nThe VetPac team`
+
+  const [subject, setSubject]   = useState(defaultSubject)
+  const [body, setBody]         = useState(defaultMessage)
+  const [sending, setSending]   = useState(false)
+  const [sent, setSent]         = useState(false)
+  const [error, setError]       = useState(null)
+
+  const send = async () => {
+    if (!toEmail) { setError('No email address for this customer'); return }
+    setSending(true); setError(null)
+    try {
+      const r = await fetch('/api/admin-send-customer-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${msToken}` },
+        body: JSON.stringify({ to: toEmail, toName, subject, message: body }),
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error || 'Send failed')
+      setSent(true)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <div>
+            <p className="font-semibold text-textPrimary flex items-center gap-2">
+              <Mail className="w-4 h-4 text-primary" /> Reply to customer
+            </p>
+            <p className="text-xs text-textMuted mt-0.5">
+              {toName && <span className="font-medium text-textSecondary">{toName} · </span>}
+              <a href={`mailto:${toEmail}`} className="text-primary hover:underline">{toEmail || '— no email —'}</a>
+            </p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-bg flex items-center justify-center text-textMuted hover:text-textPrimary transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+
+        {sent ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-12 gap-3">
+            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <Send className="w-5 h-5 text-green-600" />
+            </div>
+            <p className="font-semibold text-textPrimary">Email sent</p>
+            <p className="text-sm text-textMuted">Delivered to {toEmail}</p>
+            <button onClick={onClose} className="mt-2 text-sm text-primary font-medium hover:underline">Close</button>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-textMuted uppercase tracking-wide block mb-1">Subject</label>
+              <input
+                value={subject}
+                onChange={e => setSubject(e.target.value)}
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-textMuted uppercase tracking-wide block mb-1">Message</label>
+              <textarea
+                value={body}
+                onChange={e => setBody(e.target.value)}
+                rows={10}
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none font-mono leading-relaxed"
+              />
+            </div>
+            {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+          </div>
+        )}
+
+        {!sent && (
+          <div className="px-5 py-4 border-t border-border flex items-center justify-between gap-3">
+            <p className="text-xs text-textMuted">Sends from VetPac · replies go to your inbox</p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
+              <Button size="sm" onClick={send} loading={sending} disabled={sending || !toEmail}>
+                <Send className="w-3.5 h-3.5" /> Send email
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function AdminConsole() {
   const [phase, setPhase] = useState('loading')
   const [error, setError] = useState(null)
@@ -136,6 +524,9 @@ export default function AdminConsole() {
   const [visitorsLoading, setVisitorsLoading] = useState(false)
   const [visitorsError, setVisitorsError] = useState(null)
   const [expandedVisitor, setExpandedVisitor] = useState(null)
+  const [replySession, setReplySession] = useState(null)
+  const [msTokenCache, setMsTokenCache] = useState(null)
+  const sessionsRef = useRef(null)
 
   useEffect(() => {
     document.title = 'Admin — VetPac'
@@ -252,6 +643,7 @@ export default function AdminConsole() {
   const fetchSessions = useCallback(async () => {
     const token = await getAccessToken()
     if (!token) return
+    setMsTokenCache(token)
     setSessionsLoading(true)
     setSessionsError(null)
     try {
@@ -495,6 +887,42 @@ export default function AdminConsole() {
           </Link>
         </div>
 
+        {/* ── Conversations inbox ─────────────────────────────────────── */}
+        <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="font-semibold text-textPrimary flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-primary" /> Conversations
+                {intakeSessions && intakeSessions.filter(s => (s.email || s.owner_details?.email)).length > 0 && (() => {
+                  const replied = getReplied()
+                  const unreplied = intakeSessions.filter(s => (s.email || s.owner_details?.email) && !replied.has(s.session_token)).length
+                  return unreplied > 0
+                    ? <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{unreplied} need reply</span>
+                    : null
+                })()}
+              </h3>
+              <p className="text-xs text-textMuted mt-0.5">Intake chat sessions — view the full conversation, draft a reply, AI rewrites it.</p>
+            </div>
+            <Button type="button" size="sm" onClick={() => void fetchSessions()} loading={sessionsLoading} disabled={sessionsLoading}>
+              <RefreshCw className="w-3.5 h-3.5" /> Refresh
+            </Button>
+          </div>
+          {sessionsLoading && (
+            <div className="flex items-center gap-2 text-sm text-textSecondary py-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" /> Loading…
+            </div>
+          )}
+          {!sessionsLoading && (
+            <ConversationInbox
+              sessions={intakeSessions}
+              sessionDetail={sessionDetail}
+              loadDetail={loadSessionDetail}
+              msToken={msTokenCache}
+              getToken={getAccessToken}
+            />
+          )}
+        </div>
+
         <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="font-semibold text-textPrimary">Analytics</h3>
@@ -540,23 +968,26 @@ export default function AdminConsole() {
             <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
               <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Intake chat</p>
               <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm text-textSecondary">
-                <div>
-                  <span className="text-textMuted text-xs block">Sessions yesterday (NZ)</span>
-                  <span className="font-bold text-textPrimary text-lg">{intakeStats.distinct_sessions_yesterday_nz}</span>
-                </div>
-                <div>
-                  <span className="text-textMuted text-xs block">Messages yesterday (NZ)</span>
-                  <span className="font-bold text-textPrimary text-lg">{intakeStats.messages_yesterday_nz}</span>
-                </div>
-                <div>
-                  <span className="text-textMuted text-xs block">Sessions today (NZ)</span>
-                  <span className="font-bold text-textPrimary text-lg">{intakeStats.distinct_sessions_today_nz}</span>
-                </div>
-                <div>
-                  <span className="text-textMuted text-xs block">Sessions last 7d (NZ)</span>
-                  <span className="font-bold text-textPrimary text-lg">{intakeStats.distinct_sessions_last_7_days_nz}</span>
-                </div>
+                {[
+                  { label: 'Sessions yesterday (NZ)', value: intakeStats.distinct_sessions_yesterday_nz },
+                  { label: 'Messages yesterday (NZ)', value: intakeStats.messages_yesterday_nz },
+                  { label: 'Sessions today (NZ)', value: intakeStats.distinct_sessions_today_nz },
+                  { label: 'Sessions last 7d (NZ)', value: intakeStats.distinct_sessions_last_7_days_nz },
+                ].map(({ label, value }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => sessionsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    className="text-left rounded-lg hover:bg-primary/10 transition-colors p-1 -m-1 group"
+                  >
+                    <span className="text-textMuted text-xs block">{label}</span>
+                    <span className="font-bold text-textPrimary text-lg group-hover:text-primary transition-colors underline decoration-dashed underline-offset-2 decoration-primary/40">
+                      {value}
+                    </span>
+                  </button>
+                ))}
               </div>
+              <p className="text-[10px] text-primary/60 mt-2">↓ Click any number to jump to full session list below</p>
             </div>
           )}
           {stats && <SiteEventStats stats={stats} />}
@@ -753,7 +1184,7 @@ export default function AdminConsole() {
         </div>
 
         {/* ── Intake sessions ─────────────────────────────────────────── */}
-        <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
+        <div ref={sessionsRef} className="bg-white rounded-card-lg border border-border p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="font-semibold text-textPrimary">Intake sessions</h3>
@@ -832,7 +1263,16 @@ export default function AdminConsole() {
                         </div>
                         <p className="text-xs text-textMuted">{date} · NZ</p>
                       </div>
-                      <StatusBadge status={s.status} />
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); setReplySession(s) }}
+                          className="flex items-center gap-1 text-xs bg-primary/10 hover:bg-primary/20 text-primary font-semibold px-2.5 py-1.5 rounded-lg transition-colors"
+                        >
+                          <Mail className="w-3 h-3" /> Reply
+                        </button>
+                        <StatusBadge status={s.status} />
+                      </div>
                     </button>
 
                     {isExpanded && (
@@ -928,6 +1368,14 @@ export default function AdminConsole() {
           )}
         </div>
       </main>
+
+      {replySession && (
+        <ReplyModal
+          session={replySession}
+          msToken={msTokenCache}
+          onClose={() => setReplySession(null)}
+        />
+      )}
     </div>
   )
 }
