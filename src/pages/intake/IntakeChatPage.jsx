@@ -166,6 +166,13 @@ export default function IntakeChatPage() {
       logSiteEvent('intake_page_view', { path: '/intake' })
     }
 
+    // ?fresh=1 — clear any stored session and start from scratch
+    if (searchParams.get('fresh') === '1') {
+      localStorage.removeItem(SESSION_KEY)
+      setCheckingResume(false)
+      return
+    }
+
     const urlToken = searchParams.get('token')
     const storedToken = localStorage.getItem(SESSION_KEY)
     const token = urlToken || storedToken

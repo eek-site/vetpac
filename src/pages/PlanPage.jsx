@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import {
   CheckCircle, Lock, Loader2, ChevronDown, ChevronUp,
-  Shield, Heart, Star, AlertCircle, Tag, Syringe, Home, Truck, MessageCircle, ArrowLeft,
+  Shield, Heart, Star, AlertCircle, Tag, Syringe, Home, Truck, MessageCircle, ArrowLeft, Mail, RefreshCw,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
@@ -525,7 +525,8 @@ export default function PlanPage() {
     assistSelected, setAssistSelected,
     insuranceSelected, setInsuranceSelected,
     planStep, setPlanStep,
-    setConsultPaid,
+    setConsultPaid, consultPaid,
+    updateDogProfile, updateHealthHistory, updateLifestyle, updateOwnerDetails,
     getOrderTotals,
   } = useIntakeStore()
 
@@ -547,6 +548,59 @@ export default function PlanPage() {
   const [aiLoading, setAiLoading] = useState(!aiAssessment)
   const [aiError, setAiError] = useState(null)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [tokenRestoring, setTokenRestoring] = useState(false)
+  const [tokenError, setTokenError] = useState(null)
+  // Resume UI state (shown when no session in localStorage)
+  const [resumeEmail, setResumeEmail] = useState('')
+  const [resumeSending, setResumeSending] = useState(false)
+  const [resumeSent, setResumeSent] = useState(false)
+  const [resumeError, setResumeError] = useState(null)
+
+  // If ?token= is in URL, restore session from server (cross-device / cleared localStorage)
+  useEffect(() => {
+    const token = searchParams.get('token')
+    if (!token || consultPaid) return   // already have a session
+
+    setTokenRestoring(true)
+    fetch(`/api/get-intake-session?token=${encodeURIComponent(token)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.error) throw new Error(data?.error || 'Session not found')
+        if (data.dogProfile)    updateDogProfile(data.dogProfile)
+        if (data.healthHistory) updateHealthHistory(data.healthHistory)
+        if (data.lifestyle)     updateLifestyle(data.lifestyle)
+        if (data.ownerDetails)  updateOwnerDetails(data.ownerDetails)
+        if (data.aiAssessment)  setAiAssessment(data.aiAssessment)
+        setConsultPaid(true)
+      })
+      .catch(e => setTokenError(e.message || 'Could not restore your session'))
+      .finally(() => setTokenRestoring(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleResumeRequest = async (e) => {
+    e.preventDefault()
+    setResumeSending(true)
+    setResumeError(null)
+    try {
+      const r = await fetch('/api/plan-resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resumeEmail }),
+      })
+      const data = await r.json()
+      if (!r.ok) throw new Error(data.error || 'Request failed')
+      if (data.ok === false && data.code === 'NOT_FOUND') {
+        setResumeError("We couldn't find a plan for that email. Check the address or start a new plan below.")
+      } else {
+        setResumeSent(true)
+      }
+    } catch (err) {
+      setResumeError(err.message || 'Something went wrong — try again.')
+    } finally {
+      setResumeSending(false)
+    }
+  }
 
   // Sync URL step → store on first load (e.g. refresh at step 3)
   useEffect(() => {
@@ -638,6 +692,75 @@ export default function PlanPage() {
     })
     navigate(`/checkout?${params.toString()}`)
     setCheckoutLoading(false)
+  }
+
+  // Token restore in progress
+  if (tokenRestoring) {
+    return (
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
+          <p className="text-sm text-textSecondary">Restoring your plan…</p>
+        </div>
+      </div>
+    )
+  }
+
+  // No session — show resume / start-fresh screen
+  if (!consultPaid && !searchParams.get('token')) {
+    return (
+      <div className="min-h-screen bg-bg flex items-center justify-center px-4">
+        <div className="w-full max-w-sm space-y-6">
+          <div className="text-center">
+            <Link to="/" className="font-display font-bold text-xl text-primary">VetPac</Link>
+          </div>
+
+          {resumeSent ? (
+            <div className="bg-white rounded-card-lg border border-border p-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <Mail className="w-6 h-6 text-primary" />
+              </div>
+              <h2 className="font-display font-bold text-xl text-textPrimary">Check your email</h2>
+              <p className="text-sm text-textSecondary">We've sent a link to <strong>{resumeEmail}</strong>. Click it to jump straight back to your plan.</p>
+              <p className="text-xs text-textMuted">Didn't get it? Check your spam folder.</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-card-lg border border-border p-6 space-y-5">
+              <div>
+                <h2 className="font-display font-bold text-xl text-textPrimary">Return to your plan</h2>
+                <p className="text-sm text-textSecondary mt-1">Enter the email you used during your intake and we'll send you a link to pick up exactly where you left off.</p>
+              </div>
+
+              <form onSubmit={handleResumeRequest} className="space-y-3">
+                <input
+                  type="email"
+                  value={resumeEmail}
+                  onChange={e => setResumeEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  className="w-full border border-border rounded-card px-3 py-2.5 text-sm text-textPrimary placeholder:text-textMuted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                />
+                {resumeError && <p className="text-xs text-red-600">{resumeError}</p>}
+                {tokenError && <p className="text-xs text-red-600">Session error: {tokenError}</p>}
+                <Button type="submit" fullWidth loading={resumeSending} disabled={resumeSending || !resumeEmail}>
+                  Send my plan link
+                </Button>
+              </form>
+
+              <div className="border-t border-border pt-4 text-center space-y-2">
+                <p className="text-xs text-textMuted">Haven't started yet, or want to start over?</p>
+                <Link
+                  to="/intake?fresh=1"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> Start a new plan
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (

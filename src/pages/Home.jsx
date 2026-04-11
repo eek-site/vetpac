@@ -529,6 +529,12 @@ export default function Home() {
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
+            <p className="mt-6 text-sm text-white/60">
+              Already started?{' '}
+              <Link to="/plan" className="text-white font-semibold underline underline-offset-2 hover:text-white/90">
+                Return to your plan →
+              </Link>
+            </p>
           </Reveal>
         </div>
       </section>
