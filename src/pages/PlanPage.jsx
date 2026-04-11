@@ -256,27 +256,33 @@ function StepInsurance({ insuranceSelected, setInsuranceSelected, onNext, onBack
 
         {/* What's covered */}
         <div className="space-y-2">
-          {[
-            {
-              heading: 'If the vaccine doesn\'t take',
-              body: 'Some puppies don\'t build full immunity — maternal antibodies, genetics, or timing. If your puppy contracts a vaccine-preventable disease during the programme, VetPac covers the vet bill in full.',
-              cost: 'Parvo treatment: $1,500–$5,000',
-            },
-            {
-              heading: 'If your puppy reacts to a vaccine',
-              body: 'Adverse reactions are rare but real. Facial swelling, anaphylaxis, severe lethargy — VetPac covers any vet care required as a direct result of a vaccine we administered.',
-              cost: 'Reaction treatment: $150–$800',
-            },
-          ].map(({ heading, body, cost }) => (
-            <div key={heading} className="flex items-start gap-3 p-4 bg-white border border-border rounded-card-lg">
-              <Shield className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-sm text-textPrimary">{heading}</p>
-                <p className="text-sm text-textSecondary mt-0.5">{body}</p>
-                <p className="text-xs text-textMuted mt-1">{cost}</p>
-              </div>
+          <div className="flex items-start gap-3 p-4 bg-white border border-border rounded-card-lg">
+            <Shield className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-sm text-textPrimary">If the vaccine doesn't take</p>
+              <p className="text-sm text-textSecondary mt-0.5">
+                Around 5% of puppies don't build full immunity — maternal antibodies, genetics, or timing can all block the vaccine from working.<sup className="text-primary">1</sup> If your puppy contracts a vaccine-preventable disease during the programme, VetPac covers the vet bill in full.
+              </p>
+              <p className="text-xs text-textMuted mt-1">Parvovirus treatment in NZ: $1,500–$5,000<sup className="text-primary">2</sup></p>
             </div>
-          ))}
+          </div>
+          <div className="flex items-start gap-3 p-4 bg-white border border-border rounded-card-lg">
+            <Shield className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-sm text-textPrimary">If your puppy reacts to a vaccine</p>
+              <p className="text-sm text-textSecondary mt-0.5">
+                About 1 in 88 puppies experience an adverse reaction requiring vet care across a 3-dose programme.<sup className="text-primary">3</sup> Facial swelling, anaphylaxis, severe lethargy — VetPac covers any vet costs resulting from a vaccine we administered.
+              </p>
+              <p className="text-xs text-textMuted mt-1">Reaction treatment: $150–$800</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footnotes */}
+        <div className="text-xs text-textMuted space-y-0.5 px-1">
+          <p><sup>1</sup> Decaro et al., <em>Veterinary Microbiology</em> 2020 — multi-national survey of CPV immunisation failure rates.</p>
+          <p><sup>2</sup> PetNSur NZ vet cost data, 2025 — hospitalisation, IV fluids, antibiotics.</p>
+          <p><sup>3</sup> Moore et al., <em>JAVMA</em> 2005 — adverse event study across 1.2 million vaccinated dogs (0.38%/dose).</p>
         </div>
 
         {/* Yes / No */}
