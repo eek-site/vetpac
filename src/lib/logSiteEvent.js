@@ -4,6 +4,12 @@ const TYPES = new Set([
   'intake_completed',
   'contact_ai_message',
   'treatment_plan_generated',
+  'guide_page_view',
+  'guide_section_view',
+  'checkout_started',
+  'checkout_completed',
+  'plan_page_view',
+  'dashboard_view',
 ])
 
 /** Stable per-tab id for analytics + intake transcript logging. */

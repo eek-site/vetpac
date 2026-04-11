@@ -246,19 +246,39 @@ export const INTAKE_STEPS = [
 export const FAQ_ITEMS = [
   {
     q: 'How does it work?',
-    a: 'Start your puppy\'s health plan below. Our AI reviews your puppy\'s history, age, breed, and lifestyle to build a personalised vaccination programme, reviewed and authorised by a NZ-registered veterinarian. Your vaccines are then administered at home, at a time that works for both of you.',
+    a: 'Start your puppy\'s health plan below. Our AI reviews your puppy\'s history, age, breed, and lifestyle to build a personalised vaccination programme, reviewed and authorised by a NZ-registered veterinarian. Your vaccines are cold-chain delivered to your home and administered at a time that works for both of you.',
+  },
+  {
+    q: 'When should my puppy get their first vaccination?',
+    a: 'The first C3 vaccination is typically given at 6–8 weeks — usually by the breeder. If your puppy hasn\'t had it yet, start as soon as possible. VetPac will build the programme around your puppy\'s actual age and history, so there\'s no guessing.',
+  },
+  {
+    q: 'What is the difference between C3 and C5?',
+    a: 'C3 covers Distemper, Hepatitis, and Parvovirus — the three core diseases. C5 adds Parainfluenza and Kennel Cough (Bordetella). Most puppies receive C3 as their first dose and C5 from dose 2 onwards. Annual boosters are C5. If your puppy attends boarding or daycare, C5 is required.',
+  },
+  {
+    q: 'Does my puppy need the Leptospirosis vaccine?',
+    a: 'It depends on your puppy\'s lifestyle. Leptospirosis is recommended if your puppy has exposure to farms, rivers, livestock, or wildlife. Your VetPac intake will ask the right questions and your vet will include it if warranted. Requires two doses 2–4 weeks apart.',
   },
   {
     q: 'What vaccines do you offer?',
-    a: 'We offer C3 and C5 — the standard core vaccinations for puppies in New Zealand. C3 covers Distemper, Hepatitis, and Parvovirus. C5 adds Parainfluenza and Kennel Cough. We also offer Leptospirosis and Kennel Cough boosters where your puppy\'s lifestyle warrants it.',
+    a: 'We offer C3, C5, Leptospirosis, and Kennel Cough — the full suite of core and non-core vaccinations for puppies in New Zealand. Every programme is personalised by a NZ-registered veterinarian.',
   },
   {
     q: 'Is it safe?',
-    a: 'Yes — and in many ways, your home is a better environment than a clinic waiting room. Your home has none of the pathogens that circulate in a waiting room, which is particularly important for unvaccinated puppies. Every vaccine is sealed, sterile, and single-use. We walk you through everything — you are supported at every step.',
+    a: 'Yes — and in many ways, your home is a safer environment than a clinic waiting room. Your home has none of the pathogens that circulate among sick or unvaccinated animals. Every vaccine is sealed, sterile, and single-use, cold-chain maintained to your door. You are supported at every step.',
+  },
+  {
+    q: 'Can I take my puppy to the park before vaccinations are complete?',
+    a: 'Not to public areas where unvaccinated dogs may have been. You can carry your puppy for socialisation exposure, or let them play with fully vaccinated dogs in clean private environments. Full off-lead freedom comes 2 weeks after the final dose.',
+  },
+  {
+    q: 'What if my puppy already has some vaccinations from the breeder?',
+    a: 'No problem — VetPac continues from wherever your puppy left off. Your intake asks for the prior vaccine product, dose number, and date. Your vet will design the remaining programme so nothing is repeated unnecessarily.',
   },
   {
     q: 'Can I meet the technician before you send someone to my home?',
-    a: 'Yes. Before any home visit, our senior programme coordinator will video call you to introduce the technician assigned to your puppy, walk you through what to expect, and make sure you are completely comfortable. Every technician is individually matched to ensure they share our values around animal care. We will arrange this once your plan is confirmed.',
+    a: 'Yes. Before any home visit, our senior programme coordinator will video call you to introduce the technician assigned to your puppy, walk you through what to expect, and make sure you are completely comfortable. Every technician is individually matched to ensure they share our values around animal care.',
   },
   {
     q: 'What if my puppy seems unwell on the day?',
@@ -266,14 +286,22 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'What if something goes wrong after vaccination?',
-    a: 'Our chat support is available 24 hours a day, 7 days a week. Message us immediately if your puppy shows any unusual signs after vaccination. We will advise you on what to do and stay with you throughout.',
+    a: 'Our chat support is available 24 hours a day, 7 days a week. Message us immediately if your puppy shows any unusual signs after vaccination. Serious reactions are rare — under 0.07% of doses — but we are here if you need us.',
+  },
+  {
+    q: 'Do puppies need annual boosters?',
+    a: 'Yes. Vaccine immunity fades after 1–3 years. Annual C5 boosters maintain full protection. Most boarding facilities and doggy day care centres require an up-to-date C5 certificate — VetPac provides these for every dose.',
   },
   {
     q: 'Do you cover all of New Zealand?',
-    a: 'Yes — we cover all regions of New Zealand including rural addresses. Get in touch if you have questions about your area.',
+    a: 'Yes — we cover all regions of New Zealand including rural addresses. Cold-chain delivery reaches every part of the country.',
   },
   {
     q: 'Is the vaccination record official?',
-    a: 'Yes. Every programme includes a signed vaccination certificate confirming your puppy\'s vaccinations, the products used, and the dates administered. It is accepted by boarding facilities, groomers, and vets.',
+    a: 'Yes. Every programme includes a signed vaccination certificate confirming the vaccine product, batch number, date, and authorising veterinarian. It is accepted by boarding facilities, groomers, and vets across New Zealand.',
+  },
+  {
+    q: 'How much does VetPac cost?',
+    a: 'The initial consultation is $49. Each vaccine is $89. Cold-chain delivery is $119 per shipment. A typical 3-dose puppy course costs approximately $624 all in. The optional Programme Warranty is $225 one-time and covers vaccine failure and adverse reactions up to $5,000.',
   },
 ]

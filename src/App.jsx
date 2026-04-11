@@ -19,6 +19,7 @@ import WarrantyTerms from './pages/WarrantyTerms'
 import VetPortal from './pages/VetPortal'
 import NotFound from './pages/NotFound'
 import AdminConsole from './pages/AdminConsole'
+import GuidePage from './pages/GuidePage'
 import GoogleAdsContext from './components/GoogleAdsContext'
 import GoogleTag from './components/GoogleTag'
 import VisitorTracker from './components/VisitorTracker'
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/legal" element={<LegalCompliance />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/guide" element={<GuidePage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/warranty-terms" element={<WarrantyTerms />} />

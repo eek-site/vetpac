@@ -30,9 +30,9 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-sm mb-4 text-white/70 uppercase tracking-wider">Platform</h4>
             <ul className="space-y-2.5">
-              {['How It Works', 'Pricing', 'FAQ', 'Dashboard'].map((item) => (
+              {['How It Works', 'Vaccine Guide', 'Pricing', 'FAQ', 'Dashboard'].map((item) => (
                 <li key={item}>
-                  <a href={item === 'Dashboard' ? '/dashboard' : `/#${item.toLowerCase().replace(/ /g, '-')}`}
+                  <a href={item === 'Dashboard' ? '/dashboard' : item === 'Vaccine Guide' ? '/guide' : `/#${item.toLowerCase().replace(/ /g, '-')}`}
                     className="text-sm text-white/70 hover:text-white transition-colors">
                     {item}
                   </a>

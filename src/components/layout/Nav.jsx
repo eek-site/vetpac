@@ -22,6 +22,7 @@ function PawLogo() {
 
 const navLinks = [
   { label: 'How It Works', href: '/#how-it-works' },
+  { label: 'Vaccine Guide', href: '/guide' },
   { label: 'FAQ', href: '/#faq' },
   { label: 'Contact', href: '/contact' },
 ]

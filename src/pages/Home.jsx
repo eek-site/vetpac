@@ -526,6 +526,47 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── GUIDE CALLOUT ─────────────────────────────────────────────────── */}
+      <section className="bg-primary/5 border-y border-primary/10 py-14">
+        <div className="max-w-content mx-auto px-4 sm:px-6">
+          <Reveal>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="max-w-xl">
+                <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-2">Free resource</p>
+                <h2 className="font-display font-bold text-2xl sm:text-3xl text-textPrimary mb-3">
+                  The Complete NZ Puppy Vaccination Guide
+                </h2>
+                <p className="text-textSecondary leading-relaxed mb-4">
+                  C3 vs C5 explained. Recommended schedules. What Parvovirus and Kennel Cough actually are.
+                  How much vaccinations cost in NZ. And why more families are choosing at-home over the waiting room.
+                </p>
+                <div className="flex flex-wrap gap-2 text-xs text-textMuted mb-5">
+                  {['C3 vs C5', 'NZ schedule', 'Parvovirus', 'Kennel Cough', 'Leptospirosis', 'Side effects', 'Cost comparison'].map(tag => (
+                    <span key={tag} className="bg-white border border-border rounded-full px-3 py-1">{tag}</span>
+                  ))}
+                </div>
+                <Link to="/guide">
+                  <Button>Read the guide <ArrowRight className="w-4 h-4" /></Button>
+                </Link>
+              </div>
+              <div className="hidden md:grid grid-cols-2 gap-3 flex-shrink-0">
+                {[
+                  { title: 'Vaccination schedule', sub: 'Week-by-week from 6 weeks' },
+                  { title: 'C3 vs C5 explained', sub: 'What each vaccine covers' },
+                  { title: 'Cost in NZ', sub: 'Clinic vs VetPac compared' },
+                  { title: 'After vaccination', sub: 'What your puppy can do & when' },
+                ].map(card => (
+                  <Link key={card.title} to="/guide" className="bg-white border border-border rounded-xl p-4 hover:border-primary hover:shadow-sm transition-all w-44">
+                    <p className="font-semibold text-textPrimary text-xs mb-1">{card.title}</p>
+                    <p className="text-[11px] text-textMuted">{card.sub}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ── FAQ ──────────────────────────────────────────────────────────────── */}
       <section id="faq" className="bg-white py-24">
         <div className="max-w-content mx-auto px-4 sm:px-6">
