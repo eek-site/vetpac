@@ -25,8 +25,8 @@ function ScrollToTop() {
 }
 
 const INTAKE_ROUTES = ['/intake', '/intake/review']
-const NO_NAV_ROUTES = ['/checkout', '/plan', '/admin', ...INTAKE_ROUTES]
-const NO_FOOTER_ROUTES = ['/checkout', '/plan', '/admin', ...INTAKE_ROUTES, '/dashboard', '/vet-portal']
+const NO_NAV_ROUTES = ['/checkout', '/plan', '/admin', '/order-confirmation', ...INTAKE_ROUTES]
+const NO_FOOTER_ROUTES = ['/checkout', '/plan', '/admin', '/order-confirmation', ...INTAKE_ROUTES, '/dashboard', '/vet-portal']
 
 function Layout({ children }) {
   const { pathname } = useLocation()

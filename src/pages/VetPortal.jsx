@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, AlertTriangle, Video, User, PawPrint, FileText, ChevronRight, Clock, Eye } from 'lucide-react'
+import { CheckCircle, AlertTriangle, Video, User, PawPrint, Clock } from 'lucide-react'
 import Nav from '../components/layout/Nav'
 import StatusBadge from '../components/ui/StatusBadge'
 import Button from '../components/ui/Button'
@@ -251,7 +251,7 @@ export default function VetPortal() {
               <p className="text-textMuted text-sm">Review intake assessments and issue VOIs</p>
             </div>
             <div className="bg-primary text-white text-sm px-4 py-2 rounded-full font-semibold">
-              {queue.filter(q => q.status === 'ai_complete').length} awaiting review
+              {queue.filter(q => !['approved', 'needs_physical', 'rejected'].includes(q.status)).length} awaiting review
             </div>
           </div>
         </div>

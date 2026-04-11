@@ -138,9 +138,13 @@ function OrderRow({ order }) {
       {expanded && (
         <div className="border-t border-border p-5 bg-bg space-y-3">
           <p className="text-sm text-textMuted">Order confirmed and being processed. You will receive tracking details once your vaccines are dispatched.</p>
-          <Button size="sm" variant="secondary" className="flex items-center gap-1.5">
-            <ExternalLink className="w-3.5 h-3.5" /> View receipt
-          </Button>
+          {order.receiptUrl && (
+            <a href={order.receiptUrl} target="_blank" rel="noopener noreferrer">
+              <Button size="sm" variant="secondary" className="flex items-center gap-1.5">
+                <ExternalLink className="w-3.5 h-3.5" /> View receipt
+              </Button>
+            </a>
+          )}
         </div>
       )}
     </div>

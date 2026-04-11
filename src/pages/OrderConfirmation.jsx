@@ -2,8 +2,6 @@ import { useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { CheckCircle, Package, Clock, FileText, Calendar, ArrowRight, Bell } from 'lucide-react'
 import Button from '../components/ui/Button'
-import Nav from '../components/layout/Nav'
-import Footer from '../components/layout/Footer'
 import { useIntakeStore } from '../store/intakeStore'
 
 // ── .ics calendar helper ─────────────────────────────────────────────────────
@@ -183,11 +181,11 @@ export default function OrderConfirmation() {
         insuranceBilling,
       }),
     }).catch(() => {})
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ownerDetails?.email])
 
   return (
     <div className="min-h-screen bg-bg">
-      <Nav />
       <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-28 pb-20">
         <SuccessAnimation />
 
@@ -196,7 +194,9 @@ export default function OrderConfirmation() {
             Order confirmed! {dogName.charAt(0).toUpperCase() + dogName.slice(1)}'s health plan is underway.
           </h1>
           <p className="text-textSecondary">Order reference: <span className="font-mono font-bold text-textPrimary">{orderRef}</span></p>
-          <p className="text-textMuted text-sm mt-1">A confirmation email has been sent to your inbox.</p>
+          {ownerDetails?.email && (
+            <p className="text-textMuted text-sm mt-1">A confirmation email has been sent to <span className="font-medium text-textSecondary">{ownerDetails.email}</span>.</p>
+          )}
         </div>
 
         {/* What happens next */}
@@ -260,7 +260,6 @@ export default function OrderConfirmation() {
           </p>
         </div>
       </div>
-      <Footer />
     </div>
   )
 }

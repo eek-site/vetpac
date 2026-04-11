@@ -70,9 +70,23 @@ export default function Checkout() {
     setError(null)
     try {
       const origin = window.location.origin
+      const vaccineSuccessParams = new URLSearchParams({
+        session_id: '{CHECKOUT_SESSION_ID}',
+        puppy: dogName,
+        puppyCount: puppyCount.toString(),
+        mode: 'vaccines',
+        total: total.toString(),
+        consult: '0',
+        vaccines: vaccinesTotal.toString(),
+        freight: freightTotal.toString(),
+        assist: assistTotal.toString(),
+        insurance: insuranceTotal.toString(),
+        insuranceBilling,
+        items: params.get('items') || '[]',
+      })
       const successUrl = isConsult
         ? params.get('successUrl') || `${origin}/plan?paid=1&puppy=${encodeURIComponent(dogName)}&session_id={CHECKOUT_SESSION_ID}`
-        : `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&puppy=${encodeURIComponent(dogName)}`
+        : `${origin}/order-confirmation?${vaccineSuccessParams.toString()}`
       const cancelUrl = params.get('cancelUrl') || `${origin}/checkout?${params.toString()}`
 
       // Insurance is billed separately after order confirmation — intentionally excluded from Stripe charge.

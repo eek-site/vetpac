@@ -15,7 +15,7 @@ function useIntersection(ref, threshold = 0.12) {
     }, { threshold })
     if (ref.current) observer.observe(ref.current)
     return () => observer.disconnect()
-  }, [ref])
+  }, [ref, threshold])
   return visible
 }
 

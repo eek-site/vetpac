@@ -456,7 +456,10 @@ function StepSummary({ totals, puppyCount, insuranceSelected, insuranceBilling, 
 // ─── STEP 1: Vaccines ─────────────────────────────────────────────────────────
 
 function StepVaccines({ puppyName, additionalPuppies, additionalPuppyVaccinePlans, vaccinePlan, toggleVaccineItem, toggleAdditionalPuppyVaccineItem, aiLoading, aiError, onNext }) {
-  const selected = vaccinePlan.filter((v) => v.selected)
+  const primarySelected = vaccinePlan.filter((v) => v.selected)
+  const totalSelected = primarySelected.length + additionalPuppyVaccinePlans.reduce(
+    (sum, plan) => sum + plan.filter((v) => v.selected).length, 0
+  )
   return (
     <div className="space-y-5">
       <div>
@@ -487,9 +490,9 @@ function StepVaccines({ puppyName, additionalPuppies, additionalPuppyVaccinePlan
         />
       ))}
 
-      {selected.length === 0 && !aiLoading && <Alert type="warning">Select at least one vaccine to continue.</Alert>}
+      {totalSelected === 0 && !aiLoading && <Alert type="warning">Select at least one vaccine to continue.</Alert>}
 
-      <Button fullWidth size="lg" onClick={onNext} disabled={selected.length === 0 || aiLoading}>
+      <Button fullWidth size="lg" onClick={onNext} disabled={totalSelected === 0 || aiLoading}>
         Continue →
       </Button>
     </div>
@@ -534,6 +537,7 @@ export default function PlanPage() {
 
   useEffect(() => {
     if (!aiAssessment) runAi()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Scroll to top on step change
@@ -561,8 +565,21 @@ export default function PlanPage() {
 
   const handlePay = (displayTotal, discountApplied, discountCode) => {
     setCheckoutLoading(true)
-    const selectedVaccines = vaccinePlan.filter((v) => v.selected)
-    const items = selectedVaccines.map((v) => ({ name: v.name, price: v.price }))
+    const primarySelected = vaccinePlan.filter((v) => v.selected)
+    const additionalItems = additionalPuppyVaccinePlans.flatMap((plan, i) => {
+      const label = additionalPuppies[i]?.name || `Puppy ${i + 2}`
+      return plan.filter((v) => v.selected).map((v) => ({
+        name: numberOfPuppies > 1 ? `${v.name} (${label})` : v.name,
+        price: v.price,
+      }))
+    })
+    const items = [
+      ...primarySelected.map((v) => ({
+        name: numberOfPuppies > 1 ? `${v.name} (${puppyName})` : v.name,
+        price: v.price,
+      })),
+      ...additionalItems,
+    ]
 
     const params = new URLSearchParams({
       mode: 'vaccines',

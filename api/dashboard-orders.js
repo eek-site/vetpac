@@ -34,10 +34,12 @@ export default async function handler(req, res) {
   if (!secret) return res.status(500).json({ error: 'Stripe not configured' })
 
   try {
-    // Search Stripe for payment sessions with this customer email
+    // Filter sessions directly by customer email on the Stripe side
     const url = new URL('https://api.stripe.com/v1/checkout/sessions')
-    url.searchParams.set('limit', '25')
+    url.searchParams.set('limit', '100')
     url.searchParams.set('status', 'complete')
+    url.searchParams.set('customer_email', email)
+    url.searchParams.append('expand[]', 'data.payment_intent')
 
     const r = await fetch(url.toString(), {
       headers: { Authorization: `Bearer ${secret}` },
@@ -45,13 +47,12 @@ export default async function handler(req, res) {
     const data = await r.json()
     if (!r.ok) throw new Error(data.error?.message || 'Stripe error')
 
-    const sessions = (data.data || []).filter((s) => {
-      const sEmail = (s.customer_details?.email || s.customer_email || '').toLowerCase()
-      return sEmail === email && s.payment_status === 'paid'
-    })
+    const sessions = (data.data || []).filter((s) => s.payment_status === 'paid')
 
     const orders = sessions.map((s) => {
       const meta = s.metadata || {}
+      const pi = typeof s.payment_intent === 'object' ? s.payment_intent : null
+      const receiptUrl = pi?.charges?.data?.[0]?.receipt_url || null
       return {
         id: s.id.slice(0, 8).toUpperCase(),
         sessionId: s.id,
@@ -60,6 +61,7 @@ export default async function handler(req, res) {
         dog: meta.dog_name || '',
         total: (s.amount_total / 100).toFixed(2),
         date: new Date(s.created * 1000).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' }),
+        receiptUrl,
       }
     })
 
