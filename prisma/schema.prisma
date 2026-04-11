@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model IntakeSession {
+  id               String    @id @default(cuid())
+  sessionToken     String    @unique @default(cuid()) @map("session_token")
+  email            String?
+  dogName          String?   @map("dog_name")
+  status           String    @default("in_progress")
+  messages         Json      @default("[]")
+  dogProfile       Json      @default("{}") @map("dog_profile")
+  healthHistory    Json      @default("{}") @map("health_history")
+  lifestyle        Json      @default("{}") @map("lifestyle")
+  ownerDetails     Json      @default("{}") @map("owner_details")
+  aiAssessment     Json?     @map("ai_assessment")
+  stripeSessionId  String?   @map("stripe_session_id")
+  orderDate        DateTime? @map("order_date")
+  orderStatus      String?   @map("order_status")
+  orderTotal       String?   @map("order_total")
+  vaccinePlan      Json?     @map("vaccine_plan")
+  deliveryMethod   String?   @map("delivery_method")
+  warrantySelected Boolean   @default(false) @map("warranty_selected")
+  consultPaid      Boolean   @default(false) @map("consult_paid")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  chatMessages     IntakeChatMessage[]
+
+  @@map("intake_sessions")
+}
+
+model IntakeChatMessage {
+  id         String        @id @default(cuid())
+  sessionId  String        @map("session_id")
+  role       String
+  content    String
+  turnIndex  Int           @default(0) @map("turn_index")
+  createdAt  DateTime      @default(now()) @map("created_at")
+
+  session    IntakeSession @relation(fields: [sessionId], references: [sessionToken])
+
+  @@unique([sessionId, turnIndex])
+  @@map("intake_chat_messages")
+}
+
+model DashboardAccess {
+  email     String   @id
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("dashboard_access")
+}
+
+model SiteEvent {
+  id         String   @id @default(cuid())
+  eventType  String   @map("event_type")
+  source     String   @default("client")
+  meta       Json     @default("{}")
+  backfilled Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("site_events")
+}
+
+model VisitorMessage {
+  id        String   @id @default(cuid())
+  visitorId String   @map("visitor_id")
+  email     String?
+  role      String
+  content   String
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("visitor_messages")
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  startAt   DateTime @map("start_at")
+  endAt     DateTime @map("end_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("announcements")
+}

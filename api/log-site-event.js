@@ -1,9 +1,9 @@
 /**
- * Lightweight analytics POST (service role insert). Origin-restricted.
- * Event types: intake_page_view, intake_user_message, intake_completed, contact_ai_message, treatment_plan_generated
+ * Lightweight analytics POST. Origin-restricted.
+ * Event types: intake_page_view, intake_user_message, intake_completed,
+ *              contact_ai_message, treatment_plan_generated
  */
-
-import { getServiceSupabase } from './lib/site-events-db.js'
+import { prisma } from './lib/prisma.js'
 
 const ALLOWED = new Set([
   'intake_page_view',
@@ -17,12 +17,7 @@ function allowOrigin(origin) {
   if (!origin) return false
   try {
     const h = new URL(origin).hostname
-    return (
-      h === 'vetpac.nz' ||
-      h === 'www.vetpac.nz' ||
-      h === 'localhost' ||
-      h.endsWith('.vercel.app')
-    )
+    return h === 'vetpac.nz' || h === 'www.vetpac.nz' || h === 'localhost' || h.endsWith('.vercel.app')
   } catch {
     return false
   }
@@ -36,12 +31,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const origin = req.headers.origin || ''
-  if (!allowOrigin(origin)) {
-    return res.status(403).json({ error: 'Forbidden' })
-  }
-
-  const sb = getServiceSupabase()
-  if (!sb) return res.status(503).json({ error: 'Analytics not configured' })
+  if (!allowOrigin(origin)) return res.status(403).json({ error: 'Forbidden' })
 
   const { event_type, meta } = req.body || {}
   if (!event_type || !ALLOWED.has(event_type)) {
@@ -53,17 +43,13 @@ export default async function handler(req, res) {
       ? Object.fromEntries(Object.entries(meta).slice(0, 20).map(([k, v]) => [String(k).slice(0, 64), v]))
       : {}
 
-  const { error } = await sb.from('site_events').insert({
-    event_type,
-    source: 'client',
-    meta: safeMeta,
-    backfilled: false,
-  })
-
-  if (error) {
-    console.error('[log-site-event]', error.message)
+  try {
+    await prisma.siteEvent.create({
+      data: { eventType: event_type, source: 'client', meta: safeMeta, backfilled: false },
+    })
+    return res.status(200).json({ ok: true })
+  } catch (e) {
+    console.error('[log-site-event]', e.message)
     return res.status(500).json({ error: 'Insert failed' })
   }
-
-  return res.status(200).json({ ok: true })
 }

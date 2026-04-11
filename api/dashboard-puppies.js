@@ -1,57 +1,41 @@
 /**
- * POST — returns puppy profiles for the authenticated user, sourced from intake_sessions.
+ * POST — returns puppy profiles for the authenticated user.
  */
 import { handleCors } from './lib/cors.js'
-import { createClient } from '@supabase/supabase-js'
-
-function adminSupabase() {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) return null
-  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
-}
+import { prisma } from './lib/prisma.js'
+import { requireSession } from './lib/auth.js'
 
 export default async function handler(req, res) {
   if (handleCors(req, res)) return
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const authHeader = req.headers.authorization || ''
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim()
-  if (!token) return res.status(401).json({ error: 'Unauthorized', code: 'NO_TOKEN' })
-
-  const sb = adminSupabase()
-  if (!sb) return res.status(500).json({ error: 'Not configured' })
-
-  let email
-  try {
-    const { data: { user }, error } = await sb.auth.getUser(token)
-    if (error || !user?.email) {
-      return res.status(401).json({ error: 'Session expired', code: 'SESSION_EXPIRED' })
-    }
-    email = user.email.toLowerCase()
-  } catch (e) {
-    return res.status(401).json({ error: 'Session expired', code: 'SESSION_EXPIRED' })
-  }
+  const auth = await requireSession(req)
+  if (!auth.ok) return res.status(auth.status).json({ error: auth.error, code: 'SESSION_EXPIRED' })
+  const email = auth.email
 
   try {
-    const { data: sessions, error } = await sb
-      .from('intake_sessions')
-      .select('id, session_token, dog_name, dog_profile, health_history, lifestyle, ai_assessment, status, created_at')
-      .filter('owner_details->>email', 'eq', email)
-      .in('status', ['complete', 'paid', 'in_progress'])
-      .order('created_at', { ascending: false })
+    const sessions = await prisma.intakeSession.findMany({
+      where: {
+        OR: [{ email }, { ownerDetails: { path: ['email'], equals: email } }],
+        status: { in: ['complete', 'paid', 'in_progress'] },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true, sessionToken: true, dogName: true,
+        dogProfile: true, healthHistory: true, lifestyle: true,
+        aiAssessment: true, status: true, createdAt: true,
+      },
+    })
 
-    if (error) throw error
-
-    const puppies = (sessions || [])
-      .filter((s) => s.dog_profile && Object.keys(s.dog_profile).length > 0)
+    const puppies = sessions
+      .filter((s) => s.dogProfile && Object.keys(s.dogProfile).length > 0)
       .map((s) => {
-        const p = s.dog_profile || {}
-        const h = s.health_history || {}
+        const p = s.dogProfile || {}
+        const h = s.healthHistory || {}
         const l = s.lifestyle || {}
         return {
           id: s.id,
-          name: p.name || s.dog_name || 'Unknown',
+          name: p.name || s.dogName || 'Unknown',
           breed: p.breed || null,
           dob: p.dob || null,
           sex: p.sex || null,
@@ -76,7 +60,7 @@ export default async function handler(req, res) {
             livestock_contact: l.livestock_contact,
           },
           status: s.status,
-          created_at: s.created_at,
+          created_at: s.createdAt,
         }
       })
 

@@ -208,3 +208,50 @@ END $$;
 
 -- --- RLS on EEK migrations table (Supabase linter 0013) ---
 ALTER TABLE IF EXISTS public._eek_migrations ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- Migration 004: visitor_messages — unified chat SSOT
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.visitor_messages (
+  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  visitor_id  TEXT        NOT NULL,
+  email       TEXT,
+  role        TEXT        NOT NULL CHECK (role IN ('user', 'assistant')),
+  content     TEXT        NOT NULL,
+  source      TEXT        NOT NULL CHECK (source IN ('contact', 'intake', 'support')),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_visitor_messages_visitor ON public.visitor_messages (visitor_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_visitor_messages_email ON public.visitor_messages (email, created_at) WHERE email IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_visitor_messages_created ON public.visitor_messages (created_at DESC);
+ALTER TABLE public.visitor_messages ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- Migration 005: announcements — splash modal
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.announcements (
+  id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  title      TEXT        NOT NULL,
+  body       TEXT        NOT NULL,
+  start_at   TIMESTAMPTZ NOT NULL,
+  end_at     TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_announcements_active ON public.announcements (start_at, end_at);
+ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='announcements' AND policyname='Public can read active announcements') THEN
+    CREATE POLICY "Public can read active announcements"
+      ON public.announcements FOR SELECT
+      USING (NOW() BETWEEN start_at AND end_at);
+  END IF;
+END $$;
+
+-- Seed: Cyclone Vaianu notice (11 Apr 11am NZT → 13 Apr 11am NZT)
+INSERT INTO public.announcements (title, body, start_at, end_at)
+SELECT
+  '⚠️ All Home Visits Suspended — Cyclone Vaianu',
+  E'Due to Civil Defence emergency declarations across the North Island, all scheduled VetPac home visits are temporarily suspended.\n\nCyclone Vaianu is currently making landfall, with states of emergency declared in Northland, Auckland, Waikato, Coromandel, and Bay of Plenty. Civil Defence is advising all residents to stay indoors and off the roads.\n\nThe safety of our customers, their families, and our team comes first.\n\nAll affected customers will be contacted directly to reschedule at no extra cost. We expect to resume normal operations once Civil Defence advisories are lifted.\n\nStay safe, and keep your puppies inside.',
+  '2026-04-10 23:00:00+00',
+  '2026-04-12 23:00:00+00'
+WHERE NOT EXISTS (SELECT 1 FROM public.announcements WHERE title LIKE '%Cyclone Vaianu%');

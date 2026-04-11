@@ -1,8 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-
-export function getServiceSupabase() {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) return null
-  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
-}
+// Backwards-compat re-export — API files that imported getServiceSupabase()
+// are being migrated to use `prisma` directly. This file keeps them working
+// during the transition, but new code should import from ./prisma.js directly.
+export { prisma as db } from './prisma.js'

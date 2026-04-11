@@ -8,7 +8,7 @@
  *   { ok: false, code: 'NOT_PAID' }       — session found but consult not paid
  */
 
-import { getServiceSupabase } from './lib/site-events-db.js'
+import { prisma } from './lib/prisma.js'
 import { normalizeEmail } from './lib/dashboard-access.js'
 import { handleCors } from './lib/cors.js'
 
@@ -112,33 +112,24 @@ export default async function handler(req, res) {
   const email = normalizeEmail(req.body?.email)
   if (!email) return res.status(400).json({ error: 'Valid email required' })
 
-  const sb = getServiceSupabase()
-  if (!sb) return res.status(503).json({ error: 'Storage not configured' })
-
   try {
-    // Find most recent session for this email
-    const { data, error } = await sb
-      .from('intake_sessions')
-      .select('session_token, status, dog_profile, owner_details, consult_paid')
-      .filter('owner_details->>email', 'eq', email)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    const data = await prisma.intakeSession.findFirst({
+      where: {
+        OR: [{ email }, { ownerDetails: { path: ['email'], equals: email } }],
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { sessionToken: true, status: true, dogProfile: true, ownerDetails: true, consultPaid: true },
+    })
 
-    if (error) throw error
+    if (!data) return res.status(200).json({ ok: false, code: 'NOT_FOUND' })
 
-    if (!data) {
-      return res.status(200).json({ ok: false, code: 'NOT_FOUND' })
-    }
-
-    const puppy_name = data.dog_profile?.name || null
+    const puppy_name = data.dogProfile?.name || null
     const base = SITE_URL.replace(/\/$/, '')
 
-    // Consult paid — send straight back to their plan
-    const isPaid = data.consult_paid === true || data.status === 'complete' || data.status === 'review_complete'
+    const isPaid = data.consultPaid === true || data.status === 'complete' || data.status === 'review_complete'
 
     if (isPaid) {
-      const resumeUrl = `${base}/plan?token=${encodeURIComponent(data.session_token)}&paid=1${puppy_name ? `&puppy=${encodeURIComponent(puppy_name)}` : ''}`
+      const resumeUrl = `${base}/plan?token=${encodeURIComponent(data.sessionToken)}&paid=1${puppy_name ? `&puppy=${encodeURIComponent(puppy_name)}` : ''}`
       await sendResumeEmail(email, puppy_name, resumeUrl)
       return res.status(200).json({ ok: true, paid: true })
     }

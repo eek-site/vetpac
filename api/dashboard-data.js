@@ -10,14 +10,8 @@
  *   - schedule (calculated dose dates based on DOB + order date)
  */
 import { handleCors } from './lib/cors.js'
-import { createClient } from '@supabase/supabase-js'
-
-function adminSupabase() {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) return null
-  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
-}
+import { prisma } from './lib/prisma.js'
+import { requireSession } from './lib/auth.js'
 
 function classifyLineItem(name) {
   const n = (name || '').toLowerCase()
@@ -94,30 +88,22 @@ export default async function handler(req, res) {
   if (handleCors(req, res)) return
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim()
-  if (!token) return res.status(401).json({ error: 'Unauthorized', code: 'NO_TOKEN' })
-
-  const sb = adminSupabase()
-  if (!sb) return res.status(500).json({ error: 'Not configured' })
-
-  let email
-  try {
-    const { data: { user }, error } = await sb.auth.getUser(token)
-    if (error || !user?.email) return res.status(401).json({ error: 'Session expired', code: 'SESSION_EXPIRED' })
-    email = user.email.toLowerCase()
-  } catch {
-    return res.status(401).json({ error: 'Session expired', code: 'SESSION_EXPIRED' })
-  }
+  const auth = await requireSession(req)
+  if (!auth.ok) return res.status(auth.status).json({ error: auth.error, code: 'SESSION_EXPIRED' })
+  const email = auth.email
 
   // ── 1. Load all intake sessions for this user ─────────────────────────────
   let sessions = []
   try {
-    const { data } = await sb
-      .from('intake_sessions')
-      .select('*')
-      .filter('owner_details->>email', 'eq', email)
-      .order('created_at', { ascending: false })
-    sessions = data || []
+    sessions = await prisma.intakeSession.findMany({
+      where: {
+        OR: [
+          { email },
+          { ownerDetails: { path: ['email'], equals: email } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+    })
   } catch (e) {
     console.error('[dashboard-data] intake_sessions error:', e.message)
   }
@@ -223,12 +209,12 @@ export default async function handler(req, res) {
   const dogs = []
 
   for (const s of sessions) {
-    const p = s.dog_profile || {}
-    const h = s.health_history || {}
+    const p = s.dogProfile || {}
+    const h = s.healthHistory || {}
     const l = s.lifestyle || {}
-    const o = s.owner_details || {}
+    const o = s.ownerDetails || {}
 
-    const dogName = p.name || s.dog_name || 'Unknown'
+    const dogName = p.name || s.dogName || 'Unknown'
 
     // Age label
     let ageLabel = null
@@ -239,8 +225,8 @@ export default async function handler(req, res) {
 
     // Find matched Stripe order — prefer the one stored on the intake session
     let stripeOrder = null
-    if (s.stripe_session_id && stripeOrderMap[s.stripe_session_id]) {
-      stripeOrder = parseStripeOrder(stripeOrderMap[s.stripe_session_id])
+    if (s.stripeSessionId && stripeOrderMap[s.stripeSessionId]) {
+      stripeOrder = parseStripeOrder(stripeOrderMap[s.stripeSessionId])
     } else {
       // Try to match by dog name
       const match = Object.values(stripeOrderMap).find(
@@ -250,16 +236,12 @@ export default async function handler(req, res) {
     }
 
     // Merge order data: prefer Stripe line items, fall back to stored vaccine_plan
-    const orderDate = stripeOrder?.orderDate || s.order_date
-    const deliveryMethod = stripeOrder?.deliveryMethod || s.delivery_method || null
-    // Use || so that warranty_selected=true from intake_session always wins
-    // even when the Stripe line items don't surface it (e.g. bossmode test payment)
-    const warrantySelected = stripeOrder?.hasWarranty || s.warranty_selected || false
-    const vaccines = stripeOrder?.vaccines?.length
-      ? stripeOrder.vaccines
-      : (s.vaccine_plan || [])
-    const orderStatus = stripeOrder?.orderStatus || s.order_status || null
-    const orderTotal = stripeOrder?.orderTotal || s.order_total || null
+    const orderDate = stripeOrder?.orderDate || s.orderDate
+    const deliveryMethod = stripeOrder?.deliveryMethod || s.deliveryMethod || null
+    const warrantySelected = stripeOrder?.hasWarranty || s.warrantySelected || false
+    const vaccines = stripeOrder?.vaccines?.length ? stripeOrder.vaccines : (s.vaccinePlan || [])
+    const orderStatus = stripeOrder?.orderStatus || s.orderStatus || null
+    const orderTotal = stripeOrder?.orderTotal || s.orderTotal || null
     const receiptUrl = stripeOrder?.receiptUrl || null
 
     // Dose schedule
@@ -267,9 +249,9 @@ export default async function handler(req, res) {
 
     dogs.push({
       id: s.id,
-      sessionToken: s.session_token,
+      sessionToken: s.sessionToken,
       consultationStatus: s.status,
-      consultationDate: formatDate(s.created_at),
+      consultationDate: formatDate(s.createdAt),
 
       profile: {
         name: dogName,

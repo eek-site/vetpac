@@ -10,7 +10,7 @@ import {
 import Nav from '../components/layout/Nav'
 import Footer from '../components/layout/Footer'
 import Button from '../components/ui/Button'
-import { supabase } from '../lib/supabase'
+import { getSession, clearSession, getAuthHeader } from '../lib/auth'
 
 const CACHE_KEY = 'vp_dashboard_data'
 
@@ -693,7 +693,7 @@ function AccountTab({ session, dogs, onSwitchToDogs }) {
         <p>Use the chat button to get in touch — we respond as quickly as possible.</p>
         <p className="text-xs text-slate-400">For veterinary emergencies, contact your local vet immediately.</p>
       </div>
-      <button onClick={() => supabase.auth.signOut()} className="w-full text-sm text-slate-500 hover:text-red-600 transition-colors py-2">Sign out</button>
+      <button onClick={() => { clearSession(); setSession(null) }} className="w-full text-sm text-slate-500 hover:text-red-600 transition-colors py-2">Sign out</button>
     </div>
   )
 }
@@ -703,31 +703,29 @@ function AccountTab({ session, dogs, onSwitchToDogs }) {
 const TABS = [{ id: 'dogs', label: 'My Dogs', icon: PawPrint }, { id: 'account', label: 'Account', icon: Settings }]
 
 export default function Dashboard() {
-  const [session, setSession] = useState(null)
-  const [authLoading, setAuthLoading] = useState(true)
+  const [session, setSession] = useState(() => getSession())
+  const [authLoading, setAuthLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('dogs')
   const [dogs, setDogs] = useState(() => {
-    // Load from sessionStorage immediately so there's no blank flash on return visits
     try { const c = sessionStorage.getItem(CACHE_KEY); return c ? JSON.parse(c) : [] } catch { return [] }
   })
   const [fetching, setFetching] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => { setSession(session); setAuthLoading(false) })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => { setSession(s); setAuthLoading(false) })
-    return () => subscription.unsubscribe()
+    const s = getSession()
+    setSession(s)
   }, [])
 
   useEffect(() => {
-    if (!session?.access_token) return
-    // Don't show spinner if we already have cached data — just silently refresh
+    const authHeader = getAuthHeader()
+    if (!authHeader) return
     if (!dogs.length) setFetching(true)
     fetch('/api/dashboard-data', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: authHeader },
       body: JSON.stringify({}),
     })
-      .then(r => { if (r.status === 401) { supabase.auth.signOut(); return null } return r.json() })
+      .then(r => { if (r.status === 401) { clearSession(); setSession(null); return null } return r.json() })
       .then(d => {
         if (d?.dogs) {
           setDogs(d.dogs)
@@ -736,7 +734,7 @@ export default function Dashboard() {
       })
       .catch(console.error)
       .finally(() => setFetching(false))
-  }, [session?.access_token])
+  }, [session?.token])
 
   const handleDogUpdate = useCallback((id, updated) => {
     setDogs(prev => {
@@ -769,7 +767,7 @@ export default function Dashboard() {
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8 space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">My dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">{session.user.email}</p>
+          <p className="text-sm text-slate-500 mt-1">{session.email}</p>
         </div>
         <div className="flex gap-1 bg-slate-100 rounded-xl p-1">
           {TABS.map(t => (

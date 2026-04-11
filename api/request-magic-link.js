@@ -1,18 +1,16 @@
 /**
- * POST { email } — if email is in dashboard_access, send Supabase magic link via branded HTML email (MS Graph).
- * If not registered: returns { ok: false, code: 'NOT_REGISTERED' } (no email sent).
+ * POST { email } — if email has dashboard access, generate a one-time magic link
+ * stored in Vercel KV (1-hour TTL) and email it via MS Graph.
  */
-
-import { createClient } from '@supabase/supabase-js'
+import { kv } from '@vercel/kv'
+import { handleCors } from './lib/cors.js'
 import { normalizeEmail, emailHasDashboardAccess } from './lib/dashboard-access.js'
 
 const SITE_URL = process.env.SITE_URL || 'https://vetpac.nz'
 
 async function getGraphToken() {
-  const tenantId = process.env.MS_TENANT_ID
-  const clientId = process.env.MS_CLIENT_ID
-  const clientSecret = process.env.MS_CLIENT_SECRET
-  const tokenRes = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
+  const { MS_TENANT_ID: tenantId, MS_CLIENT_ID: clientId, MS_CLIENT_SECRET: clientSecret } = process.env
+  const res = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -22,9 +20,9 @@ async function getGraphToken() {
       scope: 'https://graph.microsoft.com/.default',
     }),
   })
-  const tokenData = await tokenRes.json()
-  if (!tokenRes.ok) throw new Error(tokenData.error_description || 'Graph token failed')
-  return tokenData.access_token
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error_description || 'Graph token failed')
+  return data.access_token
 }
 
 async function sendMagicLinkEmail(toEmail, actionLink) {
@@ -66,8 +64,6 @@ async function sendMagicLinkEmail(toEmail, actionLink) {
   }
 }
 
-import { handleCors } from './lib/cors.js'
-
 export default async function handler(req, res) {
   if (handleCors(req, res)) return
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -76,37 +72,19 @@ export default async function handler(req, res) {
   if (!email) return res.status(400).json({ error: 'Valid email required' })
 
   const allowed = await emailHasDashboardAccess(email)
-  if (!allowed) {
-    return res.status(200).json({ ok: false, code: 'NOT_REGISTERED' })
-  }
+  if (!allowed) return res.status(200).json({ ok: false, code: 'NOT_REGISTERED' })
 
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !serviceKey) {
-    return res.status(500).json({ error: 'Auth not configured' })
-  }
+  // Generate a cryptographically random one-time token
+  const otp = crypto.randomUUID()
+  const key = `magic:${otp}`
 
-  const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } })
+  // Store in KV with 1-hour TTL
+  await kv.set(key, email, { ex: 3600 })
+
+  const base = SITE_URL.replace(/\/$/, '')
+  const actionLink = `${base}/auth/callback?token=${encodeURIComponent(otp)}`
 
   try {
-    const { data, error } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email,
-      options: {
-        redirectTo: `${SITE_URL.replace(/\/$/, '')}/auth/callback`,
-      },
-    })
-
-    if (error) throw error
-
-    // Use token_hash directly in our own callback URL — bypasses Supabase "Site URL" config
-    const tokenHash = data?.properties?.hashed_token
-    const actionLink = tokenHash
-      ? `${SITE_URL.replace(/\/$/, '')}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink`
-      : data?.properties?.action_link   // fallback to Supabase action link
-
-    if (!actionLink) throw new Error('No action link returned')
-
     await sendMagicLinkEmail(email, actionLink)
     return res.status(200).json({ ok: true })
   } catch (e) {

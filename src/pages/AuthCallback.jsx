@@ -1,16 +1,10 @@
 /**
- * /auth/callback — exchanges a Supabase magic-link token hash for a session,
- * then redirects to /dashboard. This bypasses Supabase's "Site URL" setting
- * so the Supabase dashboard doesn't need to be reconfigured.
- *
- * URL params accepted:
- *   ?token_hash=...&type=magiclink   (our custom flow via /api/request-magic-link)
- *   #access_token=...                (legacy Supabase fragment redirect)
+ * /auth/callback — exchanges the one-time OTP token in the URL for a JWT session.
  */
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, AlertCircle } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { setSession } from '../lib/auth'
 
 export default function AuthCallback() {
   const [searchParams] = useSearchParams()
@@ -19,28 +13,21 @@ export default function AuthCallback() {
 
   useEffect(() => {
     async function handle() {
-      // 1. Hash-fragment tokens (#access_token=...) — set by Supabase on redirect
-      const hash = window.location.hash
-      if (hash.includes('access_token=')) {
-        // Supabase client picks this up automatically via detectSessionInUrl
-        // Wait briefly for supabase.auth to process, then redirect
-        await new Promise(r => setTimeout(r, 800))
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) { navigate('/dashboard', { replace: true }); return }
-      }
+      const otp = searchParams.get('token')
+      if (!otp) { navigate('/dashboard', { replace: true }); return }
 
-      // 2. token_hash query param — our custom flow
-      const tokenHash = searchParams.get('token_hash')
-      const type = searchParams.get('type') || 'magiclink'
-      if (tokenHash) {
-        const { error: err } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
-        if (err) { setError(err.message); return }
+      try {
+        const res = await fetch(`/api/auth-callback?token=${encodeURIComponent(otp)}`)
+        const data = await res.json()
+        if (!res.ok || !data.ok) {
+          setError(data.error || 'Link expired or already used.')
+          return
+        }
+        setSession(data.token, data.email)
         navigate('/dashboard', { replace: true })
-        return
+      } catch {
+        setError('Something went wrong. Please try again.')
       }
-
-      // 3. Nothing to process — go to dashboard (Supabase may have already set session)
-      navigate('/dashboard', { replace: true })
     }
     handle()
     // eslint-disable-next-line react-hooks/exhaustive-deps

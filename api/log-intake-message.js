@@ -1,19 +1,12 @@
 /**
- * Stores each intake chat turn (user + assistant) in Supabase.
- * Requires SUPABASE_SERVICE_ROLE_KEY on the server.
+ * Stores each intake chat turn in the database.
  */
-
-import { getServiceSupabase } from './lib/site-events-db.js'
+import { prisma } from './lib/prisma.js'
 import { handleCors } from './lib/cors.js'
 
 export default async function handler(req, res) {
   if (handleCors(req, res)) return
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-
-  const sb = getServiceSupabase()
-  if (!sb) {
-    return res.status(503).json({ error: 'Server storage not configured (missing SUPABASE_SERVICE_ROLE_KEY)' })
-  }
 
   const { session_id, role, content, turn_index } = req.body || {}
   if (!session_id || typeof session_id !== 'string' || session_id.length > 200) {
@@ -30,22 +23,21 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid turn_index' })
   }
 
-  const safeContent = content.slice(0, 50_000)
-
-  const { error } = await sb.from('intake_chat_messages').insert({
-    session_id,
-    role,
-    turn_index: Math.floor(ti),
-    content: safeContent,
-  })
-
-  if (error) {
-    if (error.code === '23505') {
+  try {
+    await prisma.intakeChatMessage.create({
+      data: {
+        sessionId: session_id,
+        role,
+        content: content.slice(0, 50_000),
+        turnIndex: Math.floor(ti),
+      },
+    })
+    return res.status(200).json({ ok: true })
+  } catch (e) {
+    if (e.code === 'P2002') {
       return res.status(200).json({ ok: true, duplicate: true })
     }
-    console.error('[log-intake-message]', error.message)
+    console.error('[log-intake-message]', e.message)
     return res.status(500).json({ error: 'Insert failed' })
   }
-
-  return res.status(200).json({ ok: true })
 }
