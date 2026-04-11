@@ -106,12 +106,21 @@ export default function WarrantyTerms() {
         <Section title="5. How to make a claim">
           <ol className="list-decimal pl-5 space-y-2">
             <li>Obtain a detailed invoice and clinical notes from your veterinarian following treatment.</li>
-            <li>Submit your claim within 90 days of treatment via the chat button on your dashboard, with your invoice, clinical notes, and warranty reference number.</li>
+            <li>Submit your claim within 90 days of treatment via the chat button below, with your invoice, clinical notes, and warranty reference number.</li>
             <li>VetPac will assess your claim within 10 business days of receiving all required documentation.</li>
             <li>Approved claim payments will be made directly to your nominated bank account within 5 business days of approval.</li>
             <li>If your claim is declined, you will receive a written explanation with the reasons for the decision.</li>
           </ol>
           <p className="mt-3">VetPac reserves the right to request additional veterinary records, second opinions, or independent assessments to evaluate a claim.</p>
+
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))}
+            className="mt-5 w-full flex items-center justify-center gap-2 bg-[#1a3c2e] hover:bg-[#2d5a42] text-white font-semibold py-4 px-6 rounded-2xl transition-colors text-base shadow-sm"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            File a warranty claim
+          </button>
+          <p className="text-xs text-center text-textMuted mt-2">Our team reviews every claim personally</p>
         </Section>
 
         <Section title="6. Plan fees and billing">
