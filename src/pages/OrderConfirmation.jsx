@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { CheckCircle, Package, Clock, FileText, Calendar, ArrowRight, Bell } from 'lucide-react'
+import { CheckCircle, Package, Clock, FileText, Calendar, ArrowRight } from 'lucide-react'
 import Button from '../components/ui/Button'
 import { useIntakeStore } from '../store/intakeStore'
 
@@ -122,9 +122,9 @@ function SuccessAnimation() {
 }
 
 const timeline = [
-  { icon: Clock, label: 'Vet review', desc: 'A NZ-registered vet reviews your intake (within 4 hours)', status: 'in_progress' },
+  { icon: Clock, label: 'Vet review', desc: 'A NZ-registered vet reviews your intake', status: 'in_progress' },
   { icon: FileText, label: 'VOI issued', desc: 'Your Veterinary Operating Instruction is generated', status: 'pending' },
-  { icon: Package, label: 'Vaccines dispatched', desc: 'Cold-chain courier picks up your order (within 24 hours)', status: 'pending' },
+  { icon: Package, label: 'Vaccines dispatched', desc: 'Cold-chain courier picks up your order', status: 'pending' },
   { icon: CheckCircle, label: 'Delivered', desc: '1–3 business days nationwide', status: 'pending' },
 ]
 
@@ -233,16 +233,14 @@ export default function OrderConfirmation() {
         <div className="bg-primary rounded-card-lg p-8 text-white mb-6">
           <h2 className="font-display font-semibold text-xl mb-3">Administration guide</h2>
           <p className="text-primary-light text-sm mb-5">
-            When your vaccines arrive, follow our step-by-step video guide. Our team is available 24/7 on WhatsApp if you have any questions.
+            A step-by-step guide is included in your vaccine kit. Our team is available 24/7 on WhatsApp for any questions before, during, or after each dose.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button variant="accent">
-              View Administration Guide
-            </Button>
-            <Button variant="ghostWhite">
-              <Bell className="w-4 h-4" />
-              Add dose reminders
-            </Button>
+            <a href="https://wa.me/6421000000" target="_blank" rel="noopener noreferrer">
+              <Button variant="accent">
+                Message us on WhatsApp
+              </Button>
+            </a>
           </div>
         </div>
 

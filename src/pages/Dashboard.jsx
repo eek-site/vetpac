@@ -336,7 +336,7 @@ export default function Dashboard() {
                   <Button>Start a health plan <ArrowRight className="w-4 h-4" /></Button>
                 </Link>
               ) : (
-                <p className="text-xs text-textMuted">Your vet review is in progress. Records typically appear within 4 hours.</p>
+                <p className="text-xs text-textMuted">Your vet review is in progress. You'll receive an email once it's complete.</p>
               )
             }
           />
