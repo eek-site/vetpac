@@ -275,29 +275,41 @@ function ProgressTracker({ dog }) {
 function WhatToExpect({ deliveryMethod }) {
   if (!deliveryMethod) return null
   const isAssist = deliveryMethod === 'vetpac_assist'
+
   const steps = isAssist ? [
-    "We'll contact you to schedule your first appointment at a time that suits you.",
-    'Your vaccinator arrives with everything needed — vaccines, cold-chain kit, and paperwork.',
-    'Each dose takes around 15–20 minutes. Your dog stays comfortable at home.',
-    "We'll schedule each follow-up and send a reminder before every appointment.",
-    'You receive a signed vaccination record after each dose.',
+    "We'll contact you to schedule your first appointment — evenings and weekends available.",
+    'Your VetPac trainer arrives with everything: vaccines, cold-chain kit, syringes, and all paperwork. Nothing for you to source.',
+    'Your trainer administers each dose and stays for the full 30-minute observation window — included at no extra charge.',
+    "We'll book each follow-up and send a reminder before every appointment. You don't need to chase anything.",
+    'You receive a signed, official vaccination certificate after each dose. We keep a copy too.',
   ] : [
-    'Your vaccines arrive in a certified cold-chain pack with a temperature strip — intact strip means safe to use.',
-    'Store in the fridge immediately at 2–8°C. Do not freeze.',
-    'Read the included VetPac Administration Guide carefully before the first dose.',
-    'Administer each dose on the schedule shown below. The guide walks you through every step.',
-    'Any concerns before, during, or after a dose — use the chat button.',
+    'Your vaccines are hand-delivered by a VetPac trainer in a certified cold-chain pack with a temperature strip — intact strip means safe to use.',
+    'Store in the fridge at 2–8°C immediately. Do not freeze.',
+    'Your trainer walks you through the full administration process — included free with every self-administer order.',
+    'Administer each dose on the schedule below. The included VetPac Guide covers every step in plain language.',
+    'Any questions before, during, or after a dose — chat to us. We're available around the clock.',
   ]
+
+  const freebies = isAssist ? [
+    '30-min post-dose observation — included',
+    'Official vaccination certificate — included',
+    'Follow-up scheduling & reminders — included',
+  ] : [
+    'Trainer delivery & orientation session — included',
+    'VetPac Administration Guide — included',
+    'Around-the-clock chat support — included',
+  ]
+
   return (
     <Section title="What to expect" icon={Package} defaultOpen>
       <div className="flex items-start gap-2.5 mb-3">
         {isAssist ? <Home size={15} className="text-teal-600 mt-0.5 shrink-0" /> : <Package size={15} className="text-slate-500 mt-0.5 shrink-0" />}
         <div>
           <p className="text-sm font-medium text-slate-700">{isAssist ? 'VetPac Assist — In-home vaccinator' : 'Self-administer at home'}</p>
-          <p className="text-xs text-slate-500 mt-0.5">{isAssist ? 'A trained VetPac assistant comes to your home for each dose.' : 'Your vaccines are shipped in a temperature-certified cold-chain kit.'}</p>
+          <p className="text-xs text-slate-500 mt-0.5">{isAssist ? 'A certified VetPac trainer comes to your home and administers every dose.' : 'Vaccines delivered by a VetPac trainer — you administer each dose with full guidance.'}</p>
         </div>
       </div>
-      <ol className="space-y-2">
+      <ol className="space-y-2 mb-4">
         {steps.map((s, i) => (
           <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
             <span className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 ${isAssist ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-600'}`}>{i + 1}</span>
@@ -305,6 +317,12 @@ function WhatToExpect({ deliveryMethod }) {
           </li>
         ))}
       </ol>
+      <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 space-y-1.5">
+        <p className="text-xs font-semibold text-teal-800">Included at no extra charge</p>
+        {freebies.map((f, i) => (
+          <p key={i} className="text-xs text-teal-700 flex items-center gap-1.5"><CheckCircle size={11} className="shrink-0" />{f}</p>
+        ))}
+      </div>
     </Section>
   )
 }
@@ -510,19 +528,26 @@ function DogCard({ dog: initial, sessionToken, accessToken, onUpdate }) {
                 <BadgeCheck size={16} className="text-teal-600" />
                 <span className="text-sm font-semibold text-teal-700">VetPac Programme Warranty active</span>
               </div>
-              <div className="space-y-2 text-sm text-slate-700">
+              <div className="space-y-1.5 text-sm text-slate-700">
                 <p className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />Covers vaccine failure or adverse reactions</p>
                 <p className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />Covers illness contracted during the vaccination window</p>
-                <p className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />Valid for the duration of your puppy's programme</p>
+                <p className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />Valid for the full duration of your puppy's programme</p>
+                <p className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />No excess. No vet visit required to make a claim.</p>
               </div>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-                To make a claim, use the chat button with your order reference and a summary of the issue.
-              </div>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('vetpac:open-chat'))}
+                className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium py-2.5 px-4 rounded-xl transition-colors"
+              >
+                <Shield size={14} /> File a claim
+              </button>
+              <Link to="/warranty-terms" className="block text-center text-xs text-slate-400 hover:text-teal-700 transition-colors underline underline-offset-2">
+                View full warranty terms
+              </Link>
             </div>
           ) : (
             <div className="space-y-2">
               <p className="text-sm text-slate-500">No warranty on this order.</p>
-              <p className="text-xs text-slate-400">Warranty covers vaccine failure, adverse reactions, and illness during the vaccination window.</p>
+              <p className="text-xs text-slate-400">Covers vaccine failure, adverse reactions, and illness during the vaccination window. No excess. No vet visit required to claim.</p>
               <Link to="/plan"><Button size="sm" variant="outline">Add warranty <ArrowRight size={14} /></Button></Link>
             </div>
           )}

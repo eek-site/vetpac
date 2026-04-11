@@ -8,6 +8,13 @@ import { MessageCircle, X, Send, Loader2, AlertTriangle, CheckCircle } from 'luc
  */
 export default function SupportChat() {
   const [open, setOpen] = useState(false)
+
+  // Allow any component to open the chat via: window.dispatchEvent(new CustomEvent('vetpac:open-chat'))
+  useEffect(() => {
+    const handler = () => setOpen(true)
+    window.addEventListener('vetpac:open-chat', handler)
+    return () => window.removeEventListener('vetpac:open-chat', handler)
+  }, [])
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')

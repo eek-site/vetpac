@@ -15,6 +15,7 @@ import LegalCompliance from './pages/LegalCompliance'
 import ContactPage from './pages/ContactPage'
 import Dashboard from './pages/Dashboard'
 import AuthCallback from './pages/AuthCallback'
+import WarrantyTerms from './pages/WarrantyTerms'
 import VetPortal from './pages/VetPortal'
 import NotFound from './pages/NotFound'
 import AdminConsole from './pages/AdminConsole'
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/warranty-terms" element={<WarrantyTerms />} />
           <Route path="/admin" element={<AdminConsole />} />
           <Route path="/vet-portal" element={<VetPortal />} />
           <Route path="*" element={<NotFound />} />
