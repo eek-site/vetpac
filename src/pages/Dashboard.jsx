@@ -2,529 +2,385 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import SupportChat from '../components/SupportChat'
 import {
-  PawPrint, MessageSquare, Syringe, Shield, Settings, ChevronRight, Plus,
-  CheckCircle, Loader2, Mail, ArrowRight, AlertCircle, ExternalLink,
-  Calendar, MapPin, Tag, Home, Truck, User, Activity,
+  PawPrint, MessageSquare, Syringe, Shield, Settings, ChevronDown, ChevronRight,
+  CheckCircle, Clock, AlertCircle, Loader2, Mail, ExternalLink,
+  MapPin, Home, Truck, User, Activity, Heart, Leaf, CalendarDays,
+  Phone, Package, Star, BadgeCheck, ArrowRight,
 } from 'lucide-react'
 import Nav from '../components/layout/Nav'
 import Footer from '../components/layout/Footer'
 import Button from '../components/ui/Button'
-import Card from '../components/ui/Card'
 import { supabase } from '../lib/supabase'
 
-const tabs = [
-  { id: 'consultation', label: 'Consultation', icon: MessageSquare },
-  { id: 'vaccination', label: 'Vaccinations', icon: Syringe },
-  { id: 'warranty', label: 'Warranty', icon: Shield },
-  { id: 'account', label: 'Account', icon: Settings },
-]
+// ─── Tiny helpers ─────────────────────────────────────────────────────────────
 
-// ─── Login gate ───────────────────────────────────────────────────────────────
-
-function LoginGate() {
-  const [email, setEmail] = useState('')
-  const [status, setStatus] = useState('idle')
-
-  const submit = async (e) => {
-    e.preventDefault()
-    const t = email.trim()
-    if (!t) return
-    setStatus('sending')
-    try {
-      const r = await fetch('/api/request-magic-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: t }),
-      })
-      const j = await r.json()
-      if (j.code === 'NOT_REGISTERED') setStatus('not_registered')
-      else if (j.ok) setStatus('sent')
-      else setStatus('error')
-    } catch {
-      setStatus('error')
-    }
+function Pill({ children, color = 'green' }) {
+  const colors = {
+    green: 'bg-green-100 text-green-800',
+    amber: 'bg-amber-100 text-amber-800',
+    red: 'bg-red-100 text-red-800',
+    blue: 'bg-blue-100 text-blue-800',
+    slate: 'bg-slate-100 text-slate-700',
   }
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colors[color] || colors.slate}`}>
+      {children}
+    </span>
+  )
+}
+
+function Section({ title, icon: Icon, children, defaultOpen = true }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="border border-slate-200 rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+      >
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          {Icon && <Icon size={15} className="text-slate-400" />}
+          {title}
+        </div>
+        {open ? <ChevronDown size={14} className="text-slate-400" /> : <ChevronRight size={14} className="text-slate-400" />}
+      </button>
+      {open && <div className="px-4 py-4 bg-white space-y-3">{children}</div>}
+    </div>
+  )
+}
+
+function Row({ label, value }) {
+  if (value === null || value === undefined || value === '' || value === 'unknown') return null
+  return (
+    <div className="flex justify-between items-start gap-4 text-sm">
+      <span className="text-slate-500 shrink-0">{label}</span>
+      <span className="text-slate-800 font-medium text-right">{value}</span>
+    </div>
+  )
+}
+
+function FlagRow({ label, value, desc }) {
+  if (!value || value === 'no') return null
+  return (
+    <div className="text-sm space-y-0.5">
+      <div className="flex items-center gap-1.5 text-amber-700 font-medium">
+        <AlertCircle size={13} /> {label}
+      </div>
+      {desc && <p className="text-slate-600 pl-5">{desc}</p>}
+    </div>
+  )
+}
+
+function StatusDot({ status }) {
+  if (status === 'paid' || status === 'complete') return <span className="inline-flex items-center gap-1 text-green-700 text-xs font-medium"><CheckCircle size={12} /> Paid</span>
+  if (status === 'pending') return <span className="inline-flex items-center gap-1 text-amber-700 text-xs font-medium"><Clock size={12} /> Pending</span>
+  return null
+}
+
+function ScheduleDot({ status }) {
+  if (status === 'due') return <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0 mt-1.5" />
+  if (status === 'upcoming') return <span className="w-2.5 h-2.5 rounded-full bg-blue-400 shrink-0 mt-1.5" />
+  return <span className="w-2.5 h-2.5 rounded-full bg-slate-300 shrink-0 mt-1.5" />
+}
+
+// ─── Dog card — complete journey view ─────────────────────────────────────────
+
+function DogCard({ dog }) {
+  const p = dog.profile
+  const o = dog.owner
+  const h = dog.health
+  const l = dog.lifestyle
+  const order = dog.order
+  const schedule = dog.schedule || []
+
+  const hasHealthFlags = [
+    h.known_allergies, h.current_medications, h.health_conditions,
+    h.prior_vaccine_reaction, h.currently_ill, h.pregnant_or_nursing,
+  ].some((v) => v && v !== 'no')
+
+  const hasLifestyleRisk = [l.dog_parks_boarding, l.waterway_access, l.livestock_contact].some((v) => v && v !== 'no')
+
+  const deliveryLabel = order?.deliveryMethod === 'vetpac_assist'
+    ? 'VetPac Assist — in-home vaccinator'
+    : order?.deliveryMethod === 'self_administer'
+    ? 'Self-administer at home'
+    : null
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col">
-      <Nav />
-      <div className="flex-1 flex items-center justify-center px-4 py-16 pt-28">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="font-display font-bold text-2xl sm:text-3xl text-textPrimary mb-2">Your dashboard</h1>
-            <p className="text-textSecondary text-sm">Enter the email you used for your VetPac order. We will send you a secure sign-in link.</p>
+    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#1a3c2e] to-[#2d5a42] px-5 py-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+          <PawPrint size={20} className="text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-white font-bold text-lg leading-tight">{p.name}</h2>
+          <div className="flex items-center gap-2 flex-wrap">
+            {p.breed && <span className="text-white/70 text-sm">{p.breed}</span>}
+            {p.ageLabel && <span className="text-white/60 text-xs">· {p.ageLabel}</span>}
           </div>
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          {order?.status && <StatusDot status={order.status} />}
+          {!order && dog.consultationStatus && (
+            <Pill color="blue">{dog.consultationStatus === 'complete' ? 'Consult complete' : 'In progress'}</Pill>
+          )}
+        </div>
+      </div>
 
-          {status === 'sent' && (
-            <div className="rounded-card-lg border border-success/30 bg-success/5 p-6 text-center mb-6">
-              <CheckCircle className="w-10 h-10 text-success mx-auto mb-3" />
-              <p className="font-semibold text-textPrimary">Check your inbox</p>
-              <p className="text-sm text-textSecondary mt-2">We sent a sign-in link to <span className="font-mono text-textPrimary">{email}</span>. Tap the button in that email to open your dashboard.</p>
+      <div className="p-4 space-y-3">
+
+        {/* Dog profile */}
+        <Section title="Dog profile" icon={PawPrint}>
+          <Row label="Breed" value={p.breed} />
+          <Row label="Sex" value={p.sex} />
+          <Row label="Date of birth" value={p.dob ? new Date(p.dob).toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', year: 'numeric' }) : null} />
+          <Row label="Weight" value={p.weight_kg ? `${p.weight_kg} kg` : null} />
+          <Row label="Colour" value={p.colour} />
+          <Row label="Desexed" value={p.desexed} />
+          <Row label="Microchip" value={p.microchip_no} />
+          {p.vaccinated_before === 'yes' && p.prior_vaccines?.length > 0 && (
+            <Row label="Previous vaccines" value={p.prior_vaccines.join(', ')} />
+          )}
+        </Section>
+
+        {/* Owner details */}
+        <Section title="Owner details" icon={User}>
+          <Row label="Name" value={o.full_name} />
+          <Row label="Email" value={o.email} />
+          <Row label="Phone" value={o.mobile} />
+          {o.address_line1 && (
+            <div className="text-sm">
+              <span className="text-slate-500 block mb-0.5">Address</span>
+              <span className="text-slate-800">
+                {[o.address_line1, o.address_line2, o.city, o.postcode, o.region].filter(Boolean).join(', ')}
+              </span>
             </div>
           )}
+        </Section>
 
-          {status === 'not_registered' && (
-            <div className="rounded-card-lg border border-border bg-white p-6 mb-6">
-              <p className="font-semibold text-textPrimary text-center mb-2">We could not find an account for that email</p>
-              <p className="text-sm text-textSecondary text-center mb-5">Start a health plan first — then you can sign in here after you have completed an order or consultation.</p>
-              <Link to="/intake" className="block">
-                <Button fullWidth size="lg">
-                  Start a health plan <ArrowRight className="w-5 h-5" />
-                </Button>
+        {/* Health */}
+        <Section title="Health assessment" icon={Heart} defaultOpen={hasHealthFlags}>
+          <Row label="Activity level" value={h.activity_level} />
+          {hasHealthFlags ? (
+            <div className="space-y-2 pt-1">
+              <FlagRow label="Currently ill" value={h.currently_ill} desc={h.illness_description} />
+              <FlagRow label="Known allergies" value={h.known_allergies} desc={h.allergy_description} />
+              <FlagRow label="Current medications" value={h.current_medications} desc={h.medication_list} />
+              <FlagRow label="Health conditions" value={h.health_conditions} desc={h.condition_description} />
+              <FlagRow label="Prior vaccine reaction" value={h.prior_vaccine_reaction} desc={h.reaction_description} />
+              <FlagRow label="Pregnant / nursing" value={h.pregnant_or_nursing} />
+            </div>
+          ) : (
+            <p className="text-sm text-green-700 font-medium flex items-center gap-1.5"><CheckCircle size={13} /> No health concerns noted</p>
+          )}
+        </Section>
+
+        {/* Lifestyle */}
+        <Section title="Lifestyle & environment" icon={Leaf} defaultOpen={hasLifestyleRisk}>
+          <Row label="Region" value={l.region} />
+          <Row label="Living environment" value={l.living_environment} />
+          {hasLifestyleRisk ? (
+            <div className="space-y-1 pt-1">
+              <FlagRow label="Dog parks / boarding" value={l.dog_parks_boarding} />
+              <FlagRow label="Waterway access" value={l.waterway_access} />
+              <FlagRow label="Livestock contact" value={l.livestock_contact} />
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500 flex items-center gap-1.5"><CheckCircle size={13} className="text-green-600" /> Low environmental risk</p>
+          )}
+        </Section>
+
+        {/* Vaccination order */}
+        {order ? (
+          <Section title="Vaccination order" icon={Syringe}>
+            <div className="flex items-center justify-between">
+              <StatusDot status={order.status} />
+              <span className="text-sm text-slate-500">{order.date}</span>
+            </div>
+            {deliveryLabel && (
+              <div className="flex items-center gap-2 text-sm text-slate-700 font-medium pt-1">
+                {order.deliveryMethod === 'vetpac_assist' ? <Home size={14} className="text-teal-600" /> : <Package size={14} className="text-slate-500" />}
+                {deliveryLabel}
+              </div>
+            )}
+            <div className="space-y-1 pt-2">
+              {order.vaccines.map((v, i) => (
+                <div key={i} className="flex justify-between text-sm text-slate-700">
+                  <span>{v.name}</span>
+                  <span className="text-slate-500">${Number(v.price).toFixed(2)}</span>
+                </div>
+              ))}
+              {order.hasFreight && (
+                <div className="flex justify-between text-sm text-slate-600">
+                  <span className="flex items-center gap-1"><Truck size={12} />Cold-chain freight</span>
+                  <span>${order.freightTotal.toFixed(2)}</span>
+                </div>
+              )}
+              {order.hasAssist && (
+                <div className="flex justify-between text-sm text-slate-600">
+                  <span className="flex items-center gap-1"><Home size={12} />VetPac Assist</span>
+                  <span>${order.assistTotal.toFixed(2)}</span>
+                </div>
+              )}
+              {order.warrantySelected && (
+                <div className="flex justify-between text-sm text-teal-700 font-medium">
+                  <span className="flex items-center gap-1"><Shield size={12} />Warranty</span>
+                  <span>${order.warrantyTotal.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm font-bold text-slate-800 pt-2 border-t border-slate-100">
+                <span>Total paid</span>
+                <span>${Number(order.total).toFixed(2)} NZD</span>
+              </div>
+            </div>
+            {order.receiptUrl && (
+              <a href={order.receiptUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-teal-700 hover:underline pt-1">
+                <ExternalLink size={13} /> View receipt
+              </a>
+            )}
+          </Section>
+        ) : (
+          <Section title="Vaccination order" icon={Syringe} defaultOpen={false}>
+            <p className="text-sm text-slate-500">No order placed yet.</p>
+            <Link to="/plan">
+              <Button size="sm" className="mt-2">View my plan <ArrowRight size={14} /></Button>
+            </Link>
+          </Section>
+        )}
+
+        {/* Dose schedule */}
+        {schedule.length > 0 && (
+          <Section title="Dose schedule" icon={CalendarDays}>
+            <div className="space-y-3">
+              {schedule.map((dose, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <ScheduleDot status={dose.status} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-slate-800">{dose.label}</span>
+                      <span className="text-xs text-slate-500 shrink-0">{dose.date}</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">{dose.desc}</p>
+                    {dose.status === 'due' && (
+                      <Pill color="amber">Due now</Pill>
+                    )}
+                    {dose.status === 'upcoming' && (
+                      <Pill color="blue">Within 30 days</Pill>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-400 pt-2 border-t border-slate-100 mt-1">
+              Schedule is indicative based on NZ vaccination protocols and your dog's date of birth.
+              Always consult the enclosed VetPac guide for timing.
+            </p>
+          </Section>
+        )}
+
+        {/* Warranty */}
+        <Section title="Warranty" icon={Shield} defaultOpen={order?.warrantySelected}>
+          {order?.warrantySelected ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <BadgeCheck size={16} className="text-teal-600" />
+                <span className="text-sm font-semibold text-teal-700">VetPac Programme Warranty active</span>
+              </div>
+              <div className="space-y-2 text-sm text-slate-700">
+                <p className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />Covers vaccine failure or adverse reactions</p>
+                <p className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />Covers illness contracted during the vaccination window</p>
+                <p className="flex items-start gap-2"><CheckCircle size={13} className="text-teal-500 mt-0.5 shrink-0" />Valid for the duration of your puppy's programme</p>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
+                To make a claim email <strong>woof@vetpac.nz</strong> with your order reference and a summary of the issue.
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-500">No warranty on this order.</p>
+              <p className="text-xs text-slate-400">Warranty can be added when placing a new order — it covers vaccine failure, adverse reactions, and illness during the vaccination window.</p>
+              <Link to="/plan">
+                <Button size="sm" variant="outline">Add warranty <ArrowRight size={14} /></Button>
               </Link>
             </div>
           )}
+        </Section>
 
-          {status !== 'sent' && (
-            <form onSubmit={submit} className="bg-white rounded-card-lg shadow-card border border-border p-6 sm:p-8">
-              <label htmlFor="dash-email" className="block text-sm font-semibold text-textPrimary mb-2">Email address</label>
-              <div className="relative mb-4">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted" />
-                <input
-                  id="dash-email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full pl-11 pr-4 py-3 border border-border rounded-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                  disabled={status === 'sending'}
-                  required
-                />
-              </div>
-              {status === 'error' && (
-                <p className="text-sm text-red-600 mb-3">Something went wrong. Please try again in a moment.</p>
-              )}
-              <Button type="submit" fullWidth size="lg" loading={status === 'sending'} disabled={status === 'sending'}>
-                Email me a sign-in link
-              </Button>
-              <p className="text-xs text-textMuted text-center mt-4">No password — one tap from your inbox.</p>
-            </form>
-          )}
+      </div>
+    </div>
+  )
+}
 
-          {status === 'sent' && (
-            <button type="button" onClick={() => { setStatus('idle'); setEmail('') }} className="w-full text-sm text-primary font-semibold mt-4 hover:underline">
-              Use a different email
-            </button>
-          )}
+// ─── Account tab ──────────────────────────────────────────────────────────────
+
+function AccountTab({ session, dogs }) {
+  const email = session?.user?.email
+  const orderedDogs = dogs.filter((d) => d.order?.status === 'paid')
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
+        <h3 className="font-semibold text-slate-800 text-sm">Your account</h3>
+        <div className="flex items-center gap-3 text-sm text-slate-700">
+          <Mail size={16} className="text-slate-400 shrink-0" />
+          <span>{email}</span>
+        </div>
+        <div className="grid grid-cols-3 gap-3 pt-2">
+          <div className="text-center p-3 bg-slate-50 rounded-xl">
+            <p className="text-2xl font-bold text-slate-800">{dogs.length}</p>
+            <p className="text-xs text-slate-500 mt-0.5">Dog{dogs.length !== 1 ? 's' : ''} registered</p>
+          </div>
+          <div className="text-center p-3 bg-slate-50 rounded-xl">
+            <p className="text-2xl font-bold text-slate-800">{orderedDogs.length}</p>
+            <p className="text-xs text-slate-500 mt-0.5">Order{orderedDogs.length !== 1 ? 's' : ''} placed</p>
+          </div>
+          <div className="text-center p-3 bg-slate-50 rounded-xl">
+            <p className="text-2xl font-bold text-slate-800">{dogs.filter((d) => d.order?.warrantySelected).length}</p>
+            <p className="text-xs text-slate-500 mt-0.5">Warrant{dogs.filter((d) => d.order?.warrantySelected).length !== 1 ? 'ies' : 'y'} active</p>
+          </div>
         </div>
       </div>
-      <Footer />
-    </div>
-  )
-}
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function cap(s) {
-  if (!s) return null
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
-
-function Pill({ children, variant = 'neutral' }) {
-  const cls = {
-    neutral: 'bg-bg border border-border text-textSecondary',
-    primary: 'bg-primary/10 text-primary',
-    green:   'bg-green-50 text-green-700 border border-green-200',
-    amber:   'bg-amber-50 text-amber-700 border border-amber-200',
-    red:     'bg-red-50 text-red-700 border border-red-200',
-  }[variant] || 'bg-bg border border-border text-textSecondary'
-  return <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>{children}</span>
-}
-
-function Section({ title, children }) {
-  return (
-    <div>
-      <p className="text-[11px] font-bold text-textMuted uppercase tracking-widest mb-3">{title}</p>
-      {children}
-    </div>
-  )
-}
-
-function DataRow({ label, value, highlight }) {
-  if (!value) return null
-  return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-border/60 last:border-0">
-      <span className="text-sm text-textMuted shrink-0">{label}</span>
-      <span className={`text-sm font-medium text-right ${highlight ? 'text-amber-600' : 'text-textPrimary'}`}>{value}</span>
-    </div>
-  )
-}
-
-function EmptyTab({ icon: Icon, title, body, cta }) {
-  return (
-    <div className="text-center py-16 px-6">
-      <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-        <Icon className="w-7 h-7 text-primary" />
+      <div className="bg-slate-50 rounded-2xl p-4 text-sm text-slate-600 space-y-2">
+        <p className="font-semibold text-slate-700">Need help?</p>
+        <p>Email us at <a href="mailto:woof@vetpac.nz" className="text-teal-700 font-medium">woof@vetpac.nz</a> — we respond as quickly as possible.</p>
+        <p className="text-xs text-slate-400">For veterinary emergencies, contact your local vet immediately.</p>
       </div>
-      <h3 className="font-display font-semibold text-lg text-textPrimary mb-2">{title}</h3>
-      <p className="text-textMuted text-sm max-w-xs mx-auto mb-5">{body}</p>
-      {cta}
-    </div>
-  )
-}
 
-// ─── Consultation tab ─────────────────────────────────────────────────────────
-
-function ConsultationTab({ data, loading }) {
-  const [openId, setOpenId] = useState(null)
-
-  if (loading) return <Spinner label="Loading consultations…" />
-
-  if (!data?.length) return (
-    <EmptyTab
-      icon={MessageSquare}
-      title="No consultations yet"
-      body="Your puppy's health consultation will appear here once you complete the intake process."
-      cta={<Link to="/intake"><Button>Start consultation <ArrowRight className="w-4 h-4" /></Button></Link>}
-    />
-  )
-
-  const statusLabel = { in_progress: 'In progress', complete: 'Complete', paid: 'Complete' }
-  const statusVariant = { in_progress: 'amber', complete: 'green', paid: 'green' }
-
-  return (
-    <div className="space-y-4">
-      {data.map((c) => {
-        const open = openId === c.id
-        const d = c.dog
-        return (
-          <div key={c.id} className="border border-border rounded-card-lg overflow-hidden bg-white shadow-sm">
-            <button
-              type="button"
-              onClick={() => setOpenId(open ? null : c.id)}
-              className="w-full flex items-center justify-between p-5 text-left hover:bg-bg transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <PawPrint className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-display font-bold text-textPrimary">{d.name}</span>
-                    <Pill variant={statusVariant[c.status] || 'neutral'}>{statusLabel[c.status] || c.status}</Pill>
-                  </div>
-                  <p className="text-sm text-textSecondary mt-0.5">
-                    {[cap(d.breed), cap(d.sex), d.ageLabel].filter(Boolean).join(' · ')}
-                  </p>
-                  <p className="text-xs text-textMuted mt-0.5">{c.date}{c.ownerName ? ` · ${c.ownerName}` : ''}</p>
-                </div>
-              </div>
-              <ChevronRight className={`w-5 h-5 text-textMuted transition-transform shrink-0 ${open ? 'rotate-90' : ''}`} />
-            </button>
-
-            {open && (
-              <div className="border-t border-border px-5 pb-6 pt-5 space-y-6">
-
-                <Section title="Dog profile">
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {d.dob && <Pill variant="primary"><Calendar className="w-3 h-3" /> Born {new Date(d.dob).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })}</Pill>}
-                    {d.desexed && d.desexed !== 'unknown' && <Pill variant="neutral">{d.desexed === 'yes' ? 'Desexed' : 'Entire'}</Pill>}
-                    {d.weight_kg && <Pill variant="neutral">{d.weight_kg} kg</Pill>}
-                    {d.colour && <Pill variant="neutral"><Tag className="w-3 h-3" /> {cap(d.colour)}</Pill>}
-                    {d.vaccinated_before === 'yes' && <Pill variant="neutral">Previously vaccinated</Pill>}
-                    {d.microchip_no && <Pill variant="neutral">Microchip: {d.microchip_no}</Pill>}
-                  </div>
-                  {c.lifestyle?.region && (
-                    <p className="text-sm text-textSecondary flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 shrink-0" /> {c.lifestyle.region}
-                      {c.lifestyle.living_environment ? ` · ${cap(c.lifestyle.living_environment)}` : ''}
-                    </p>
-                  )}
-                </Section>
-
-                <Section title="Health assessment">
-                  <div className="space-y-0">
-                    <DataRow label="Activity level" value={cap(c.health?.activity_level)} />
-                    <DataRow label="Currently ill" value={c.health?.currently_ill === 'yes' ? 'Yes' : 'No'} highlight={c.health?.currently_ill === 'yes'} />
-                    <DataRow label="Known allergies" value={c.health?.known_allergies === 'yes' ? (c.health.allergy_description || 'Yes') : 'None'} highlight={c.health?.known_allergies === 'yes'} />
-                    <DataRow label="Current medications" value={c.health?.current_medications === 'yes' ? (c.health.medication_list || 'Yes') : 'None'} highlight={c.health?.current_medications === 'yes'} />
-                    <DataRow label="Health conditions" value={c.health?.health_conditions === 'yes' ? (c.health.condition_description || 'Yes') : 'None'} highlight={c.health?.health_conditions === 'yes'} />
-                    <DataRow label="Prior vaccine reaction" value={c.health?.prior_vaccine_reaction === 'yes' ? 'Yes' : 'None recorded'} highlight={c.health?.prior_vaccine_reaction === 'yes'} />
-                    <DataRow label="Pregnant / nursing" value={c.health?.pregnant_or_nursing === 'yes' ? 'Yes' : 'No'} highlight={c.health?.pregnant_or_nursing === 'yes'} />
-                  </div>
-                </Section>
-
-                <Section title="Lifestyle risk factors">
-                  <div className="flex flex-wrap gap-2">
-                    {c.lifestyle?.dog_parks_boarding === 'yes' && <Pill variant="amber">Dog parks / boarding</Pill>}
-                    {c.lifestyle?.waterway_access === 'yes' && <Pill variant="amber">Waterway access</Pill>}
-                    {c.lifestyle?.livestock_contact === 'yes' && <Pill variant="amber">Livestock contact</Pill>}
-                    {c.lifestyle?.other_dogs_household === 'yes' && <Pill variant="neutral">Other dogs in household</Pill>}
-                    {c.lifestyle?.dog_parks_boarding !== 'yes' && c.lifestyle?.waterway_access !== 'yes' && c.lifestyle?.livestock_contact !== 'yes' && (
-                      <span className="text-sm text-textMuted">No elevated risk factors identified</span>
-                    )}
-                  </div>
-                </Section>
-
-              </div>
-            )}
-          </div>
-        )
-      })}
-
-      <Link to="/intake?fresh=1" className="block">
-        <div className="flex items-center gap-3 p-4 border-2 border-dashed border-border rounded-card-lg hover:border-primary hover:bg-primary/5 transition-all text-textMuted hover:text-primary">
-          <Plus className="w-5 h-5 shrink-0" />
-          <span className="text-sm font-medium">Add another puppy</span>
-        </div>
-      </Link>
-    </div>
-  )
-}
-
-// ─── Vaccination tab ──────────────────────────────────────────────────────────
-
-function VaccinationTab({ data, loading }) {
-  const [openId, setOpenId] = useState(null)
-
-  if (loading) return <Spinner label="Loading vaccinations…" />
-
-  if (!data?.length) return (
-    <EmptyTab
-      icon={Syringe}
-      title="No vaccine orders yet"
-      body="Once you complete an order your vaccination plan, delivery method, and schedule will appear here."
-      cta={<Link to="/plan"><Button>View my plan <ArrowRight className="w-4 h-4" /></Button></Link>}
-    />
-  )
-
-  return (
-    <div className="space-y-4">
-      {data.map((o) => {
-        const open = openId === o.sessionId
-        const isAssist = o.deliveryMethod === 'vetpac_assist'
-        return (
-          <div key={o.sessionId} className="border border-border rounded-card-lg overflow-hidden bg-white shadow-sm">
-            <button
-              type="button"
-              onClick={() => setOpenId(open ? null : o.sessionId)}
-              className="w-full flex items-center justify-between p-5 text-left hover:bg-bg transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Syringe className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-display font-bold text-textPrimary">{o.dogName || 'Vaccine order'}</span>
-                    <Pill variant="green">Confirmed</Pill>
-                    {isAssist ? <Pill variant="primary"><User className="w-3 h-3" /> VetPac Assist</Pill> : <Pill variant="neutral"><Home className="w-3 h-3" /> Self-administer</Pill>}
-                  </div>
-                  <p className="text-sm text-textMuted mt-0.5">{o.date} · NZD ${o.total}</p>
-                </div>
-              </div>
-              <ChevronRight className={`w-5 h-5 text-textMuted transition-transform shrink-0 ${open ? 'rotate-90' : ''}`} />
-            </button>
-
-            {open && (
-              <div className="border-t border-border px-5 pb-6 pt-5 space-y-6">
-
-                <Section title="Vaccines ordered">
-                  <div className="space-y-0">
-                    {o.vaccines.map((v, i) => (
-                      <div key={i} className="flex items-center justify-between py-2 border-b border-border/60 last:border-0">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                          <span className="text-sm text-textPrimary">{v.name}</span>
-                        </div>
-                        <span className="text-sm font-medium text-textPrimary">NZD ${v.price.toFixed(2)}</span>
-                      </div>
-                    ))}
-                    {o.vaccines.length === 0 && <p className="text-sm text-textMuted">Vaccine details not available for this order.</p>}
-                  </div>
-                </Section>
-
-                <Section title="Delivery">
-                  {isAssist ? (
-                    <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-card border border-primary/20">
-                      <User className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-semibold text-textPrimary text-sm">VetPac Assist — technician visits your home</p>
-                        <p className="text-xs text-textSecondary mt-1">A trained vaccinator will administer all doses. NZD ${o.assistTotal?.toFixed(2)}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start gap-3 p-4 bg-bg rounded-card border border-border">
-                      <Truck className="w-5 h-5 text-textSecondary shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-semibold text-textPrimary text-sm">Self-administer — cold-chain courier delivery</p>
-                        <p className="text-xs text-textSecondary mt-1">Vaccines delivered in temperature-controlled packaging with administration guide.{o.freightTotal ? ` NZD $${o.freightTotal.toFixed(2)}` : ''}</p>
-                      </div>
-                    </div>
-                  )}
-                </Section>
-
-                <Section title="What to expect">
-                  <div className="space-y-3">
-                    {[
-                      { step: '1', label: 'Vet review', desc: 'A licensed vet reviews your puppy\'s health profile and authorises the vaccination plan.' },
-                      { step: '2', label: isAssist ? 'Booking confirmed' : 'Vaccines dispatched', desc: isAssist ? 'Your VetPac Assist technician will contact you to arrange a visit time.' : 'Cold-chain vaccines dispatched to your address with a temperature indicator strip.' },
-                      { step: '3', label: isAssist ? 'Technician visits' : 'Administer at home', desc: isAssist ? 'Technician administers all vaccines and records each dose.' : 'Follow the included administration guide. Record each dose in your dashboard.' },
-                      { step: '4', label: 'Health records updated', desc: 'Vaccination certificates and records will appear in your dashboard.' },
-                    ].map((item) => (
-                      <div key={item.step} className="flex gap-3">
-                        <div className="w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{item.step}</div>
-                        <div>
-                          <p className="text-sm font-semibold text-textPrimary">{item.label}</p>
-                          <p className="text-xs text-textSecondary mt-0.5">{item.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </Section>
-
-                {o.receiptUrl && (
-                  <a href={o.receiptUrl} target="_blank" rel="noopener noreferrer">
-                    <Button size="sm" variant="secondary" className="flex items-center gap-1.5">
-                      <ExternalLink className="w-3.5 h-3.5" /> View receipt
-                    </Button>
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-// ─── Warranty tab ─────────────────────────────────────────────────────────────
-
-function WarrantyTab({ data, loading }) {
-  if (loading) return <Spinner label="Loading warranty…" />
-
-  if (!data?.length) return (
-    <EmptyTab
-      icon={Shield}
-      title="No warranty on file"
-      body="The VetPac Programme Warranty covers vaccine failure and adverse reactions up to $5,000. Add it when placing your vaccine order."
-      cta={<Link to="/plan"><Button>View my plan <ArrowRight className="w-4 h-4" /></Button></Link>}
-    />
-  )
-
-  return (
-    <div className="space-y-4">
-      {data.map((o) => (
-        <div key={o.sessionId} className="border border-border rounded-card-lg overflow-hidden bg-white shadow-sm">
-          {/* Header */}
-          <div className="p-5 flex items-center gap-4 border-b border-border">
-            <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-              <Shield className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display font-bold text-textPrimary">VetPac Programme Warranty</span>
-                <Pill variant="green">Active</Pill>
-              </div>
-              <p className="text-sm text-textMuted mt-0.5">{o.dogName ? `${o.dogName} · ` : ''}{o.date} · NZD ${o.warrantyTotal?.toFixed(2)} paid</p>
-            </div>
-          </div>
-
-          {/* Coverage */}
-          <div className="px-5 pb-6 pt-5 space-y-6">
-            <Section title="What's covered">
-              <div className="space-y-0">
-                {[
-                  ['Vaccine failure', 'If the vaccine does not provide adequate immunity, repeat vaccination costs are covered.'],
-                  ['Adverse reactions', 'Vet treatment costs for reactions directly caused by the administered vaccines.'],
-                  ['Claim limit', 'Up to NZD $5,000 per programme.'],
-                  ['Duration', 'Covers the full vaccination programme purchased.'],
-                ].map(([label, desc]) => (
-                  <div key={label} className="py-2.5 border-b border-border/60 last:border-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                      <span className="text-sm font-semibold text-textPrimary">{label}</span>
-                    </div>
-                    <p className="text-xs text-textSecondary ml-5">{desc}</p>
-                  </div>
-                ))}
-              </div>
-            </Section>
-
-            <Section title="What's not covered">
-              <div className="space-y-1 text-sm text-textSecondary">
-                {[
-                  'Pre-existing conditions or illnesses present at time of vaccination',
-                  'Reactions caused by failure to follow the administration guide',
-                  'Injuries, accidents, or illnesses unrelated to the vaccination programme',
-                  'Costs incurred more than 30 days after the final dose',
-                ].map((item) => (
-                  <div key={item} className="flex items-start gap-2 py-1">
-                    <span className="text-textMuted mt-0.5">—</span>
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </Section>
-
-            <Section title="How to make a claim">
-              <div className="p-4 bg-bg rounded-card border border-border text-sm text-textSecondary space-y-1">
-                <p>Email <a href="mailto:woof@vetpac.nz" className="text-primary font-medium">woof@vetpac.nz</a> with:</p>
-                <ul className="list-disc list-inside space-y-1 mt-2 text-xs">
-                  <li>Your order reference number</li>
-                  <li>A description of the issue</li>
-                  <li>Any vet invoices or supporting documentation</li>
-                </ul>
-                <p className="text-xs text-textMuted mt-2">Our team will respond and guide you through the claims process.</p>
-              </div>
-            </Section>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// ─── Account tab ─────────────────────────────────────────────────────────────
-
-function AccountTab({ userEmail, data }) {
-  return (
-    <div className="max-w-lg">
-      <Card>
-        <h3 className="font-display font-semibold text-xl text-textPrimary mb-5">Account</h3>
-        <div className="space-y-0 text-sm mb-6">
-          <DataRow label="Sign-in email" value={userEmail} />
-          <DataRow label="Consultations" value={String(data?.consultations?.length ?? '—')} />
-          <DataRow label="Vaccine orders" value={String(data?.vaccinations?.length ?? '—')} />
-          <DataRow label="Warranty" value={data?.warrantyOrders?.length ? 'Active' : 'Not purchased'} />
-        </div>
-        <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>Sign out</Button>
-      </Card>
-    </div>
-  )
-}
-
-// ─── Spinner ──────────────────────────────────────────────────────────────────
-
-function Spinner({ label }) {
-  return (
-    <div className="flex items-center justify-center gap-3 py-14">
-      <Loader2 className="w-6 h-6 text-primary animate-spin" />
-      <span className="text-sm text-textMuted">{label}</span>
+      <button
+        onClick={() => supabase.auth.signOut()}
+        className="w-full text-sm text-slate-500 hover:text-red-600 transition-colors py-2"
+      >
+        Sign out
+      </button>
     </div>
   )
 }
 
 // ─── Main dashboard ───────────────────────────────────────────────────────────
 
+const tabs = [
+  { id: 'dogs', label: 'My Dogs', icon: PawPrint },
+  { id: 'account', label: 'Account', icon: Settings },
+]
+
 export default function Dashboard() {
   const [session, setSession] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('consultation')
+  const [activeTab, setActiveTab] = useState('dogs')
   const [data, setData] = useState(null)
   const [dataLoading, setDataLoading] = useState(false)
 
   useEffect(() => {
-    let mounted = true
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      if (mounted) { setSession(s); setAuthLoading(false) }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setAuthLoading(false)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      if (mounted) setSession(s)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      setAuthLoading(false)
     })
-    return () => { mounted = false; subscription.unsubscribe() }
+    return () => subscription.unsubscribe()
   }, [])
 
   useEffect(() => {
@@ -534,67 +390,168 @@ export default function Dashboard() {
     fetch('/api/dashboard-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({}),
     })
       .then((r) => {
         if (r.status === 401) { supabase.auth.signOut(); return null }
         return r.json()
       })
       .then((d) => { if (!cancelled && d) setData(d) })
-      .catch(() => {})
+      .catch(console.error)
       .finally(() => { if (!cancelled) setDataLoading(false) })
     return () => { cancelled = true }
   }, [session])
 
-  if (authLoading) return (
-    <div className="min-h-screen bg-bg"><Nav />
-      <div className="flex flex-col items-center justify-center gap-3 pt-32 pb-20">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <p className="text-sm text-textMuted">Loading…</p>
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-teal-600" size={32} />
       </div>
-    </div>
-  )
+    )
+  }
 
-  if (!session) return <LoginGate />
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col">
+        <Nav />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-sm w-full text-center space-y-4">
+            <PawPrint size={40} className="text-teal-600 mx-auto" />
+            <h1 className="text-xl font-bold text-slate-800">Sign in to your dashboard</h1>
+            <p className="text-sm text-slate-500">We'll email you a magic link — no password needed.</p>
+            <MagicLinkForm />
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
 
-  const userEmail = session.user?.email || ''
+  const dogs = data?.dogs || []
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Nav />
-      <div className="max-w-content mx-auto px-4 sm:px-6 pt-24 pb-20">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-          <div>
-            <h1 className="font-display font-bold text-3xl text-textPrimary mb-1">My dashboard</h1>
-            <p className="text-textMuted text-sm">Signed in as <span className="font-mono text-textSecondary">{userEmail}</span></p>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>Sign out</Button>
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8 space-y-6">
+
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">My dashboard</h1>
+          <p className="text-sm text-slate-500 mt-1">{session.user.email}</p>
         </div>
 
-        <div className="flex items-center gap-0 border-b border-border mb-8 overflow-x-auto">
-          {tabs.map((tab) => {
-            const Icon = tab.icon
+        {/* Tabs */}
+        <div className="flex gap-1 bg-slate-100 rounded-xl p-1">
+          {tabs.map((t) => {
+            const Icon = t.icon
             return (
               <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 -mb-px transition-all whitespace-nowrap
-                  ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-textMuted hover:text-textPrimary'}`}
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`flex-1 flex items-center justify-center gap-2 text-sm font-medium py-2 px-3 rounded-lg transition-all ${
+                  activeTab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'
+                }`}
               >
-                <Icon className="w-4 h-4" />
-                {tab.label}
+                <Icon size={15} />
+                {t.label}
               </button>
             )
           })}
         </div>
 
-        {activeTab === 'consultation' && <ConsultationTab data={data?.consultations} loading={dataLoading} />}
-        {activeTab === 'vaccination' && <VaccinationTab data={data?.vaccinations} loading={dataLoading} />}
-        {activeTab === 'warranty' && <WarrantyTab data={data?.warrantyOrders} loading={dataLoading} />}
-        {activeTab === 'account' && <AccountTab userEmail={userEmail} data={data} />}
-      </div>
+        {/* Content */}
+        {activeTab === 'dogs' && (
+          <div className="space-y-6">
+            {dataLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="animate-spin text-teal-600" size={28} />
+              </div>
+            ) : dogs.length > 0 ? (
+              <>
+                {dogs.map((dog) => <DogCard key={dog.id} dog={dog} />)}
+                <Link to="/intake" className="block">
+                  <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-teal-400 hover:bg-teal-50 transition-colors">
+                    <PawPrint size={24} className="text-slate-400 mx-auto mb-2" />
+                    <p className="text-sm font-medium text-slate-600">Add another dog</p>
+                  </div>
+                </Link>
+              </>
+            ) : (
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-4">
+                <PawPrint size={36} className="text-slate-300 mx-auto" />
+                <div>
+                  <p className="font-semibold text-slate-700">No records yet</p>
+                  <p className="text-sm text-slate-500 mt-1">Complete the intake form to get your puppy's programme.</p>
+                </div>
+                <Link to="/intake">
+                  <Button>Start intake form <ArrowRight size={14} /></Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'account' && (
+          <AccountTab session={session} dogs={dogs} />
+        )}
+
+      </main>
       <Footer />
       <SupportChat />
     </div>
+  )
+}
+
+// ─── Magic link form (shown when not authenticated) ───────────────────────────
+
+function MagicLinkForm() {
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/send-dashboard-magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error || 'Failed to send link')
+      setSent(true)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (sent) return (
+    <div className="text-center space-y-2">
+      <CheckCircle size={32} className="text-teal-500 mx-auto" />
+      <p className="font-semibold text-slate-800">Check your email</p>
+      <p className="text-sm text-slate-500">We sent a magic link to <strong>{email}</strong></p>
+    </div>
+  )
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <input
+        type="email"
+        required
+        placeholder="your@email.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+      />
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? <Loader2 size={16} className="animate-spin" /> : 'Send magic link'}
+      </Button>
+    </form>
   )
 }

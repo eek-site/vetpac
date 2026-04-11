@@ -1,4 +1,12 @@
 import { handleCors } from './lib/cors.js'
+import { createClient } from '@supabase/supabase-js'
+
+function adminSupabase() {
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return null
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
+}
 
 export default async function handler(req, res) {
   if (handleCors(req, res)) return
@@ -8,19 +16,30 @@ export default async function handler(req, res) {
   if (!secretKey) return res.status(500).json({ error: 'Stripe not configured' })
 
   try {
-    const { items, dogName, customerEmail, successUrl, discountCode } = req.body
+    const {
+      items,
+      dogName,
+      customerEmail,
+      successUrl,
+      cancelUrl,
+      discountCode,
+      // Plan data for persisting to intake_sessions
+      sessionToken,
+      vaccinePlan,
+      deliveryMethod,
+      warrantySelected,
+      orderTotal,
+    } = req.body
 
     if (!items || !items.length) {
       return res.status(400).json({ error: 'No items provided' })
     }
 
-    // bossmode: single $1 test charge
     const isBossMode = discountCode?.toLowerCase() === 'bossmode'
     const lineItems = isBossMode
       ? [{ name: 'VetPac — Test charge (bossmode)', price: 1.00 }]
       : items
 
-    // Build Stripe form-encoded body (Stripe REST API uses urlencoded, not JSON)
     const body = new URLSearchParams()
     body.append('ui_mode', 'embedded')
     body.append('mode', 'payment')
@@ -28,12 +47,16 @@ export default async function handler(req, res) {
     body.append('billing_address_collection', 'auto')
     body.append('payment_intent_data[metadata][dog_name]', dogName || '')
     body.append('payment_intent_data[metadata][platform]', 'vetpac')
+    body.append('metadata[dog_name]', dogName || '')
+
     if (customerEmail) {
+      body.append('customer_email', customerEmail)
       body.append('payment_intent_data[metadata][customer_email]', customerEmail)
       body.append('metadata[customer_email]', customerEmail)
-      body.append('customer_email', customerEmail)
     }
-    body.append('metadata[dog_name]', dogName || '')
+    if (sessionToken) {
+      body.append('metadata[session_token]', sessionToken)
+    }
 
     lineItems.forEach((item, i) => {
       body.append(`line_items[${i}][quantity]`, '1')
@@ -59,6 +82,27 @@ export default async function handler(req, res) {
     if (!response.ok) {
       console.error('Stripe error:', data)
       return res.status(500).json({ error: data.error?.message || 'Stripe request failed' })
+    }
+
+    // Persist plan data to intake_sessions immediately — before payment completes
+    if (sessionToken && (vaccinePlan || deliveryMethod != null)) {
+      try {
+        const sb = adminSupabase()
+        if (sb) {
+          await sb.from('intake_sessions').update({
+            vaccine_plan: vaccinePlan || null,
+            delivery_method: deliveryMethod || null,
+            warranty_selected: warrantySelected || false,
+            stripe_session_id: data.id,
+            order_total: orderTotal || null,
+            order_date: new Date().toISOString(),
+            order_status: 'pending',
+          }).eq('session_token', sessionToken)
+        }
+      } catch (e) {
+        // Non-fatal — order can still proceed
+        console.warn('[create-checkout-session] intake_sessions update failed:', e.message)
+      }
     }
 
     return res.status(200).json({ clientSecret: data.client_secret, sessionId: data.id })

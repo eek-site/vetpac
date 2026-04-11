@@ -434,10 +434,29 @@ function StepSummary({ totals, puppyCount, insuranceSelected, vaccinePlan, addit
       const successUrl = `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&${successParams.toString()}`
       const cancelUrl = `${origin}/plan?step=4`
 
+      // Pull session token from localStorage so we can persist plan data server-side
+      const sessionToken = localStorage.getItem('intake_session_token') || null
+
+      // Build the persisted vaccine plan (vaccine names + prices, not freight/warranty)
+      const persistedVaccinePlan = primarySelected.map((v) => ({ name: v.name, price: v.price }))
+
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items, dogName: puppyName, customerEmail: ownerEmail, successUrl, cancelUrl, discountCode: discountApplied ? discountCode : '' }),
+        body: JSON.stringify({
+          items,
+          dogName: puppyName,
+          customerEmail: ownerEmail,
+          successUrl,
+          cancelUrl,
+          discountCode: discountApplied ? discountCode : '',
+          // Plan persistence
+          sessionToken,
+          vaccinePlan: persistedVaccinePlan,
+          deliveryMethod: totals.assist > 0 ? 'vetpac_assist' : 'self_administer',
+          warrantySelected: insuranceSelected,
+          orderTotal: displayTotal,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Could not create payment session')

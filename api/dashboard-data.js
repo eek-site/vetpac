@@ -1,8 +1,13 @@
 /**
- * POST — single endpoint returning all dashboard data for the authenticated user:
- *   consultations  — intake sessions with dog profiles and health/lifestyle data
- *   vaccinations   — Stripe orders with line items broken out (vaccines, delivery, assist)
- *   warranty       — warranty purchase status per order
+ * POST — returns the complete dashboard dataset for the authenticated user.
+ * Returns a `dogs` array, each dog containing:
+ *   - profile (breed, sex, DOB, weight, microchip, etc.)
+ *   - owner (name, email, phone, address)
+ *   - health (allergies, medications, conditions, reactions, activity)
+ *   - lifestyle (region, environment, risk factors)
+ *   - consultation (status, date)
+ *   - order (vaccines ordered, delivery method, warranty, total, status)
+ *   - schedule (calculated dose dates based on DOB + order date)
  */
 import { handleCors } from './lib/cors.js'
 import { createClient } from '@supabase/supabase-js'
@@ -20,6 +25,69 @@ function classifyLineItem(name) {
   if (n.includes('assist') || n.includes('vaccinator')) return 'assist'
   if (n.includes('freight') || n.includes('cold-chain') || n.includes('delivery')) return 'freight'
   return 'vaccine'
+}
+
+function addDays(date, days) {
+  const d = new Date(date)
+  d.setDate(d.getDate() + days)
+  return d
+}
+
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function calcAgeWeeks(dob, atDate) {
+  return (new Date(atDate) - new Date(dob)) / (1000 * 60 * 60 * 24 * 7)
+}
+
+/**
+ * Calculate the vaccination dose schedule based on:
+ *  - dog's age at time of order
+ *  - NZ standard puppy/adult vaccination protocols
+ */
+function calcDoseSchedule(dob, orderDate) {
+  if (!dob || !orderDate) return []
+  const ageWeeks = calcAgeWeeks(dob, orderDate)
+  const start = new Date(orderDate)
+  const now = new Date()
+
+  const doses = []
+
+  if (ageWeeks < 10) {
+    // Very young puppy — full 3-dose primary course
+    doses.push({ label: 'Dose 1 — Primary', date: start, desc: 'First vaccination (6–8 weeks)' })
+    doses.push({ label: 'Dose 2 — Primary', date: addDays(start, 28), desc: 'Second vaccination (10–12 weeks)' })
+    doses.push({ label: 'Dose 3 — Primary', date: addDays(start, 56), desc: 'Third vaccination (14–16 weeks)' })
+    doses.push({ label: 'Annual booster', date: addDays(start, 56 + 365), desc: 'Due 12 months after final puppy dose' })
+  } else if (ageWeeks < 16) {
+    // Mid-puppy — 2-dose primary course
+    doses.push({ label: 'Dose 1 — Primary', date: start, desc: 'First vaccination (10–12 weeks)' })
+    doses.push({ label: 'Dose 2 — Primary', date: addDays(start, 28), desc: 'Second vaccination (14–16 weeks)' })
+    doses.push({ label: 'Annual booster', date: addDays(start, 28 + 365), desc: 'Due 12 months after final puppy dose' })
+  } else if (ageWeeks < 52) {
+    // Young adult — 2-dose catch-up
+    doses.push({ label: 'Dose 1', date: start, desc: 'First vaccination' })
+    doses.push({ label: 'Dose 2', date: addDays(start, 28), desc: 'Booster — 4 weeks after first' })
+    doses.push({ label: 'Annual booster', date: addDays(start, 28 + 365), desc: 'Due 12 months after last dose' })
+  } else {
+    // Adult — annual booster
+    doses.push({ label: 'Booster dose', date: start, desc: 'Annual vaccination' })
+    doses.push({ label: 'Next annual booster', date: addDays(start, 365), desc: 'Due 12 months from now' })
+  }
+
+  return doses.map((d) => {
+    const dDate = new Date(d.date)
+    const isPast = dDate < now
+    const isUpcoming = !isPast && dDate < addDays(now, 30)
+    return {
+      label: d.label,
+      desc: d.desc,
+      date: formatDate(dDate),
+      isoDate: dDate.toISOString(),
+      status: isPast ? 'due' : isUpcoming ? 'upcoming' : 'scheduled',
+    }
+  })
 }
 
 export default async function handler(req, res) {
@@ -41,209 +109,226 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Session expired', code: 'SESSION_EXPIRED' })
   }
 
-  // ── 1. Consultations from intake_sessions ──────────────────────────────────
-  const consultations = []
+  // ── 1. Load all intake sessions for this user ─────────────────────────────
+  let sessions = []
   try {
-    const { data: sessions } = await sb
+    const { data } = await sb
       .from('intake_sessions')
-      .select('id, session_token, dog_name, dog_profile, health_history, lifestyle, ai_assessment, owner_details, status, created_at, updated_at')
+      .select('*')
       .filter('owner_details->>email', 'eq', email)
       .order('created_at', { ascending: false })
-
-    for (const s of sessions || []) {
-      const p = s.dog_profile || {}
-      const h = s.health_history || {}
-      const l = s.lifestyle || {}
-      const ownerName = s.owner_details?.full_name || ''
-
-      // Calculate age from DOB
-      let ageLabel = null
-      if (p.dob) {
-        const months = Math.floor((Date.now() - new Date(p.dob)) / (1000 * 60 * 60 * 24 * 30.44))
-        ageLabel = months < 24 ? `${months} months old` : `${Math.floor(months / 12)} years old`
-      }
-
-      consultations.push({
-        id: s.id,
-        token: s.session_token,
-        status: s.status, // in_progress | complete | paid
-        date: new Date(s.created_at).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' }),
-        ownerName,
-        dog: {
-          name: p.name || s.dog_name || 'Unknown',
-          breed: p.breed || null,
-          sex: p.sex || null,
-          dob: p.dob || null,
-          ageLabel,
-          desexed: p.desexed || null,
-          weight_kg: p.weight_kg !== 'unknown' ? p.weight_kg : null,
-          microchip_no: p.microchip_no || null,
-          colour: p.colour || null,
-          vaccinated_before: p.vaccinated_before || 'no',
-        },
-        health: {
-          currently_ill: h.currently_ill,
-          known_allergies: h.known_allergies,
-          allergy_description: h.allergy_description || null,
-          current_medications: h.current_medications,
-          medication_list: h.medication_list || null,
-          health_conditions: h.health_conditions,
-          condition_description: h.condition_description || null,
-          prior_vaccine_reaction: h.prior_vaccine_reaction,
-          activity_level: h.activity_level,
-          pregnant_or_nursing: h.pregnant_or_nursing,
-        },
-        lifestyle: {
-          region: l.region || null,
-          living_environment: l.living_environment || null,
-          dog_parks_boarding: l.dog_parks_boarding,
-          waterway_access: l.waterway_access,
-          livestock_contact: l.livestock_contact,
-          other_dogs_household: l.other_dogs_household,
-        },
-      })
-    }
+    sessions = data || []
   } catch (e) {
-    console.error('[dashboard-data] consultations error:', e.message)
+    console.error('[dashboard-data] intake_sessions error:', e.message)
   }
 
-  // ── 2. Vaccine orders from Stripe ──────────────────────────────────────────
-  const vaccinations = []
-  const warrantyOrders = []
-
-  // Dog names from intake sessions — used to cross-reference Stripe orders
-  // that were paid with a different billing email than the dashboard login
+  // ── 2. Load Stripe orders ─────────────────────────────────────────────────
+  const stripeOrderMap = {} // keyed by stripe_session_id
   const knownDogNames = new Set(
-    consultations.map((c) => c.dog.name?.toLowerCase()).filter(Boolean)
+    sessions.map((s) => (s.dog_profile?.name || s.dog_name || '').toLowerCase()).filter(Boolean)
   )
 
   const secret = process.env.STRIPE_SECRET_KEY
   if (secret) {
+    // Primary: search by customer_email (set at session creation for new orders)
+    const emailsToSearch = [email]
     try {
-      const url = new URL('https://api.stripe.com/v1/checkout/sessions')
-      url.searchParams.set('limit', '50')
-      url.searchParams.set('status', 'complete')
-      url.searchParams.set('customer_email', email)
-      url.searchParams.append('expand[]', 'data.line_items')
-      url.searchParams.append('expand[]', 'data.payment_intent')
+      for (const searchEmail of emailsToSearch) {
+        const url = new URL('https://api.stripe.com/v1/checkout/sessions')
+        url.searchParams.set('limit', '50')
+        url.searchParams.set('status', 'complete')
+        url.searchParams.set('customer_email', searchEmail)
+        url.searchParams.append('expand[]', 'data.line_items')
+        url.searchParams.append('expand[]', 'data.payment_intent')
 
-      const r = await fetch(url.toString(), { headers: { Authorization: `Bearer ${secret}` } })
-      const data = await r.json()
-
-      if (r.ok) {
-        for (const s of (data.data || []).filter((s) => s.payment_status === 'paid')) {
-          const meta = s.metadata || {}
-          const pi = typeof s.payment_intent === 'object' ? s.payment_intent : null
-          const receiptUrl = pi?.charges?.data?.[0]?.receipt_url || null
-          const lineItems = s.line_items?.data || []
-          const dogName = meta.dog_name || meta.customer_name || ''
-
-          const vaccines = []
-          let hasAssist = false
-          let hasFreight = false
-          let hasWarranty = false
-          let assistTotal = 0
-          let warrantyTotal = 0
-          let freightTotal = 0
-
-          for (const li of lineItems) {
-            const type = classifyLineItem(li.description)
-            const amount = (li.amount_total || 0) / 100
-            if (type === 'vaccine') vaccines.push({ name: li.description, price: amount })
-            else if (type === 'assist') { hasAssist = true; assistTotal = amount }
-            else if (type === 'freight') { hasFreight = true; freightTotal = amount }
-            else if (type === 'warranty') { hasWarranty = true; warrantyTotal = amount }
+        const r = await fetch(url.toString(), { headers: { Authorization: `Bearer ${secret}` } })
+        const data = await r.json()
+        if (r.ok) {
+          for (const s of (data.data || []).filter((s) => s.payment_status === 'paid')) {
+            stripeOrderMap[s.id] = s
           }
-
-          const deliveryMethod = hasAssist ? 'vetpac_assist' : 'self_administer'
-
-          const order = {
-            id: s.id.slice(-8).toUpperCase(),
-            sessionId: s.id,
-            dogName,
-            date: new Date(s.created * 1000).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' }),
-            total: (s.amount_total / 100).toFixed(2),
-            receiptUrl,
-            vaccines,
-            deliveryMethod,
-            hasFreight,
-            freightTotal,
-            hasAssist,
-            assistTotal,
-            hasWarranty,
-            warrantyTotal,
-          }
-
-          vaccinations.push(order)
-          if (hasWarranty) warrantyOrders.push(order)
         }
       }
     } catch (e) {
-      console.error('[dashboard-data] Stripe error:', e.message)
+      console.error('[dashboard-data] Stripe search error:', e.message)
     }
-  }
 
-  // ── 3. Cross-reference recent Stripe sessions by dog name ─────────────────
-  // Catches orders paid with a different billing email but for a known dog.
-  // Only runs if there are known dog names and Stripe is configured.
-  if (secret && knownDogNames.size > 0) {
-    try {
-      const url = new URL('https://api.stripe.com/v1/checkout/sessions')
-      url.searchParams.set('limit', '100')
-      url.searchParams.set('status', 'complete')
-      url.searchParams.append('expand[]', 'data.line_items')
-      url.searchParams.append('expand[]', 'data.payment_intent')
+    // Secondary: cross-reference by dog name for older orders (paid with different billing email)
+    if (knownDogNames.size > 0) {
+      try {
+        const url = new URL('https://api.stripe.com/v1/checkout/sessions')
+        url.searchParams.set('limit', '100')
+        url.searchParams.set('status', 'complete')
+        url.searchParams.append('expand[]', 'data.line_items')
+        url.searchParams.append('expand[]', 'data.payment_intent')
 
-      const r = await fetch(url.toString(), { headers: { Authorization: `Bearer ${secret}` } })
-      const data = await r.json()
-
-      if (r.ok) {
-        for (const s of (data.data || []).filter((s) => s.payment_status === 'paid')) {
-          if (vaccinations.some((v) => v.sessionId === s.id)) continue
-          const meta = s.metadata || {}
-          const dogName = meta.dog_name || meta.customer_name || ''
-          // Only include if this session's dog name matches one of this user's known dogs
-          if (!dogName || !knownDogNames.has(dogName.toLowerCase())) continue
-
-          const pi = typeof s.payment_intent === 'object' ? s.payment_intent : null
-          const receiptUrl = pi?.charges?.data?.[0]?.receipt_url || null
-          const lineItems = s.line_items?.data || []
-
-          const vaccines = []
-          let hasAssist = false, hasFreight = false, hasWarranty = false
-          let assistTotal = 0, warrantyTotal = 0, freightTotal = 0
-
-          for (const li of lineItems) {
-            const type = classifyLineItem(li.description)
-            const amount = (li.amount_total || 0) / 100
-            if (type === 'vaccine') vaccines.push({ name: li.description, price: amount })
-            else if (type === 'assist') { hasAssist = true; assistTotal = amount }
-            else if (type === 'freight') { hasFreight = true; freightTotal = amount }
-            else if (type === 'warranty') { hasWarranty = true; warrantyTotal = amount }
+        const r = await fetch(url.toString(), { headers: { Authorization: `Bearer ${secret}` } })
+        const data = await r.json()
+        if (r.ok) {
+          for (const s of (data.data || []).filter((s) => s.payment_status === 'paid')) {
+            const dogName = (s.metadata?.dog_name || '').toLowerCase()
+            if (dogName && knownDogNames.has(dogName) && !stripeOrderMap[s.id]) {
+              stripeOrderMap[s.id] = s
+            }
           }
-
-          const order = {
-            id: s.id.slice(-8).toUpperCase(),
-            sessionId: s.id,
-            dogName,
-            date: new Date(s.created * 1000).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' }),
-            total: (s.amount_total / 100).toFixed(2),
-            receiptUrl,
-            vaccines,
-            deliveryMethod: hasAssist ? 'vetpac_assist' : 'self_administer',
-            hasFreight, freightTotal,
-            hasAssist, assistTotal,
-            hasWarranty, warrantyTotal,
-          }
-
-          vaccinations.push(order)
-          if (hasWarranty) warrantyOrders.push(order)
         }
+      } catch (e) {
+        console.error('[dashboard-data] Stripe dog-name cross-ref error:', e.message)
       }
-    } catch (e) {
-      console.error('[dashboard-data] dog-name cross-ref error:', e.message)
     }
   }
 
-  return res.status(200).json({ consultations, vaccinations, warrantyOrders })
+  // Helper: parse a Stripe session into order fields
+  function parseStripeOrder(s) {
+    const lineItems = s.line_items?.data || []
+    const pi = typeof s.payment_intent === 'object' ? s.payment_intent : null
+    const receiptUrl = pi?.charges?.data?.[0]?.receipt_url || null
+
+    const vaccines = []
+    let hasAssist = false, assistTotal = 0
+    let hasFreight = false, freightTotal = 0
+    let hasWarranty = false, warrantyTotal = 0
+
+    for (const li of lineItems) {
+      const type = classifyLineItem(li.description)
+      const amount = (li.amount_total || 0) / 100
+      if (type === 'vaccine') vaccines.push({ name: li.description, price: amount })
+      else if (type === 'assist') { hasAssist = true; assistTotal = amount }
+      else if (type === 'freight') { hasFreight = true; freightTotal = amount }
+      else if (type === 'warranty') { hasWarranty = true; warrantyTotal = amount }
+    }
+
+    return {
+      stripeSessionId: s.id,
+      orderDate: new Date(s.created * 1000).toISOString(),
+      orderDateFormatted: formatDate(new Date(s.created * 1000)),
+      orderTotal: (s.amount_total / 100).toFixed(2),
+      orderStatus: 'paid',
+      receiptUrl,
+      vaccines,
+      deliveryMethod: hasAssist ? 'vetpac_assist' : 'self_administer',
+      hasFreight, freightTotal,
+      hasAssist, assistTotal,
+      hasWarranty, warrantyTotal,
+    }
+  }
+
+  // ── 3. Build per-dog records ───────────────────────────────────────────────
+  const dogs = []
+
+  for (const s of sessions) {
+    const p = s.dog_profile || {}
+    const h = s.health_history || {}
+    const l = s.lifestyle || {}
+    const o = s.owner_details || {}
+
+    const dogName = p.name || s.dog_name || 'Unknown'
+
+    // Age label
+    let ageLabel = null
+    if (p.dob) {
+      const months = Math.floor((Date.now() - new Date(p.dob)) / (1000 * 60 * 60 * 24 * 30.44))
+      ageLabel = months < 24 ? `${months} months old` : `${Math.floor(months / 12)} year${Math.floor(months / 12) !== 1 ? 's' : ''} old`
+    }
+
+    // Find matched Stripe order — prefer the one stored on the intake session
+    let stripeOrder = null
+    if (s.stripe_session_id && stripeOrderMap[s.stripe_session_id]) {
+      stripeOrder = parseStripeOrder(stripeOrderMap[s.stripe_session_id])
+    } else {
+      // Try to match by dog name
+      const match = Object.values(stripeOrderMap).find(
+        (str) => (str.metadata?.dog_name || '').toLowerCase() === dogName.toLowerCase()
+      )
+      if (match) stripeOrder = parseStripeOrder(match)
+    }
+
+    // Merge order data: prefer Stripe line items, fall back to stored vaccine_plan
+    const orderDate = stripeOrder?.orderDate || s.order_date
+    const deliveryMethod = stripeOrder?.deliveryMethod || s.delivery_method || null
+    const warrantySelected = stripeOrder?.hasWarranty ?? s.warranty_selected ?? false
+    const vaccines = stripeOrder?.vaccines?.length
+      ? stripeOrder.vaccines
+      : (s.vaccine_plan || [])
+    const orderStatus = stripeOrder?.orderStatus || s.order_status || null
+    const orderTotal = stripeOrder?.orderTotal || s.order_total || null
+    const receiptUrl = stripeOrder?.receiptUrl || null
+
+    // Dose schedule
+    const schedule = calcDoseSchedule(p.dob, orderDate)
+
+    dogs.push({
+      id: s.id,
+      sessionToken: s.session_token,
+      consultationStatus: s.status,
+      consultationDate: formatDate(s.created_at),
+
+      profile: {
+        name: dogName,
+        breed: p.breed || null,
+        sex: p.sex || null,
+        dob: p.dob || null,
+        ageLabel,
+        desexed: p.desexed !== 'unknown' ? p.desexed : null,
+        weight_kg: p.weight_kg !== 'unknown' ? p.weight_kg : null,
+        microchip_no: p.microchip_no || null,
+        colour: p.colour || null,
+        vaccinated_before: p.vaccinated_before || 'no',
+        prior_vaccines: p.prior_vaccines || [],
+      },
+
+      owner: {
+        full_name: o.full_name || null,
+        email: o.email || email,
+        mobile: o.mobile || null,
+        address_line1: o.address_line1 || null,
+        address_line2: o.address_line2 || null,
+        city: o.city || null,
+        postcode: o.postcode || null,
+        region: o.region || l.region || null,
+      },
+
+      health: {
+        activity_level: h.activity_level || null,
+        currently_ill: h.currently_ill || 'no',
+        illness_description: h.illness_description || null,
+        known_allergies: h.known_allergies || 'no',
+        allergy_description: h.allergy_description || null,
+        current_medications: h.current_medications || 'no',
+        medication_list: h.medication_list || null,
+        health_conditions: h.health_conditions || 'no',
+        condition_description: h.condition_description || null,
+        prior_vaccine_reaction: h.prior_vaccine_reaction || 'no',
+        reaction_description: h.reaction_description || null,
+        pregnant_or_nursing: h.pregnant_or_nursing || 'no',
+      },
+
+      lifestyle: {
+        region: l.region || null,
+        living_environment: l.living_environment || null,
+        dog_parks_boarding: l.dog_parks_boarding || 'no',
+        waterway_access: l.waterway_access || 'no',
+        livestock_contact: l.livestock_contact || 'no',
+        other_dogs_household: l.other_dogs_household || 'no',
+      },
+
+      order: vaccines.length || orderStatus ? {
+        status: orderStatus,
+        date: orderDate ? formatDate(orderDate) : null,
+        total: orderTotal,
+        receiptUrl,
+        vaccines,
+        deliveryMethod,
+        warrantySelected,
+        hasFreight: stripeOrder?.hasFreight ?? false,
+        freightTotal: stripeOrder?.freightTotal ?? 0,
+        assistTotal: stripeOrder?.assistTotal ?? 0,
+        warrantyTotal: stripeOrder?.warrantyTotal ?? 0,
+      } : null,
+
+      schedule,
+    })
+  }
+
+  return res.status(200).json({ dogs })
 }

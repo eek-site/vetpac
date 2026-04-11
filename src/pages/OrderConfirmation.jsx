@@ -174,6 +174,21 @@ export default function OrderConfirmation() {
   const orderRefRef = useRef('VP-' + Math.random().toString(36).substr(2, 8).toUpperCase())
   const orderRef = orderRefRef.current
   const emailSentRef = useRef(false)
+  const orderSavedRef = useRef(false)
+
+  // Mark intake session as paid
+  useEffect(() => {
+    if (orderSavedRef.current) return
+    const stripeSessionId = params.get('session_id')
+    if (!stripeSessionId || stripeSessionId.includes('{')) return
+    orderSavedRef.current = true
+    const sessionToken = localStorage.getItem('intake_session_token') || null
+    fetch('/api/save-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stripeSessionId, sessionToken }),
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (emailSentRef.current) return

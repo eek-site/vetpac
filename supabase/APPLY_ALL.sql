@@ -182,5 +182,29 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
--- --- 004: RLS on EEK migrations table (Supabase linter 0013) ---
+-- === 004 intake_sessions order fields ===
+
+ALTER TABLE public.intake_sessions
+  ADD COLUMN IF NOT EXISTS vaccine_plan JSONB,
+  ADD COLUMN IF NOT EXISTS delivery_method TEXT,
+  ADD COLUMN IF NOT EXISTS warranty_selected BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS stripe_session_id TEXT,
+  ADD COLUMN IF NOT EXISTS order_total DECIMAL(10,2),
+  ADD COLUMN IF NOT EXISTS order_date TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS order_status TEXT DEFAULT 'pending';
+
+-- === 005 dashboard_access table ===
+
+CREATE TABLE IF NOT EXISTS public.dashboard_access (
+  email TEXT PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.dashboard_access ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "service_only" ON public.dashboard_access FOR ALL TO service_role USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- --- RLS on EEK migrations table (Supabase linter 0013) ---
 ALTER TABLE IF EXISTS public._eek_migrations ENABLE ROW LEVEL SECURITY;
