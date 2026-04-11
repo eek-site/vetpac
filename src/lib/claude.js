@@ -28,11 +28,11 @@ export function parseIntakeComplete(text) {
 
 // ─── Contact chatbot ─────────────────────────────────────────────────────────
 
-export async function runContactChat(messages) {
+export async function runContactChat(messages, context) {
   const response = await fetch('/api/ai-contact-chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, context }),
   })
   if (!response.ok) throw new Error('AI unavailable')
   const data = await response.json()

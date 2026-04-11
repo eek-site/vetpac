@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard, ChevronDown, ChevronRight, User, PawPrint, MessageSquare } from 'lucide-react'
+import { Loader2, Shield, LogOut, ExternalLink, LayoutDashboard, ChevronDown, ChevronRight, User, PawPrint, MessageSquare, Eye, Globe, Monitor, Smartphone, RefreshCw } from 'lucide-react'
 import Button from '../components/ui/Button'
 import StatusBadge from '../components/ui/StatusBadge'
 
@@ -57,6 +57,10 @@ export default function AdminConsole() {
   const [sessionDetail, setSessionDetail] = useState({})
   const [intakeBackfillLoading, setIntakeBackfillLoading] = useState(false)
   const [intakeBackfillResult, setIntakeBackfillResult] = useState(null)
+  const [visitors, setVisitors] = useState(null)
+  const [visitorsLoading, setVisitorsLoading] = useState(false)
+  const [visitorsError, setVisitorsError] = useState(null)
+  const [expandedVisitor, setExpandedVisitor] = useState(null)
 
   useEffect(() => {
     document.title = 'Admin — VetPac'
@@ -223,11 +227,27 @@ export default function AdminConsole() {
     }
   }, [getAccessToken, fetchSessions])
 
+  const fetchVisitors = useCallback(async () => {
+    setVisitorsLoading(true)
+    setVisitorsError(null)
+    try {
+      const r = await fetch('/api/visitors?limit=100')
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error || 'Failed to load visitors')
+      setVisitors(d.visitors || [])
+    } catch (e) {
+      setVisitorsError(e.message || 'Could not load visitors')
+    } finally {
+      setVisitorsLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     if (phase !== 'authed' || !account) return
     void fetchStats()
     void fetchSessions()
-  }, [phase, account, fetchStats, fetchSessions])
+    void fetchVisitors()
+  }, [phase, account, fetchStats, fetchSessions, fetchVisitors])
 
   const signIn = async () => {
     const pca = window.__vetpacMsal
@@ -487,6 +507,196 @@ export default function AdminConsole() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* ── Visitors ────────────────────────────────────────────────── */}
+        <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-textPrimary">Visitors</h3>
+              <p className="text-xs text-textMuted mt-0.5">Real-time website visitors — source, journey, and intent signals.</p>
+            </div>
+            <Button type="button" size="sm" onClick={() => void fetchVisitors()} loading={visitorsLoading} disabled={visitorsLoading}>
+              <RefreshCw className="w-3.5 h-3.5" /> Refresh
+            </Button>
+          </div>
+
+          {visitorsLoading && (
+            <div className="flex items-center gap-2 text-sm text-textSecondary py-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" /> Loading visitors…
+            </div>
+          )}
+          {visitorsError && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+              {visitorsError}
+              {visitorsError.includes('KV') || visitorsError.includes('fetch') ? ' — ensure KV_REST_API_URL and KV_REST_API_TOKEN are set on Vercel.' : ''}
+            </p>
+          )}
+
+          {visitors && visitors.length === 0 && (
+            <p className="text-sm text-textMuted py-4 text-center">No visitors recorded yet — tracking will populate as visitors land on the site.</p>
+          )}
+
+          {visitors && visitors.length > 0 && (() => {
+            const today = new Date().toDateString()
+            const todayCount = visitors.filter(v => new Date(v.createdAt).toDateString() === today).length
+            const highIntent = visitors.filter(v => v.hasHighIntent || (v.currentSession?.bookingClicks > 0)).length
+            const returning = visitors.filter(v => v.metrics?.isReturning || v.historyMetrics?.isReturning).length
+            const engaged = visitors.filter(v => v.metrics?.isEngaged || v.currentSession?.isEngaged).length
+
+            return (
+              <>
+                {/* Summary bar */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                  {[
+                    { label: 'Today', value: todayCount },
+                    { label: 'Total', value: visitors.length },
+                    { label: 'High intent', value: highIntent, highlight: true },
+                    { label: 'Engaged', value: engaged },
+                  ].map(({ label, value, highlight }) => (
+                    <div key={label} className={`rounded-lg p-3 border ${highlight ? 'bg-amber-50 border-amber-200' : 'bg-bg border-border'}`}>
+                      <p className={`text-xs font-medium mb-1 ${highlight ? 'text-amber-700' : 'text-textMuted'}`}>{label}</p>
+                      <p className={`text-xl font-bold ${highlight ? 'text-amber-800' : 'text-textPrimary'}`}>{value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Visitor list */}
+                <div className="space-y-2">
+                  {visitors.map((v) => {
+                    const isExpanded = expandedVisitor === v.id
+                    const source = (() => {
+                      const s = v.source || {}
+                      if (s.gclid || s.gbraid || s.wbraid) return { label: 'Google Ads', emoji: '🔵' }
+                      if (s.fbclid) return { label: 'Facebook Ads', emoji: '📘' }
+                      if (s.utmSource) return { label: s.utmSource, emoji: '🏷️' }
+                      if (s.referrer) {
+                        try {
+                          const h = new URL(s.referrer).hostname
+                          if (h.includes('google')) return { label: 'Google Search', emoji: '🔍' }
+                          if (h.includes('bing')) return { label: 'Bing Search', emoji: '🔍' }
+                          if (h.includes('facebook')) return { label: 'Facebook', emoji: '📘' }
+                          return { label: h, emoji: '🔗' }
+                        } catch { return { label: 'Referral', emoji: '🔗' } }
+                      }
+                      return { label: 'Direct', emoji: '🎯' }
+                    })()
+
+                    const locationStr = [v.location?.city, v.location?.region].filter(Boolean).join(', ') || null
+                    const timeAgo = (() => {
+                      const ms = Date.now() - new Date(v.updatedAt || v.createdAt).getTime()
+                      if (ms < 60000) return `${Math.round(ms / 1000)}s ago`
+                      if (ms < 3600000) return `${Math.round(ms / 60000)}m ago`
+                      if (ms < 86400000) return `${Math.round(ms / 3600000)}h ago`
+                      return `${Math.round(ms / 86400000)}d ago`
+                    })()
+
+                    const pageViews = Array.isArray(v.pageViews) ? v.pageViews : []
+                    const intentSignals = v.currentSession?.intentSignals || []
+                    const isHighIntent = v.hasHighIntent || intentSignals.some(s => s.includes('booking') || s.includes('plan') || s.includes('checkout'))
+
+                    return (
+                      <div key={v.id} className="border border-border rounded-card overflow-hidden">
+                        <button
+                          type="button"
+                          className="w-full text-left p-3 hover:bg-bg transition-colors"
+                          onClick={() => setExpandedVisitor(isExpanded ? null : v.id)}
+                        >
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-textMuted flex-shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-textMuted flex-shrink-0" />}
+
+                            <span className="text-sm font-medium">{source.emoji} {source.label}</span>
+
+                            {isHighIntent && (
+                              <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">HIGH INTENT</span>
+                            )}
+                            {(v.metrics?.isReturning || v.historyMetrics?.isReturning) && (
+                              <span className="text-xs font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">RETURNING</span>
+                            )}
+
+                            <span className="text-xs text-textMuted ml-auto flex items-center gap-2">
+                              {v.device?.isMobile
+                                ? <Smartphone className="w-3 h-3" />
+                                : <Monitor className="w-3 h-3" />}
+                              {locationStr && <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {locationStr}</span>}
+                              <span>{pageViews.length} {pageViews.length === 1 ? 'page' : 'pages'}</span>
+                              <span>{timeAgo}</span>
+                            </span>
+                          </div>
+                          <p className="text-xs text-textMuted mt-1 ml-5 truncate">{v.source?.landingPage || '/'}</p>
+                        </button>
+
+                        {isExpanded && (
+                          <div className="border-t border-border bg-bg p-4 space-y-3">
+                            <div className="grid sm:grid-cols-2 gap-3">
+                              <div className="bg-white rounded-card border border-border p-3">
+                                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Source</p>
+                                <dl className="space-y-1 text-xs">
+                                  {[
+                                    ['Landing', v.source?.landingPage],
+                                    ['Referrer', v.source?.referrer || 'Direct'],
+                                    ['UTM source', v.source?.utmSource],
+                                    ['UTM campaign', v.source?.utmCampaign],
+                                    ['gclid', v.source?.gclid],
+                                  ].filter(([, val]) => val).map(([k, val]) => (
+                                    <div key={k} className="flex gap-2">
+                                      <dt className="text-textMuted w-24 flex-shrink-0">{k}</dt>
+                                      <dd className="text-textPrimary font-medium truncate">{val}</dd>
+                                    </div>
+                                  ))}
+                                </dl>
+                              </div>
+
+                              <div className="bg-white rounded-card border border-border p-3">
+                                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Session</p>
+                                <dl className="space-y-1 text-xs">
+                                  {[
+                                    ['Pages', pageViews.length],
+                                    ['Scroll depth', v.currentSession?.maxScrollDepth != null ? `${v.currentSession.maxScrollDepth}%` : null],
+                                    ['Time on site', v.currentSession?.timeOnSite ? `${v.currentSession.timeOnSite}s` : null],
+                                    ['Plan clicks', v.currentSession?.bookingClicks || null],
+                                    ['Phone clicks', v.currentSession?.phoneClicks || null],
+                                    ['Location', locationStr],
+                                    ['Device', v.device?.isMobile ? 'Mobile' : 'Desktop'],
+                                    ['Visitor ID', v.id],
+                                  ].filter(([, val]) => val != null && val !== '').map(([k, val]) => (
+                                    <div key={k} className="flex gap-2">
+                                      <dt className="text-textMuted w-24 flex-shrink-0">{k}</dt>
+                                      <dd className="text-textPrimary font-medium truncate">{String(val)}</dd>
+                                    </div>
+                                  ))}
+                                </dl>
+                              </div>
+                            </div>
+
+                            {intentSignals.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5">
+                                <span className="text-xs text-textMuted">Intent signals:</span>
+                                {intentSignals.map((sig, i) => (
+                                  <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">{sig}</span>
+                                ))}
+                              </div>
+                            )}
+
+                            {pageViews.length > 0 && (
+                              <div>
+                                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-1.5">Page journey</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {pageViews.map((pv, i) => (
+                                    <span key={i} className="text-xs bg-white border border-border text-textSecondary px-2 py-0.5 rounded font-mono">{pv.path}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            )
+          })()}
         </div>
 
         {/* ── Intake sessions ─────────────────────────────────────────── */}

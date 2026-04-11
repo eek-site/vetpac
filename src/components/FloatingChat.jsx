@@ -5,10 +5,10 @@ import { logSiteEvent } from '../lib/logSiteEvent'
 
 const OPENING = {
   role: 'assistant',
-  content: "Hi! Any questions about your plan, the vaccines, or how self-administration works? I'm here.",
+  content: "Hi! Any questions about your plan, the vaccines, or how everything works? Ask away.",
 }
 
-export default function FloatingChat() {
+export default function FloatingChat({ context }) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([OPENING])
   const [input, setInput] = useState('')
@@ -34,7 +34,7 @@ export default function FloatingChat() {
     setInput('')
     setLoading(true)
     try {
-      const reply = await runContactChat(updated.map(({ role, content }) => ({ role, content })))
+      const reply = await runContactChat(updated.map(({ role, content }) => ({ role, content })), context)
       logSiteEvent('contact_ai_message', { context: 'floating_chat' })
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
       const contact = parseContactSubmit(reply)

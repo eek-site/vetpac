@@ -659,7 +659,16 @@ export default function PlanPage() {
         )}
       </div>
 
-      <FloatingChat />
+      <FloatingChat context={[
+        `Puppy: ${dogProfile.name || 'unknown'}, ${dogProfile.breed || 'unknown breed'}, ${dogProfile.sex || ''}, ${dogProfile.weight_kg ? dogProfile.weight_kg + 'kg' : 'weight unknown'}`,
+        `Current step: ${step} of 4 (1=Your Plan, 2=Delivery, 3=Warranty, 4=Confirm)`,
+        `Delivery: ${assistSelected ? 'VetPac Assist — technician administers' : 'Self-administer (cold-chain courier)'}`,
+        `Warranty: ${insuranceSelected ? 'added ($225)' : 'not added'}`,
+        vaccinePlan.length > 0
+          ? `Selected vaccines: ${vaccinePlan.filter(v => v.selected).map(v => v.name).join(', ') || 'none selected'}`
+          : 'Vaccine plan not yet built',
+        numberOfPuppies > 1 ? `Number of puppies: ${numberOfPuppies}` : null,
+      ].filter(Boolean).join('\n')} />
     </div>
   )
 }
