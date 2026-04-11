@@ -1,5 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { MessageCircle, X, Send, Loader2, AlertTriangle, Trash2 } from 'lucide-react'
+import { getVisitorId } from '../lib/visitorId'
+
+function saveMessage(role, content, email) {
+  fetch('/api/chat-save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ visitor_id: getVisitorId(), email: email || null, role, content, source: 'support' }),
+  }).catch(() => {})
+}
 
 const STORAGE_KEY = 'vetpac_chat_v1'
 const MAX_STORED = 60 // max messages to keep in storage
@@ -135,6 +144,7 @@ export default function SupportChat() {
       .filter(m => m.role !== 'system-divider')
 
     setMessages(prev => [...prev, { role: 'user', content: userText }])
+    saveMessage('user', userText)
     setLoading(true)
 
     try {
@@ -148,9 +158,11 @@ export default function SupportChat() {
 
       if (reply.includes('CONTACT_SUBMIT:')) {
         const jsonMatch = reply.match(/CONTACT_SUBMIT:(\{.*?\})/)
+        let knownEmail = null
         if (jsonMatch) {
           try {
             const contactData = JSON.parse(jsonMatch[1])
+            knownEmail = contactData.email || null
             await fetch('/api/send-contact', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -161,8 +173,10 @@ export default function SupportChat() {
         }
         const cleanReply = reply.replace(/CONTACT_SUBMIT:\{.*?\}/, '').trim()
         setMessages(prev => [...prev, { role: 'assistant', content: cleanReply }])
+        saveMessage('assistant', cleanReply, knownEmail)
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: reply }])
+        saveMessage('assistant', reply)
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: "I'm having trouble connecting right now. Please try again in a moment." }])

@@ -6,7 +6,16 @@ import {
 } from 'lucide-react'
 import { runContactChat, parseContactSubmit } from '../lib/claude'
 import { logSiteEvent } from '../lib/logSiteEvent'
+import { getVisitorId } from '../lib/visitorId'
 import SEO from '../components/SEO'
+
+function saveMessage(role, content, email) {
+  fetch('/api/chat-save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ visitor_id: getVisitorId(), email: email || null, role, content, source: 'contact' }),
+  }).catch(() => {})
+}
 
 const OPENING_MESSAGE = {
   role: 'assistant',
@@ -116,6 +125,7 @@ export default function ContactPage() {
     setInput('')
     setLoading(true)
     setError(null)
+    saveMessage('user', msgText)
 
     try {
       const apiMessages = updatedMessages.map(({ role, content }) => ({ role, content }))
@@ -124,6 +134,8 @@ export default function ContactPage() {
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
 
       const contactData = parseContactSubmit(reply)
+      const knownEmail = contactData?.email || null
+      saveMessage('assistant', reply.replace(/CONTACT_SUBMIT:\{[\s\S]*?\}/, '').trim(), knownEmail)
       if (contactData && !sent) {
         const transcript = updatedMessages
           .filter(m => m.role !== 'system')

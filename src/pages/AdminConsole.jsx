@@ -116,6 +116,189 @@ function SiteEventStats({ stats }) {
 
 // ─── Conversation Inbox ───────────────────────────────────────────────────────
 
+const VISITOR_REPLIED_KEY = 'vetpac_admin_visitor_replied_v1'
+function getVisitorReplied() {
+  try { return new Set(JSON.parse(localStorage.getItem(VISITOR_REPLIED_KEY) || '[]')) } catch { return new Set() }
+}
+function markVisitorReplied(vid) {
+  const s = getVisitorReplied(); s.add(vid)
+  localStorage.setItem(VISITOR_REPLIED_KEY, JSON.stringify([...s]))
+}
+
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso)
+  if (diff < 60000) return 'just now'
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
+  return `${Math.floor(diff / 86400000)}d ago`
+}
+
+const SOURCE_LABEL = { contact: 'Contact', intake: 'Intake', support: 'Widget' }
+const SOURCE_COLOR = { contact: 'bg-blue-100 text-blue-700', intake: 'bg-green-100 text-green-700', support: 'bg-purple-100 text-purple-700' }
+
+function VisitorInbox({ visitors, msToken, getToken }) {
+  const [active, setActive]       = useState(null)
+  const [draft, setDraft]         = useState('')
+  const [rewriting, setRewriting] = useState(false)
+  const [rewritten, setRewritten] = useState(null)
+  const [sending, setSending]     = useState(false)
+  const [sentSet, setSentSet]     = useState(() => getVisitorReplied())
+  const [err, setErr]             = useState(null)
+  const msgRef = useRef(null)
+
+  useEffect(() => {
+    if (msgRef.current) msgRef.current.scrollTop = msgRef.current.scrollHeight
+  }, [active, visitors])
+
+  const needsReply = (visitors || []).filter(v => {
+    const last = v.messages[v.messages.length - 1]
+    return last?.role === 'user' && !sentSet.has(v.visitor_id)
+  })
+  const others = (visitors || []).filter(v => !needsReply.find(n => n.visitor_id === v.visitor_id))
+
+  const activeVisitor = (visitors || []).find(v => v.visitor_id === active)
+
+  const rewrite = async () => {
+    if (!draft.trim() || !activeVisitor) return
+    const convo = activeVisitor.messages.slice(-8)
+      .map(m => `${m.role === 'user' ? 'Customer' : 'VetPac AI'}: ${m.content}`)
+      .join('\n')
+    const token = msToken || await getToken()
+    setRewriting(true); setErr(null)
+    try {
+      const r = await fetch('/api/admin-rewrite-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ draft, customerName: '', dogName: '', conversationSummary: convo }),
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error)
+      setRewritten(d.text)
+    } catch (e) { setErr(e.message) }
+    finally { setRewriting(false) }
+  }
+
+  const sendReply = async () => {
+    if (!activeVisitor?.email) return
+    const body = rewritten || draft
+    const token = msToken || await getToken()
+    setSending(true); setErr(null)
+    try {
+      const r = await fetch('/api/admin-send-customer-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ to: activeVisitor.email, toName: '', subject: 'Re: Your VetPac enquiry', message: body }),
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error)
+      markVisitorReplied(active)
+      setSentSet(getVisitorReplied())
+      setDraft(''); setRewritten(null); setActive(null)
+    } catch (e) { setErr(e.message) }
+    finally { setSending(false) }
+  }
+
+  if (!visitors || visitors.length === 0) return (
+    <p className="text-sm text-textMuted text-center py-6">No visitor conversations yet.</p>
+  )
+
+  return (
+    <div className="flex gap-0 border border-border rounded-xl overflow-hidden" style={{ minHeight: 480 }}>
+      {/* Left — visitor list */}
+      <div className="w-64 flex-shrink-0 border-r border-border flex flex-col bg-bg overflow-y-auto">
+        {needsReply.length > 0 && (
+          <div className="px-3 pt-3 pb-1">
+            <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> Needs reply ({needsReply.length})
+            </p>
+          </div>
+        )}
+        {needsReply.map(v => (
+          <button key={v.visitor_id} onClick={() => { setActive(v.visitor_id); setDraft(''); setRewritten(null); setErr(null) }}
+            className={`text-left px-3 py-3 border-b border-border hover:bg-surface transition-colors ${active === v.visitor_id ? 'bg-primary/5 border-l-2 border-l-primary' : ''}`}>
+            <div className="flex items-center justify-between gap-1 mb-0.5">
+              <p className="text-xs font-semibold text-textPrimary truncate">{v.email || v.visitor_id.slice(0, 8) + '…'}</p>
+              <span className="text-[10px] text-amber-600 font-bold shrink-0">reply</span>
+            </div>
+            <p className="text-[11px] text-textMuted truncate">{v.messages[v.messages.length - 1]?.content?.slice(0, 50)}…</p>
+            <p className="text-[10px] text-textMuted mt-0.5">{timeAgo(v.last_active)}</p>
+          </button>
+        ))}
+        {others.length > 0 && (
+          <div className="px-3 pt-3 pb-1 mt-1 border-t border-border">
+            <p className="text-[10px] font-bold text-textMuted uppercase tracking-wider">Others ({others.length})</p>
+          </div>
+        )}
+        {others.map(v => (
+          <button key={v.visitor_id} onClick={() => { setActive(v.visitor_id); setDraft(''); setRewritten(null); setErr(null) }}
+            className={`text-left px-3 py-3 border-b border-border hover:bg-surface transition-colors ${active === v.visitor_id ? 'bg-primary/5 border-l-2 border-l-primary' : ''}`}>
+            <div className="flex items-center justify-between gap-1 mb-0.5">
+              <p className="text-xs font-semibold text-textPrimary truncate">{v.email || v.visitor_id.slice(0, 8) + '…'}</p>
+              <span className="text-[10px] text-green-600 font-bold shrink-0">✓</span>
+            </div>
+            <p className="text-[11px] text-textMuted truncate">{v.messages[v.messages.length - 1]?.content?.slice(0, 50)}…</p>
+            <p className="text-[10px] text-textMuted mt-0.5">{timeAgo(v.last_active)}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* Right — thread */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {!activeVisitor ? (
+          <div className="flex-1 flex items-center justify-center text-sm text-textMuted">Select a conversation</div>
+        ) : (
+          <>
+            <div className="px-4 py-3 border-b border-border bg-white flex items-center gap-3 flex-wrap">
+              <div>
+                <p className="text-sm font-semibold text-textPrimary">{activeVisitor.email || 'Anonymous visitor'}</p>
+                <p className="text-xs text-textMuted">{activeVisitor.messages.length} messages · last active {timeAgo(activeVisitor.last_active)}</p>
+              </div>
+              <div className="flex gap-1 flex-wrap">
+                {[...new Set(activeVisitor.messages.map(m => m.source))].map(s => (
+                  <span key={s} className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${SOURCE_COLOR[s] || 'bg-slate-100 text-slate-600'}`}>{SOURCE_LABEL[s] || s}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div ref={msgRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-2 bg-bg" style={{ maxHeight: 320 }}>
+              {activeVisitor.messages.map((m, i) => (
+                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] text-xs px-3 py-2 rounded-xl leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'bg-primary text-white rounded-br-sm' : 'bg-white border border-border text-textPrimary rounded-bl-sm'}`}>
+                    {m.content}
+                    <span className={`block text-[10px] mt-1 opacity-60`}>{SOURCE_LABEL[m.source] || m.source} · {timeAgo(m.created_at)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Reply composer */}
+            <div className="border-t border-border bg-white px-4 py-3 space-y-2">
+              {!activeVisitor.email && (
+                <p className="text-xs text-amber-600">No email address yet — can't send reply until customer provides one.</p>
+              )}
+              <textarea value={rewritten ?? draft} onChange={e => rewritten ? setRewritten(e.target.value) : setDraft(e.target.value)}
+                placeholder="Type a reply…" rows={3}
+                className="w-full text-sm border border-border rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+              {err && <p className="text-xs text-red-500">{err}</p>}
+              <div className="flex gap-2">
+                <button onClick={rewrite} disabled={rewriting || !draft.trim()} className="text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-bg disabled:opacity-40 transition-colors">
+                  {rewriting ? '…' : '✨ Rewrite with AI'}
+                </button>
+                {rewritten && <button onClick={() => { setRewritten(null) }} className="text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-bg transition-colors">Reset</button>}
+                <button onClick={sendReply} disabled={sending || !(rewritten || draft).trim() || !activeVisitor.email}
+                  className="ml-auto text-xs px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-40 transition-colors flex items-center gap-1.5">
+                  <Send size={11} /> {sending ? 'Sending…' : 'Send email'}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 const REPLIED_KEY = 'vetpac_admin_replied_v1'
 function getReplied() {
   try { return new Set(JSON.parse(localStorage.getItem(REPLIED_KEY) || '[]')) } catch { return new Set() }
@@ -523,6 +706,8 @@ export default function AdminConsole() {
   const [visitors, setVisitors] = useState(null)
   const [visitorsLoading, setVisitorsLoading] = useState(false)
   const [visitorsError, setVisitorsError] = useState(null)
+  const [visitorMsgs, setVisitorMsgs] = useState(null)
+  const [visitorMsgsLoading, setVisitorMsgsLoading] = useState(false)
   const [expandedVisitor, setExpandedVisitor] = useState(null)
   const [replySession, setReplySession] = useState(null)
   const [msTokenCache, setMsTokenCache] = useState(null)
@@ -694,6 +879,19 @@ export default function AdminConsole() {
     }
   }, [getAccessToken, fetchSessions])
 
+  const fetchVisitorMessages = useCallback(async () => {
+    const token = await getAccessToken()
+    if (!token) return
+    setMsTokenCache(token)
+    setVisitorMsgsLoading(true)
+    try {
+      const r = await fetch('/api/visitor-messages', { headers: { Authorization: `Bearer ${token}` } })
+      const d = await r.json()
+      if (r.ok) setVisitorMsgs(d.visitors || [])
+    } catch { /* silent */ }
+    finally { setVisitorMsgsLoading(false) }
+  }, [getAccessToken])
+
   const fetchVisitors = useCallback(async () => {
     setVisitorsLoading(true)
     setVisitorsError(null)
@@ -714,7 +912,8 @@ export default function AdminConsole() {
     void fetchStats()
     void fetchSessions()
     void fetchVisitors()
-  }, [phase, account, fetchStats, fetchSessions, fetchVisitors])
+    void fetchVisitorMessages()
+  }, [phase, account, fetchStats, fetchSessions, fetchVisitors, fetchVisitorMessages])
 
   const signIn = async () => {
     const pca = window.__vetpacMsal
@@ -887,12 +1086,44 @@ export default function AdminConsole() {
           </Link>
         </div>
 
+        {/* ── All visitor messages (SSOT) ────────────────────────────── */}
+        <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="font-semibold text-textPrimary flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-primary" /> All Conversations
+                {visitorMsgs && (() => {
+                  const nr = (visitorMsgs || []).filter(v => {
+                    const last = v.messages[v.messages.length - 1]
+                    return last?.role === 'user' && !getVisitorReplied().has(v.visitor_id)
+                  }).length
+                  return nr > 0
+                    ? <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{nr} need reply</span>
+                    : null
+                })()}
+              </h3>
+              <p className="text-xs text-textMuted mt-0.5">Every chat message across contact page, support widget — oldest to newest, keyed to visitor.</p>
+            </div>
+            <Button type="button" size="sm" onClick={() => void fetchVisitorMessages()} loading={visitorMsgsLoading} disabled={visitorMsgsLoading}>
+              <RefreshCw className="w-3.5 h-3.5" /> Refresh
+            </Button>
+          </div>
+          {visitorMsgsLoading && (
+            <div className="flex items-center gap-2 text-sm text-textSecondary py-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" /> Loading…
+            </div>
+          )}
+          {!visitorMsgsLoading && (
+            <VisitorInbox visitors={visitorMsgs} msToken={msTokenCache} getToken={getAccessToken} />
+          )}
+        </div>
+
         {/* ── Conversations inbox ─────────────────────────────────────── */}
         <div className="bg-white rounded-card-lg border border-border p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="font-semibold text-textPrimary flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-primary" /> Conversations
+                <MessageSquare className="w-4 h-4 text-primary" /> Intake Conversations
                 {intakeSessions && intakeSessions.filter(s => (s.email || s.owner_details?.email)).length > 0 && (() => {
                   const replied = getReplied()
                   const unreplied = intakeSessions.filter(s => (s.email || s.owner_details?.email) && !replied.has(s.session_token)).length
