@@ -1,43 +1,42 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { CheckCircle, Package, Clock, FileText, Calendar, ArrowRight } from 'lucide-react'
+import { CheckCircle, Package, Clock, FileText, Calendar, ArrowRight, Mail, ChevronDown, ChevronUp } from 'lucide-react'
 import Button from '../components/ui/Button'
 import { useIntakeStore } from '../store/intakeStore'
+import { SITE_EMAIL, mailtoHref } from '../lib/site-email'
 
-// ── .ics calendar helper ─────────────────────────────────────────────────────
+// ── Calendar helpers — Google + Outlook URL links (no file download) ─────────
 
-function toIcsDate(date) {
+function gcalDate(date) {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
 }
 
-function downloadIcs({ title, description, date }) {
+function googleCalendarUrl({ title, description, date }) {
   const start = new Date(date)
   start.setHours(9, 0, 0, 0)
   const end = new Date(start.getTime() + 30 * 60 * 1000)
-  const uid = `vetpac-${Date.now()}@vetpac.nz`
-  const ics = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//VetPac//EN',
-    'CALSCALE:GREGORIAN',
-    'BEGIN:VEVENT',
-    `UID:${uid}`,
-    `DTSTAMP:${toIcsDate(new Date())}`,
-    `DTSTART:${toIcsDate(start)}`,
-    `DTEND:${toIcsDate(end)}`,
-    `SUMMARY:${title}`,
-    `DESCRIPTION:${description}`,
-    'END:VEVENT',
-    'END:VCALENDAR',
-  ].join('\r\n')
+  const p = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${gcalDate(start)}/${gcalDate(end)}`,
+    details: description,
+  })
+  return `https://calendar.google.com/calendar/render?${p.toString()}`
+}
 
-  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.ics`
-  a.click()
-  URL.revokeObjectURL(url)
+function outlookCalendarUrl({ title, description, date }) {
+  const start = new Date(date)
+  start.setHours(9, 0, 0, 0)
+  const end = new Date(start.getTime() + 30 * 60 * 1000)
+  const p = new URLSearchParams({
+    subject: title,
+    startdt: start.toISOString(),
+    enddt: end.toISOString(),
+    body: description,
+    path: '/calendar/action/compose',
+    rru: 'addevent',
+  })
+  return `https://outlook.live.com/calendar/0/deeplink/compose?${p.toString()}`
 }
 
 function addWeeks(weeks) {
@@ -52,25 +51,53 @@ function addMonths(months) {
   return d
 }
 
+function CalendarDropdown({ title, description, date }) {
+  const [open, setOpen] = useState(false)
+  const gcal = googleCalendarUrl({ title, description, date })
+  const outlook = outlookCalendarUrl({ title, description, date })
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="text-xs text-primary hover:text-primary-dark font-semibold border border-primary/30 hover:border-primary px-3 py-1.5 rounded-card transition-colors flex items-center gap-1"
+      >
+        <Calendar className="w-3 h-3" /> Add to calendar {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 bg-white border border-border rounded-card shadow-card z-10 min-w-[160px]">
+          <a href={gcal} target="_blank" rel="noopener noreferrer"
+            className="block px-4 py-2.5 text-xs font-medium text-textPrimary hover:bg-bg transition-colors">
+            Google Calendar
+          </a>
+          <a href={outlook} target="_blank" rel="noopener noreferrer"
+            className="block px-4 py-2.5 text-xs font-medium text-textPrimary hover:bg-bg transition-colors border-t border-border">
+            Outlook / iCal
+          </a>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function DoseSchedule({ dogName }) {
   const doses = [
     {
       label: `Dose 1 — C5`,
       sub: 'Ships now',
       date: new Date(),
-      description: `Administer Dose 1 of ${dogName}'s C5 vaccine. Guide included in your kit. WhatsApp support: 24/7.`,
+      description: `Administer Dose 1 of ${dogName}'s C5 vaccine. Guide included in your kit. Email woof@vetpac.nz for support.`,
     },
     {
       label: `Dose 2 — C5`,
       sub: 'Ships at 12 weeks',
       date: addWeeks(4),
-      description: `Administer Dose 2 of ${dogName}'s C5 vaccine. Guide included in your kit. WhatsApp support: 24/7.`,
+      description: `Administer Dose 2 of ${dogName}'s C5 vaccine. Guide included in your kit. Email woof@vetpac.nz for support.`,
     },
     {
       label: `Dose 3 — C5`,
       sub: 'Ships at 16 weeks',
       date: addWeeks(8),
-      description: `Administer Dose 3 of ${dogName}'s C5 vaccine. Guide included in your kit. WhatsApp support: 24/7.`,
+      description: `Administer Dose 3 of ${dogName}'s C5 vaccine. Guide included in your kit. Email woof@vetpac.nz for support.`,
     },
     {
       label: `Annual Booster`,
@@ -86,7 +113,7 @@ function DoseSchedule({ dogName }) {
         <Calendar className="w-5 h-5 text-primary" />
         Your dose schedule
       </h2>
-      <p className="text-textMuted text-sm mb-5">Auto-reminders will be sent 3 days before each dose ships.</p>
+      <p className="text-textMuted text-sm mb-5">Add each dose to your calendar so you don't miss a shipment.</p>
       <div className="space-y-0">
         {doses.map((dose, i) => (
           <div key={i} className="flex items-center justify-between py-3 border-b border-border last:border-0">
@@ -94,12 +121,11 @@ function DoseSchedule({ dogName }) {
               <p className="text-sm font-semibold text-textPrimary">{dose.label}</p>
               <p className="text-xs text-textMuted">{dose.sub}</p>
             </div>
-            <button
-              onClick={() => downloadIcs({ title: `VetPac — ${dose.label} (${dogName})`, description: dose.description, date: dose.date })}
-              className="text-xs text-primary hover:text-primary-dark font-semibold border border-primary/30 hover:border-primary px-3 py-1.5 rounded-card transition-colors flex items-center gap-1"
-            >
-              <Calendar className="w-3 h-3" /> Add to calendar
-            </button>
+            <CalendarDropdown
+              title={`VetPac — ${dose.label} (${dogName})`}
+              description={dose.description}
+              date={dose.date}
+            />
           </div>
         ))}
       </div>
@@ -229,19 +255,20 @@ export default function OrderConfirmation() {
           </div>
         </div>
 
-        {/* Admin guide */}
+        {/* Support card */}
         <div className="bg-primary rounded-card-lg p-8 text-white mb-6">
-          <h2 className="font-display font-semibold text-xl mb-3">Administration guide</h2>
-          <p className="text-primary-light text-sm mb-5">
-            A step-by-step guide is included in your vaccine kit. Our team is available 24/7 on WhatsApp for any questions before, during, or after each dose.
+          <h2 className="font-display font-semibold text-xl mb-3">Questions? We're here.</h2>
+          <p style={{color: 'rgba(255,255,255,0.75)'}} className="text-sm mb-2">
+            A step-by-step administration guide is included in your kit. For anything else, email us — we respond as quickly as possible.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <a href="https://wa.me/6421000000" target="_blank" rel="noopener noreferrer">
-              <Button variant="accent">
-                Message us on WhatsApp
-              </Button>
-            </a>
-          </div>
+          <p style={{color: 'rgba(255,255,255,0.6)'}} className="text-xs mb-5">
+            If it's a medical emergency, call your local vet immediately.
+          </p>
+          <a href={mailtoHref('VetPac — question about my order')}>
+            <Button variant="accent">
+              <Mail className="w-4 h-4" /> Email {SITE_EMAIL}
+            </Button>
+          </a>
         </div>
 
         {/* Dose schedule */}
@@ -254,7 +281,7 @@ export default function OrderConfirmation() {
             </Button>
           </Link>
           <p className="text-textMuted text-sm mt-4">
-            Urgent? Message us on <span className="text-primary font-semibold">WhatsApp</span> (24/7)
+            Questions? Email <a href={mailtoHref()} className="text-primary font-semibold hover:underline">{SITE_EMAIL}</a>
           </p>
         </div>
       </div>

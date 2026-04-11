@@ -107,11 +107,11 @@ function PuppyPlanSection({ puppyName, vaccinePlan, toggleVaccineItem, isLoading
 // ─── Delivery FAQs ───────────────────────────────────────────────────────────
 
 const SELF_ADMIN_FAQ = [
-  { q: 'How hard is it to administer at home?', a: 'Very straightforward. For your first dose, a trained VetPac technician visits with the vaccine and walks you through the whole process in person — so you know exactly what to do. The needle is small (25 gauge), the injection is subcutaneous (just under the skin at the scruff of the neck), and the whole process takes under two minutes. From dose two onwards you do it yourself, with our step-by-step guide and 24/7 WhatsApp support throughout.' },
-  { q: "What if I'm nervous about injecting?", a: "Completely normal — most first-timers feel exactly the same. The guide is written for people with zero medical experience. Puppies generally tolerate it very well at home, especially compared to the stress of a clinic visit. If you try it and genuinely can't do it, message us on WhatsApp and we'll arrange a VetPac Assist visit." },
+  { q: 'How hard is it to administer at home?', a: 'Very straightforward. For your first dose, a trained VetPac technician visits with the vaccine and walks you through the whole process in person — so you know exactly what to do. The needle is small (25 gauge), the injection is subcutaneous (just under the skin at the scruff of the neck), and the whole process takes under two minutes. From dose two onwards you do it yourself, with our step-by-step guide and email support throughout.' },
+  { q: "What if I'm nervous about injecting?", a: "Completely normal — most first-timers feel exactly the same. The guide is written for people with zero medical experience. Puppies generally tolerate it very well at home, especially compared to the stress of a clinic visit. If you try it and genuinely can't do it, email us at woof@vetpac.nz and we'll arrange a VetPac Assist visit." },
   { q: 'What equipment do I need?', a: 'Nothing extra. Everything arrives in the kit — the vaccine vial, syringe, needle, swabs, and a step-by-step instruction card with photos. Free VetPac digital scales are included with your first order so you can monitor weight at every dose for correct dosing.' },
-  { q: 'What do I do before administering?', a: 'Run through the pre-vaccination checklist included in your kit. Your puppy should be alert, eating normally, showing no signs of illness (runny nose, lethargy, discharge, unusual behaviour), and not have eaten in the last two hours. If anything flags, stop and message us on WhatsApp — never proceed with a vaccine if your puppy is unwell.' },
-  { q: 'What happens after vaccination?', a: 'Monitor your puppy for 30 minutes. Mild lethargy or a small bump at the injection site is normal and resolves within 24 hours. If you see facial swelling, hives, vomiting, or collapse, message us on WhatsApp immediately — we respond 24/7. Serious reactions are very rare but we take them seriously.' },
+  { q: 'What do I do before administering?', a: 'Run through the pre-vaccination checklist included in your kit. Your puppy should be alert, eating normally, showing no signs of illness (runny nose, lethargy, discharge, unusual behaviour), and not have eaten in the last two hours. If anything flags, stop and email us at woof@vetpac.nz — never proceed with a vaccine if your puppy is unwell.' },
+  { q: 'What happens after vaccination?', a: 'Monitor your puppy for 30 minutes. Mild lethargy or a small bump at the injection site is normal and resolves within 24 hours. If you see facial swelling, hives, vomiting, or collapse, call your local vet immediately. For non-emergency questions, email woof@vetpac.nz.' },
   { q: 'How does cold-chain shipping work?', a: 'Every shipment is packed in pharmaceutical-grade insulated packaging with a certified gel ice pack rated to hold 2–8°C for a minimum of 48 hours. A colour-change temperature indicator strip is included. If it shows green on arrival, the cold chain held. If it has changed colour, contact us — we will resend at no charge.' },
   { q: 'Is it legal to administer vaccines at home in NZ?', a: 'Yes. VetPac operates under the ACVM Act 1997 VOI (Veterinary Operating Instruction) framework. Every vaccination plan is reviewed and authorised by a NZ-registered veterinarian before anything is dispatched. The VOI is the legal mechanism that permits administration of prescription veterinary medicines by a lay person under veterinary supervision.' },
 ]
@@ -121,7 +121,7 @@ const ASSIST_FAQ = [
   { q: 'How long does the visit take?', a: 'Typically 20–30 minutes including the wellness check, the injection itself, and the 10-minute post-vaccination observation period. Everything is done in your home at your convenience.' },
   { q: 'What areas do you service?', a: 'VetPac Assist is available NZ-wide. Scheduling may vary by region — availability is shown when you book. Most metro areas have same-week availability.' },
   { q: 'Do I need to be home for the visit?', a: 'Yes — a responsible adult needs to be present for the visit. You do not need to do anything except let the technician in and have your puppy ready.' },
-  { q: 'What if I need to reschedule?', a: 'No problem. Message us on WhatsApp up to 24 hours before your visit to reschedule. Rescheduling is free and unlimited — we work around your schedule.' },
+  { q: 'What if I need to reschedule?', a: 'No problem. Email us at woof@vetpac.nz to reschedule. Rescheduling is free and unlimited — we work around your schedule.' },
   { q: 'Is the vaccine the same as self-administration?', a: 'Identical. The same ACVM-registered vaccine, the same cold-chain logistics, the same vet-authorised plan. The only difference is who does the injection.' },
 ]
 
@@ -147,7 +147,7 @@ function StepDelivery({ assistSelected, setAssistSelected, onNext, onBack }) {
                 <span className="font-semibold text-textPrimary text-sm">I'll administer at home</span>
                 <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">Most popular</span>
               </div>
-              <p className="text-sm text-textSecondary mt-1">Vaccines cold-chain couriered to your door. Step-by-step guide included. 24/7 WhatsApp support throughout.</p>
+              <p className="text-sm text-textSecondary mt-1">Vaccines cold-chain couriered to your door. Step-by-step guide included. Email support throughout.</p>
               <p className="text-xs text-textMuted mt-1.5">${FREIGHT.pricePerShipment} per shipment · 2–8°C certified pharmaceutical courier</p>
             </div>
           </div>
@@ -223,7 +223,7 @@ const WARRANTY_TERMS_CONTENT = (
       { t: 'Warranty fee', b: `NZD $${WARRANTY.oneTimePrice} — one-time payment, covers the full vaccination programme period.` },
       { t: 'Cancellation', b: 'Monthly: cancel any time. Annual/2-year: full refund within 14 days; no refund after 14 days.' },
       { t: 'Governing law', b: 'New Zealand. Consumer Guarantees Act 1993 and Fair Trading Act 1986.' },
-      { t: 'Contact', b: `${SITE_EMAIL} · WhatsApp (24/7)` },
+      { t: 'Contact', b: SITE_EMAIL },
     ].map(({ t, b }) => (
       <div key={t}>
         <p className="font-semibold text-textPrimary">{t}</p>
@@ -417,8 +417,8 @@ function StepSummary({ totals, puppyCount, insuranceSelected, vaccinePlan, addit
             ...(insuranceSelected && totals.insurance > 0 ? [{ name: 'VetPac Programme Warranty', description: 'Covers vaccine failure & adverse reactions', price: totals.insurance }] : []),
           ]
 
+      // session_id must NOT go through URLSearchParams — it would URL-encode { } and Stripe can't replace it
       const successParams = new URLSearchParams({
-        session_id: '{CHECKOUT_SESSION_ID}',
         puppy: puppyName,
         puppyCount: numberOfPuppies.toString(),
         mode: 'vaccines',
@@ -431,7 +431,7 @@ function StepSummary({ totals, puppyCount, insuranceSelected, vaccinePlan, addit
         insuranceBilling: totals.insuranceBilling,
         items: encodeURIComponent(JSON.stringify(vaccineItems)),
       })
-      const successUrl = `${origin}/order-confirmation?${successParams.toString()}`
+      const successUrl = `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&${successParams.toString()}`
       const cancelUrl = `${origin}/plan?step=4`
 
       const res = await fetch('/api/create-checkout-session', {
@@ -517,7 +517,7 @@ function StepSummary({ totals, puppyCount, insuranceSelected, vaccinePlan, addit
             {[
               { icon: Shield, label: 'Vet-authorised' },
               { icon: Truck, label: 'Cold-chain certified' },
-              { icon: MessageCircle, label: '24/7 WhatsApp' },
+              { icon: MessageCircle, label: 'Email support' },
             ].map(({ icon: TrustIcon, label }) => (
               <div key={label} className="flex flex-col items-center gap-1.5 p-2.5 bg-bg border border-border rounded-card text-center">
                 <TrustIcon className="w-4 h-4 text-primary" />

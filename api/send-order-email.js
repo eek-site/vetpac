@@ -42,6 +42,11 @@ export default async function handler(req, res) {
   }
 
   try {
+    // ── Register dashboard access immediately — independent of email success ──
+    await registerDashboardEmail(customerEmail).catch(e =>
+      console.warn('[dashboard_access] register failed (non-fatal):', e.message)
+    )
+
     // ── Get MS Graph access token ─────────────────────────────────────────
     const tokenRes = await fetch(
       `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
@@ -90,15 +95,15 @@ export default async function handler(req, res) {
 
     const nextSteps = isConsult
       ? [
-          ['Vet review', 'A NZ-registered vet reviews your intake within 4 hours.'],
-          ['Plan confirmed', 'Your personalised vaccination programme is ready to view.'],
-          ['Vaccines dispatched', 'Cold-chain courier picks up your first dose within 24 hours of plan sign-off.'],
+          ['Vet review', 'A NZ-registered vet reviews your intake and authorises your plan.'],
+          ['Plan confirmed', 'Your personalised vaccination programme is ready to view at vetpac.nz/dashboard.'],
+          ['Vaccines dispatched', 'Cold-chain courier picks up your first dose after plan sign-off.'],
         ]
       : [
-          ['Vet review', 'A NZ-registered vet authorises your plan within 4 hours.'],
-          ['Vaccines dispatched', 'Cold-chain courier picks up your order within 24 hours.'],
+          ['Vet review', 'A NZ-registered vet authorises your vaccination plan.'],
+          ['Vaccines dispatched', 'Cold-chain courier picks up your order.'],
           ['Delivered', '1–3 business days nationwide. Temperature indicator strip included.'],
-          ['Administration', 'Follow the step-by-step guide. Our team is on WhatsApp 24/7.'],
+          ['Administration', 'Follow the step-by-step guide included in your kit. Email woof@vetpac.nz with any questions.'],
         ]
 
     const stepsHtml = nextSteps.map(([title, desc], i) =>
@@ -161,7 +166,7 @@ export default async function handler(req, res) {
       }
     }
 
-    await registerDashboardEmail(customerEmail).catch(() => {})
+    // (already registered above — this is a no-op upsert)
 
     return res.status(200).json({ ok: true })
   } catch (err) {
@@ -253,7 +258,8 @@ function buildEmail({ headline, subline, orderRef, itemRows, total, stepsHtml, d
         <!-- CTA -->
         <tr><td style="background:#ffffff;padding:0 36px 32px;border-left:1px solid #e8e0d4;border-right:1px solid #e8e0d4;border-radius:0 0 16px 16px;text-align:center;">
           <a href="${dashboardUrl}" style="display:inline-block;background:#c8612a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;padding:14px 36px;border-radius:10px;letter-spacing:0.2px;">View my dashboard →</a>
-          <p style="margin:16px 0 0;font-size:13px;color:#a0aec0;">Questions? Message us on <strong style="color:#2d5a3d;">WhatsApp</strong> — we're available 24/7.</p>
+          <p style="margin:16px 0 0;font-size:13px;color:#a0aec0;">Questions? Reply to this email or write to <strong style="color:#2d5a3d;">woof@vetpac.nz</strong> — we respond as quickly as possible.</p>
+          <p style="margin:8px 0 0;font-size:12px;color:#cbd5e0;">If it's a medical emergency, please call your local vet immediately.</p>
         </td></tr>
 
         <!-- Trust strip -->

@@ -80,7 +80,6 @@ export default function Checkout() {
     try {
       const origin = window.location.origin
       const vaccineSuccessParams = new URLSearchParams({
-        session_id: '{CHECKOUT_SESSION_ID}',
         puppy: dogName,
         puppyCount: puppyCount.toString(),
         mode: 'vaccines',
@@ -95,7 +94,7 @@ export default function Checkout() {
       })
       const successUrl = isConsult
         ? params.get('successUrl') || `${origin}/plan?paid=1&puppy=${encodeURIComponent(dogName)}&session_id={CHECKOUT_SESSION_ID}`
-        : `${origin}/order-confirmation?${vaccineSuccessParams.toString()}`
+        : `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&${vaccineSuccessParams.toString()}`
       const cancelUrl = params.get('cancelUrl') || `${origin}/checkout?${params.toString()}`
 
       const items = isConsult
